@@ -4,6 +4,21 @@ export const config = {
   tagline: "Kesehatan Anda, Prioritas Kami",
   description: "Klinik pratama dengan fasilitas modern dan tenaga medis profesional. Melayani pemeriksaan umum, konsultasi spesialis, dan perawatan gigi dengan standar medis terbaik.",
   template: "professional",
+  customDomain: "kliniksehat.com",
+  seo: {
+    title: "Klinik Sehat Bersama | Fasilitas Modern di Surabaya",
+    description: "Klinik pratama dengan fasilitas modern dan tenaga medis profesional di Surabaya.",
+  },
+  business: {
+    name: "Klinik Sehat Bersama",
+    phone: "+628111222333",
+    address: {
+      streetAddress: "Gedung Medika, Tower B Lt. 3",
+      addressLocality: "Surabaya",
+      addressCountry: "ID"
+    },
+    openingHours: ["Mo-Sa 08:00-20:00"]
+  },
   theme: {
     primaryColor: "#1d4ed8", // Blue-700
     secondaryColor: "#eff6ff", // Blue-50

@@ -4,6 +4,22 @@ export const config = {
   tagline: "Potongan Rapi, Gaya Masa Kini",
   description: "Barbershop terbaik di kota dengan layanan potong rambut, cuci, dan pijat. Berpengalaman lebih dari 5 tahun melayani pelanggan setia.",
   template: "barber",
+  seo: {
+    title: "Barber Agus | Barbershop Premium di Jakarta",
+    description: "Barbershop terbaik di Jakarta dengan layanan potong rambut, cuci, dan pijat. Pengalaman lebih dari 5 tahun.",
+    keywords: ["barbershop jakarta", "potong rambut pria", "cukur rambut"],
+  },
+  business: {
+    name: "Barber Agus",
+    description: "Barbershop terbaik di kota dengan layanan potong rambut, cuci, dan pijat.",
+    phone: "+6281234567890",
+    address: {
+      streetAddress: "Jl. Sudirman No. 123",
+      addressLocality: "Jakarta",
+      addressCountry: "ID"
+    },
+    openingHours: ["Mo-Su 10:00-22:00"]
+  },
   theme: {
     primaryColor: "#000000",
     secondaryColor: "#ffffff",

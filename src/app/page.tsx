@@ -3,7 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'motion/react';
-import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, XCircle, WhatsappLogo, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car } from '@phosphor-icons/react';
+import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, WhatsappLogo, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car } from '@phosphor-icons/react';
 
 const templates = [
   { id: 'barberagus', name: 'Barber', style: 'Ultra-Premium Brutalist', icon: <Storefront size={24} />, color: 'from-zinc-500 to-zinc-900' },

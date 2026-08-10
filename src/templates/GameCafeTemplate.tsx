@@ -1,15 +1,12 @@
 "use client";
 import React from 'react';
 import { CustomerConfig } from '@/types/config';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { motion } from 'motion/react';
 import Image from 'next/image';
 import { Slider } from '@/components/Slider';
 import { Desktop, GameController, Headset, Keyboard, Mouse, Cpu, MapPin, InstagramLogo, FacebookLogo, ArrowRight, Crosshair } from '@phosphor-icons/react';
 
 export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
-  const { scrollY } = useScroll();
-  const y1 = useTransform(scrollY, [0, 1000], [0, 150]);
-
   return (
     <div className="min-h-screen bg-[#020617] text-slate-100 font-sans selection:bg-[#00f2fe] selection:text-black overflow-x-hidden">
       

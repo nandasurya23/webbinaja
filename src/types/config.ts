@@ -16,6 +16,26 @@ export interface CustomerConfig {
   description: string;
   template: 'barber' | 'restaurant' | 'professional' | 'bakery' | 'rental' | 'gamecafe' | 'gym' | 'petshop' | 'custom';
   customDomain?: string;
+  seo?: {
+    title?: string;
+    description?: string;
+    keywords?: string[];
+    ogImage?: string;
+  };
+  business?: {
+    name?: string;
+    description?: string;
+    phone?: string;
+    address?: {
+      streetAddress?: string;
+      addressLocality?: string;
+      addressRegion?: string;
+      postalCode?: string;
+      addressCountry?: string;
+    };
+    openingHours?: string[]; // e.g. ["Mo-Fr 09:00-17:00"]
+    socialLinks?: string[];
+  };
   theme: {
     primaryColor: string;
     secondaryColor: string;
