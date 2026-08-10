@@ -9,7 +9,8 @@ export function middleware(req: NextRequest) {
   const allowedDomains = ['webbinaja.com', 'localhost:8765', '127.0.0.1:8765'];
   
   // Check if the current hostname is a custom subdomain
-  const isCustomSubdomain = !allowedDomains.includes(hostname);
+  // We exclude .vercel.app so the main landing page works on Vercel's default domain
+  const isCustomSubdomain = !allowedDomains.includes(hostname) && !hostname.endsWith('.vercel.app');
 
   if (isCustomSubdomain) {
     // Extract the subdomain slug
