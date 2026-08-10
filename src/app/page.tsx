@@ -67,32 +67,32 @@ export default function Home() {
           className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-bold mb-8 text-zinc-300"
         >
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-          Spesial Harga Launching
+          Solusi Website Cepat untuk UMKM
         </motion.div>
         
         <motion.h1 
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
           className="text-5xl md:text-7xl lg:text-[6rem] font-black tracking-tighter leading-[0.9] text-white mb-8 font-outfit max-w-5xl"
         >
-          Website Bisnis Premium, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-400">Online 24 Jam.</span>
+          Website Bisnis Profesional, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-400">Jadi Dalam 1 Hari.</span>
         </motion.h1>
         
         <motion.p 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
           className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-12 font-medium"
         >
-          Tinggalkan desain website lawas yang kaku. Kami menghadirkan standar desain kelas dunia untuk meningkatkan kredibilitas dan penjualan bisnis Anda—tanpa perlu menunggu berbulan-bulan.
+          Mulai Rp499 ribu. Pilih template, kirim data bisnis, dan biarkan kami mengurus sisanya.
         </motion.p>
         
         <motion.div 
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
-          <a href="#templates" className="flex items-center justify-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded w-full sm:w-auto">
-            Eksplorasi Template <ArrowRight weight="bold" />
+          <a href="#pricing" className="flex items-center justify-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded w-full sm:w-auto">
+            Buat Website Saya <ArrowRight weight="bold" />
           </a>
-          <a href="#workflow" className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-white/20 text-white font-bold uppercase tracking-wider hover:bg-white/5 transition-colors rounded w-full sm:w-auto">
-            Cara Pemesanan
+          <a href="#templates" className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-white/20 text-white font-bold uppercase tracking-wider hover:bg-white/5 transition-colors rounded w-full sm:w-auto">
+            Lihat Template
           </a>
         </motion.div>
       </section>
@@ -134,8 +134,8 @@ export default function Home() {
       {/* Pricing Section */}
       <section id="pricing" className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
         <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Harga Jujur. Tanpa Tersembunyi.</h2>
-          <p className="text-zinc-400 max-w-xl font-medium">Pilih paket yang sesuai dengan skala bisnis Anda. Bayar sekali, rasakan keuntungannya berkali-kali tanpa jebakan biaya bulanan.</p>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Website Bisnis Siap Pakai</h2>
+          <p className="text-zinc-400 max-w-xl font-medium">Pilih paket yang paling sesuai untuk bisnis Anda. Harga transparan tanpa biaya tersembunyi.</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -144,7 +144,7 @@ export default function Home() {
             <div className="border-b border-white/10 pb-6 mb-6 flex flex-col gap-3">
               <div>
                 <h3 className="text-2xl font-black text-white font-outfit mb-1">Paket Basic</h3>
-                <p className="text-zinc-400 text-xs font-medium">Solusi tercepat untuk tampil di Google hari ini juga.</p>
+                <p className="text-zinc-400 text-xs font-medium">Website bisnis siap online dalam 24 jam.</p>
               </div>
               <div className="flex flex-col items-start mt-1">
                 <span className="text-zinc-500 line-through text-[10px] font-mono mb-1">Rp 1.499.000</span>
@@ -157,23 +157,37 @@ export default function Home() {
             <div className="flex flex-col gap-3 mb-8 flex-grow">
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Website online dalam 24 jam</span>
+                <span className="text-zinc-300 text-xs font-medium">Website responsive</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Pilih 1 dari 8 Template Premium</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <XCircle weight="fill" className="text-red-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-500 text-xs font-medium">Desain baku (Tidak bisa custom)</span>
+                <span className="text-zinc-300 text-xs font-medium">Pilih 1 dari 8 template premium</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Domain <strong className="text-white">webbinaja.namabisnis.com</strong></span>
+                <span className="text-zinc-300 text-xs font-medium">Profil bisnis & layanan / produk</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Tombol Pesan WhatsApp</span>
+                <span className="text-zinc-300 text-xs font-medium">Galeri foto, Maps & Jam operasional</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
+                <span className="text-zinc-300 text-xs font-medium">Subdomain gratis: <strong className="text-white">namabisnis.webbinaja.com</strong></span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
+                <span className="text-zinc-300 text-xs font-medium">Tombol WhatsApp & SSL Aman</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
+                <span className="text-zinc-300 text-xs font-medium">1× revisi teks</span>
+              </div>
+              
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                <p className="text-[10px] text-red-400 font-medium leading-relaxed">
+                  <strong className="font-bold text-red-300">Desain menggunakan template yang tersedia dan tidak dapat diubah secara custom.</strong>
+                </p>
               </div>
             </div>
             
@@ -183,7 +197,7 @@ export default function Home() {
               rel="noreferrer"
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300 rounded"
             >
-              Order Basic
+              Pesan Basic
             </a>
           </div>
 
@@ -195,7 +209,7 @@ export default function Home() {
             <div className="border-b border-white/10 pb-6 mb-6 flex flex-col gap-3 relative z-10">
               <div>
                 <h3 className="text-2xl font-black text-white font-outfit mb-1">Paket Pro</h3>
-                <p className="text-zinc-400 text-xs font-medium">Tampil lebih tepercaya dengan domain .com eksklusif.</p>
+                <p className="text-zinc-400 text-xs font-medium">Tampil lebih profesional dengan domain sendiri.</p>
               </div>
               <div className="flex flex-col items-start mt-1">
                 <span className="text-zinc-500 line-through text-[10px] font-mono mb-1">Rp 2.499.000</span>
@@ -211,20 +225,30 @@ export default function Home() {
                 <span className="text-zinc-300 text-xs font-medium">Semua fitur di Paket Basic</span>
               </div>
               <div className="flex items-start gap-2">
-                <XCircle weight="fill" className="text-red-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-500 text-xs font-medium">Desain baku (Tidak bisa custom)</span>
+                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
+                <span className="text-zinc-300 text-xs font-medium">Custom domain <strong className="text-white">.com / .id</strong></span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Custom Domain <strong className="text-white">.com / .id</strong></span>
+                <span className="text-zinc-300 text-xs font-medium">Domain tahun pertama</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Gratis Revisi (Teks & Warna)</span>
+                <span className="text-zinc-300 text-xs font-medium">Setup domain & SSL</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Prioritas Support 24/7</span>
+                <span className="text-zinc-300 text-xs font-medium">1× revisi teks & warna</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
+                <span className="text-zinc-300 text-xs font-medium">Support prioritas via WhatsApp</span>
+              </div>
+
+              <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <p className="text-[10px] text-blue-300 font-medium leading-relaxed">
+                  <strong className="font-bold text-white">Anda cukup kirim data bisnis. Domain dan pengaturan teknis kami yang urus.</strong>
+                </p>
               </div>
             </div>
             
@@ -234,7 +258,7 @@ export default function Home() {
               rel="noreferrer"
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-blue-500 transition-all duration-300 rounded shadow-[0_0_20px_rgba(37,99,235,0.4)] relative z-10"
             >
-              Order Pro
+              Pesan Pro
             </a>
           </div>
 
@@ -243,12 +267,12 @@ export default function Home() {
             <div className="border-b border-white/10 pb-6 mb-6 flex flex-col gap-3">
               <div>
                 <h3 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-yellow-500 font-outfit mb-1">Paket Custom</h3>
-                <p className="text-zinc-400 text-xs font-medium">Website unik yang dirancang khusus 100% untuk Anda.</p>
+                <p className="text-zinc-400 text-xs font-medium">Website yang dirancang sesuai kebutuhan bisnis Anda.</p>
               </div>
               <div className="flex flex-col items-start mt-1">
                 <span className="text-zinc-500 line-through text-[10px] font-mono mb-1">Rp 4.500.000</span>
                 <div className="text-3xl font-black text-white font-outfit tracking-tighter">
-                  Rp 1.500.000
+                  <span className="text-xl">Mulai</span> Rp 1.500.000
                 </div>
               </div>
             </div>
@@ -260,24 +284,34 @@ export default function Home() {
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-amber-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-100 text-xs font-bold">Bebas Request Custom Desain</span>
+                <span className="text-zinc-100 text-xs font-bold">Custom desain & layout</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-amber-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-100 text-xs font-bold">Penambahan Fitur & Animasi</span>
+                <span className="text-zinc-100 text-xs font-bold">Fitur tambahan sesuai kebutuhan</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Pengerjaan Ekstra (3-5 Hari)</span>
+                <span className="text-zinc-300 text-xs font-medium">Animasi interaktif tambahan</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Support VIP Tim Ahli</span>
+                <span className="text-zinc-300 text-xs font-medium">Estimasi pengerjaan 3-5 hari kerja</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
+                <span className="text-zinc-300 text-xs font-medium">Support prioritas</span>
+              </div>
+
+              <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                <p className="text-[10px] text-amber-300 font-medium leading-relaxed">
+                  <strong className="font-bold text-white">Harga final menyesuaikan kompleksitas desain dan fitur.</strong>
+                </p>
               </div>
             </div>
             
             <a 
-              href="https://wa.me/6281339684249?text=Halo%20WebbinAja,%20saya%20ingin%20memesan%20Paket%20Custom%20(Rp%201.5jt)!"
+              href="https://wa.me/6281339684249?text=Halo%20WebbinAja,%20saya%20ingin%20berkonsultasi%20untuk%20Paket%20Custom!"
               target="_blank"
               rel="noreferrer"
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white text-black font-bold text-xs uppercase tracking-wider hover:bg-zinc-200 transition-all duration-300 rounded shadow-[0_0_20px_rgba(255,255,255,0.2)]"
