@@ -16,14 +16,14 @@ export interface ShowcaseSite {
 const SHOWCASE_INITIAL_COUNT = 4;
 
 const templates = [
-  { id: 'barberagus', name: 'Barber', style: 'Ultra-Premium Brutalist', icon: <Storefront size={24} />, color: 'from-zinc-500 to-zinc-900' },
-  { id: 'restobunda', name: 'Restaurant', style: 'Michelin-Star Fine Dining', icon: <CookingPot size={24} />, color: 'from-amber-600 to-orange-950' },
-  { id: 'gamershub', name: 'Game Cafe', style: 'Deep Cyberpunk HUD', icon: <MonitorPlay size={24} />, color: 'from-cyan-400 to-blue-900' },
-  { id: 'tokokue', name: 'Bakery', style: 'Approachable Premium', icon: <Storefront size={24} />, color: 'from-pink-400 to-rose-900' },
-  { id: 'kliniksehat', name: 'Professional', style: 'Trust-First Corporate', icon: <ChalkboardTeacher size={24} />, color: 'from-slate-400 to-indigo-950' },
-  { id: 'rentalku', name: 'Rental', style: 'Sleek & Technical', icon: <Car size={24} />, color: 'from-emerald-400 to-teal-950' },
-  { id: 'fitnespro', name: 'Gym', style: 'Kinetic Brutalist', icon: <Barbell size={24} />, color: 'from-red-500 to-red-950' },
-  { id: 'petlover', name: 'Petshop', style: 'Friendly & Organic', icon: <Cat size={24} />, color: 'from-yellow-400 to-amber-900' },
+  { id: 'barberagus', name: 'Barber', style: 'Ultra-Premium Brutalist', icon: <Storefront size={24} />, color: 'from-zinc-500 to-zinc-900', image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800' },
+  { id: 'restobunda', name: 'Restaurant', style: 'Michelin-Star Fine Dining', icon: <CookingPot size={24} />, color: 'from-amber-600 to-orange-950', image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=800' },
+  { id: 'gamershub', name: 'Game Cafe', style: 'Deep Cyberpunk HUD', icon: <MonitorPlay size={24} />, color: 'from-cyan-400 to-blue-900', image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop' },
+  { id: 'tokokue', name: 'Bakery', style: 'Approachable Premium', icon: <Storefront size={24} />, color: 'from-pink-400 to-rose-900', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop' },
+  { id: 'kliniksehat', name: 'Professional', style: 'Trust-First Corporate', icon: <ChalkboardTeacher size={24} />, color: 'from-slate-400 to-indigo-950', image: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&q=80&w=800' },
+  { id: 'rentalku', name: 'Rental', style: 'Sleek & Technical', icon: <Car size={24} />, color: 'from-emerald-400 to-teal-950', image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800&auto=format&fit=crop' },
+  { id: 'fitnespro', name: 'Gym', style: 'Kinetic Brutalist', icon: <Barbell size={24} />, color: 'from-red-500 to-red-950', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop' },
+  { id: 'petlover', name: 'Petshop', style: 'Friendly & Organic', icon: <Cat size={24} />, color: 'from-yellow-400 to-amber-900', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=800&auto=format&fit=crop' },
 ];
 
 const steps = [
@@ -136,10 +136,21 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               key={tpl.id}
             >
               <Link href={`/sites/${tpl.id}`} className="group block relative h-full bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 transition-all duration-500">
-                <div className={`w-full h-40 bg-gradient-to-br ${tpl.color} opacity-80 group-hover:opacity-100 transition-opacity duration-500 flex items-center justify-center`}>
-                   <div className="w-16 h-16 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center text-white/80 group-hover:scale-110 transition-transform duration-500">
-                     {tpl.icon}
-                   </div>
+                <div className="relative w-full h-40 overflow-hidden">
+                  <Image
+                    src={tpl.image}
+                    alt={`Preview template ${tpl.name}`}
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-br ${tpl.color} opacity-40 group-hover:opacity-30 transition-opacity duration-500`} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="w-16 h-16 bg-black/30 backdrop-blur-md rounded-full flex items-center justify-center text-white/80 group-hover:scale-110 transition-transform duration-500">
+                      {tpl.icon}
+                    </div>
+                  </div>
                 </div>
                 <div className="p-6">
                   <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2 flex items-center gap-2">
