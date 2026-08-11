@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { CustomerConfig } from '@/types/config';
 import { isValidCustomerSlug, resolveCustomerImages } from '@/lib/assets';
+import { getCustomerFromDb, getCustomerByCustomDomainFromDb } from '@/lib/db';
 
 // Define the root domain
 export const MAIN_DOMAIN = 'webbinaja.com';
@@ -50,28 +51,41 @@ export function getRecentCustomerSlugs(limit: number): string[] {
   return [...trackedNewestFirst, ...untracked].slice(0, limit);
 }
 
+function withResolvedImages(slug: string, config: CustomerConfig): CustomerConfig {
+  const resolved = resolveCustomerImages(slug, config.assets, config.images);
+  return {
+    ...config,
+    images: {
+      ...config.images,
+      ...(resolved.hero !== undefined && { hero: resolved.hero }),
+      ...(resolved.gallery !== undefined && { gallery: resolved.gallery }),
+      ...(resolved.ambiance !== undefined && { ambiance: resolved.ambiance }),
+    },
+  };
+}
+
 /**
  * Get customer config by slug, with `assets` (R2 filenames) resolved into
  * absolute CDN URLs and merged into `images`. The slug is validated first —
- * it ends up in a dynamic import path, so this also guards against path
- * traversal (`../`, etc.) reaching the bundler-resolved module map.
+ * it ends up in a dynamic import path for the file-based fallback, so this
+ * also guards against path traversal (`../`, etc.) reaching the
+ * bundler-resolved module map.
+ *
+ * Checks the `customers` table (customers created via the admin panel in
+ * production — see migrations/0002_customers.sql) first, then falls back to
+ * the file-based src/customers/<slug>/config.ts (the original handful of
+ * template showcase sites, which don't need to be DB-backed since they're
+ * only ever edited by a developer with repo access anyway).
  */
 export async function getCustomerConfig(slug: string): Promise<CustomerConfig | null> {
   if (!isValidCustomerSlug(slug)) return null;
+
+  const fromDb = await getCustomerFromDb(slug).catch(() => null);
+  if (fromDb) return withResolvedImages(slug, fromDb);
+
   try {
     const data = await import(`@/customers/${slug}/config`);
-    const config = data.config as CustomerConfig;
-
-    const resolved = resolveCustomerImages(slug, config.assets, config.images);
-    return {
-      ...config,
-      images: {
-        ...config.images,
-        ...(resolved.hero !== undefined && { hero: resolved.hero }),
-        ...(resolved.gallery !== undefined && { gallery: resolved.gallery }),
-        ...(resolved.ambiance !== undefined && { ambiance: resolved.ambiance }),
-      },
-    };
+    return withResolvedImages(slug, data.config as CustomerConfig);
   } catch {
     return null;
   }
@@ -97,8 +111,17 @@ export async function resolveCustomerByHost(hostname: string): Promise<{ slug: s
     }
   }
 
-  // 2. If it's not a known subdomain, it might be a custom domain (e.g. kliniksehat.com)
-  // We need to loop through all customers and find a matching customDomain
+  // 2. Custom domain (e.g. kliniksehat.com) — DB customers are looked up by
+  // an indexed column directly (see migrations/0002_customers.sql), so this
+  // is a single query rather than loading every customer's config to check.
+  const dbMatch = await getCustomerByCustomDomainFromDb(cleanHost).catch(() => null);
+  if (dbMatch) {
+    return { slug: dbMatch.slug, config: withResolvedImages(dbMatch.slug, dbMatch.config) };
+  }
+
+  // File-based demo customers are few enough (see src/customers/) that
+  // looping is fine — none of them are expected to carry a customDomain in
+  // practice, but this keeps the feature working for them too if one ever does.
   const slugs = getAllCustomerSlugs();
   for (const slug of slugs) {
     const config = await getCustomerConfig(slug);

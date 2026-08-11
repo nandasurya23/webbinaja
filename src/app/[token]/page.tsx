@@ -13,11 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminPage({ params }: { params: Promise<{ token: string }> }) {
-  // "Buat Customer" below still writes files under src/customers/, which
-  // only makes sense against a writable, developer-owned filesystem —
-  // Vercel's production filesystem is read-only. This page itself (login,
-  // navigation) is production-safe; the file-writing action is what's
-  // actually gated (see assertAdminAccess in ./actions.ts).
+  // "Buat Customer" writes to the `customers` table (src/lib/db.ts), not
+  // the filesystem, so it works in production too now — see
+  // migrations/0002_customers.sql and createCustomerAction in ./actions.ts.
   if (!isAdminConfigured()) notFound();
 
   const { token } = await params;
@@ -56,17 +54,7 @@ export default async function AdminPage({ params }: { params: Promise<{ token: s
           {session ? 'Tambah customer baru ke dalam sistem.' : 'Masuk untuk melanjutkan.'}
         </p>
 
-        {!session ? (
-          <LoginForm token={token} />
-        ) : process.env.NODE_ENV === 'production' ? (
-          <div className="rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50 dark:bg-amber-950/40 p-6 sm:p-8 text-sm text-amber-900 dark:text-amber-200">
-            "Buat Customer" menulis file langsung ke server dan cuma bisa dijalankan dari komputer developer
-            (<code className="text-xs">npm run dev</code>), bukan di production — filesystem production Vercel read-only.
-            Pakai <strong>Inbox Submission</strong> di atas untuk lihat data yang sudah masuk.
-          </div>
-        ) : (
-          <CustomerForm token={token} />
-        )}
+        {!session ? <LoginForm token={token} /> : <CustomerForm token={token} />}
       </main>
     </div>
   );

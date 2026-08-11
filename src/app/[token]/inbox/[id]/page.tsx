@@ -58,11 +58,6 @@ export default async function SubmissionDetailPage({
   const submission = await getSubmission(id);
   if (!submission) notFound();
 
-  // "Pakai data ini" only makes sense where CustomerForm actually works —
-  // that page is dev-only (writes to the filesystem), so this button would
-  // be dead weight (and mildly confusing) if shown in production.
-  const canUseLocally = process.env.NODE_ENV !== 'production';
-
   return (
     <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
       <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
@@ -85,15 +80,13 @@ export default async function SubmissionDetailPage({
         </div>
         {submission.tagline && <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">{submission.tagline}</p>}
 
-        {canUseLocally && (
-          <Link
-            href={`/${token}?submission=${submission.id}`}
-            className="inline-flex items-center gap-1.5 mb-10 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-4 py-2.5 text-sm font-medium hover:bg-neutral-700 dark:hover:bg-neutral-200 transition"
-          >
-            <NotePencil size={16} weight="bold" />
-            Pakai data ini di form "Buat Customer"
-          </Link>
-        )}
+        <Link
+          href={`/${token}?submission=${submission.id}`}
+          className="inline-flex items-center gap-1.5 mb-10 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-4 py-2.5 text-sm font-medium hover:bg-neutral-700 dark:hover:bg-neutral-200 transition"
+        >
+          <NotePencil size={16} weight="bold" />
+          Pakai data ini di form "Buat Customer"
+        </Link>
 
         <div className="flex flex-col gap-8">
           <StatusControls

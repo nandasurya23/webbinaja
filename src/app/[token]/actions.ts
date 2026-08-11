@@ -18,8 +18,6 @@ import {
   CUSTOMER_TEMPLATES,
   customerDirExists,
   isKnownTemplate,
-  writeNewCustomerConfig,
-  updateCustomerCustomDomain,
   type CatalogItemInput,
   type ServiceInput,
   type PackageTier,
@@ -29,6 +27,7 @@ import { getCustomerAssetUrl, isValidAssetFilename, isValidCustomerSlug } from '
 import { isSafeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { MAIN_DOMAIN } from '@/lib/customers';
 import { clientIp } from '@/lib/clientIp';
+import { revalidatePath } from 'next/cache';
 import { PutObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
 import {
   getSubmission,
@@ -39,9 +38,13 @@ import {
   getAdminByUsername,
   createAdmin,
   updateSubmissionStatus,
+  customerSlugExistsInDb,
+  insertCustomerToDb,
+  updateCustomerCustomDomainInDb,
   type StatusPatch,
 } from '@/lib/db';
 import { getSubmissionAssetUrl, isValidSubmissionId } from '@/lib/assets';
+import type { CustomerConfig } from '@/types/config';
 // Reused unchanged from the CLI pipeline (scripts/assets/*) so a photo
 // uploaded here and one uploaded via `npm run assets:upload` go through the
 // exact same validation, resize, and WebP re-encode logic.
@@ -55,11 +58,13 @@ const LOCAL_DEV_PORT = 8765;
 
 type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
-// Token + config validity check, independent of environment — shared by
-// both the dev-only file-writing actions below (via assertAdminAccess) and
-// the production-safe login/inbox actions (which need this same identity
-// check but must NOT 404 in production, since the inbox is designed to run
-// there — see src/app/[token]/inbox/).
+// Token + config validity check, re-checked on every action (not just page
+// render — the token gate on the page component only protects the initial
+// HTML; these server actions are their own endpoints and must enforce it
+// independently). Every action in this file is production-safe now: customer
+// creation/updates go through the `customers` table (see src/lib/db.ts and
+// migrations/0002_customers.sql) instead of writing to the filesystem, which
+// is what used to require a separate dev-only gate here.
 function assertAdminIdentity(token: string): void {
   if (!isAdminConfigured()) {
     throw new Error('Admin belum dikonfigurasi — set ADMIN_TOKEN, ADMIN_SESSION_SECRET di .env.local.');
@@ -67,20 +72,6 @@ function assertAdminIdentity(token: string): void {
   if (!isValidAdminToken(token)) {
     throw new Error('Unauthorized.');
   }
-}
-
-// Re-checked on every action, not just page render — the token/production
-// gate on the page component only protects the initial HTML; these server
-// actions are their own endpoints and must enforce it independently.
-// Only for actions that write to the local filesystem (customer creation,
-// asset upload, domain updates) — those genuinely cannot run on Vercel's
-// read-only production filesystem. Login/logout/inbox reads use
-// assertAdminIdentity directly instead, since they have no such constraint.
-function assertAdminAccess(token: string): void {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Admin UI ini hanya untuk pengembangan lokal, tidak tersedia di production.');
-  }
-  assertAdminIdentity(token);
 }
 
 async function requireSession(): Promise<SessionInfo> {
@@ -245,7 +236,7 @@ export async function checkAssetsAction(
   slug: string,
   items: { label: string; filename: string }[]
 ): Promise<AssetCheckResult> {
-  assertAdminAccess(token);
+  assertAdminIdentity(token);
   await requireSession();
 
   if (!isValidCustomerSlug(slug)) {
@@ -325,7 +316,7 @@ export type CreateCustomerResult =
   | { ok: false; error: string };
 
 export async function createCustomerAction(token: string, input: CreateCustomerInput): Promise<CreateCustomerResult> {
-  assertAdminAccess(token);
+  assertAdminIdentity(token);
   await requireSession();
 
   const slug = input.slug.trim();
@@ -347,8 +338,11 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
   if (!isValidCustomerSlug(slug)) {
     return { ok: false, error: 'Slug tidak valid — huruf kecil, angka, dipisah tanda hubung tunggal (contoh: cafe-siti).' };
   }
-  if (customerDirExists(slug)) {
-    return { ok: false, error: `src/customers/${slug}/ sudah ada — pilih slug lain.` };
+  // Checked against both the DB (customers created via this form) and the
+  // file-based demo customers (src/customers/) — a slug has to be unique
+  // across both, since they're both resolved by the same getCustomerConfig().
+  if (customerDirExists(slug) || (await customerSlugExistsInDb(slug).catch(() => false))) {
+    return { ok: false, error: `Slug "${slug}" sudah dipakai — pilih slug lain.` };
   }
   if (!businessName) {
     return { ok: false, error: 'Nama bisnis wajib diisi.' };
@@ -417,31 +411,42 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
     return { ok: false, error: `Item katalog maksimal ${MAX_CATALOG_ITEMS} — hapus ${catalog.length - MAX_CATALOG_ITEMS} item dulu.` };
   }
 
-  try {
-    writeNewCustomerConfig({
-      slug,
-      businessName,
-      template,
-      tagline,
-      description,
+  const config: CustomerConfig = {
+    package: input.packageTier,
+    businessName,
+    tagline,
+    description,
+    template: template as CustomerConfig['template'],
+    ...(customDomain && { customDomain }),
+    assets: { logo: logo || undefined, hero: hero || undefined, gallery, ambiance: ambiance || undefined },
+    theme: { primaryColor: '#000000', secondaryColor: '#ffffff', accentColor: '#f59e0b' },
+    contact: {
       whatsapp,
       address,
       mapsLink,
-      instagram,
-      facebook,
-      assets: { logo: logo || undefined, hero: hero || undefined, gallery, ambiance: ambiance || undefined },
-      services,
-      catalog,
-      packageTier: input.packageTier,
-      customDomain: customDomain || undefined,
-    });
+      ...(instagram && { instagram }),
+      ...(facebook && { facebook }),
+    },
+    services,
+    ...(catalog.length > 0 && { catalog }),
+  };
+
+  try {
+    await insertCustomerToDb(slug, config);
   } catch (err) {
     return { ok: false, error: (err as Error).message };
   }
 
+  // Instantly refresh the cached page for this slug — without this, the
+  // first visitor after creation would still hit whatever was cached before
+  // (a 404, since the slug didn't exist yet) until the cache naturally
+  // expires. See src/app/sites/[customer]/page.tsx: no revalidate window is
+  // set there because content normally never changes without this action.
+  revalidatePath(`/sites/${slug}`);
+
   if (input.submissionId && isValidSubmissionId(input.submissionId)) {
-    // Best-effort: the customer is already created either way (config.ts is
-    // written above regardless of what happens here). If copying fails for
+    // Best-effort: the customer is already created either way (the DB row is
+    // inserted above regardless of what happens here). If copying fails for
     // some assets, they just need re-uploading via the button already in
     // this form — same fallback as any other customer's missing asset.
     await promoteSubmissionAssets(input.submissionId, slug, [logo, hero, ambiance, ...gallery, ...catalog.map((c) => c.image)]);
@@ -457,7 +462,7 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
 
   return {
     ok: true,
-    message: `Dibuat: src/customers/${slug}/config.ts. Kalau semua foto sudah di-upload lewat form di atas, tinggal commit + push. Kalau belum, jalankan "npm run assets:upload ${slug}" dulu.`,
+    message: `Customer "${slug}" dibuat dan langsung aktif di ${productionUrl}. Kalau semua foto sudah di-upload lewat form di atas, situsnya sudah lengkap.`,
     slug,
     productionUrl,
     localUrl,
@@ -525,7 +530,7 @@ export type SubmissionPrefillResult =
 
 /** Used by CustomerForm to prefill itself from a /pesan submission picked in the inbox — see ?submission= query param handling. */
 export async function getSubmissionForPrefillAction(token: string, submissionId: string): Promise<SubmissionPrefillResult> {
-  assertAdminAccess(token);
+  assertAdminIdentity(token);
   await requireSession();
 
   if (!isValidSubmissionId(submissionId)) {
@@ -569,7 +574,7 @@ export async function getSubmissionForPrefillAction(token: string, submissionId:
  * path used when the domain is already known up front).
  */
 export async function updateCustomDomainAction(token: string, slug: string, customDomain: string): Promise<ActionResult> {
-  assertAdminAccess(token);
+  assertAdminIdentity(token);
   await requireSession();
 
   const cleanSlug = slug.trim();
@@ -578,24 +583,35 @@ export async function updateCustomDomainAction(token: string, slug: string, cust
   if (!isValidCustomerSlug(cleanSlug)) {
     return { ok: false, error: 'Slug tidak valid.' };
   }
-  if (!customerDirExists(cleanSlug)) {
-    return { ok: false, error: `src/customers/${cleanSlug}/ tidak ditemukan.` };
-  }
   if (domain && !isValidCustomDomain(domain)) {
     return { ok: false, error: `Custom domain tidak valid: ${domain} (contoh: namabisnis.com, tanpa https://).` };
   }
 
+  // File-based demo customers (src/customers/) aren't editable from here —
+  // they're template showcases, not real orders, and updating them means
+  // editing the file directly and redeploying. Only DB-backed customers
+  // (created via createCustomerAction) support this.
+  if (customerDirExists(cleanSlug)) {
+    return { ok: false, error: `"${cleanSlug}" adalah customer demo (file) — custom domain-nya diatur langsung di src/customers/${cleanSlug}/config.ts, bukan lewat sini.` };
+  }
+
+  let updated;
   try {
-    updateCustomerCustomDomain(cleanSlug, domain);
+    updated = await updateCustomerCustomDomainInDb(cleanSlug, domain || null);
   } catch (err) {
     return { ok: false, error: (err as Error).message };
   }
+  if (!updated) {
+    return { ok: false, error: `Customer "${cleanSlug}" tidak ditemukan.` };
+  }
+
+  revalidatePath(`/sites/${cleanSlug}`);
 
   return {
     ok: true,
     message: domain
-      ? `customDomain diset ke "${domain}" di src/customers/${cleanSlug}/config.ts. Jangan lupa tambahkan domain ini di Vercel → Domains, dan arahkan DNS-nya.`
-      : `customDomain dihapus dari src/customers/${cleanSlug}/config.ts.`,
+      ? `customDomain diset ke "${domain}" untuk "${cleanSlug}". Jangan lupa tambahkan domain ini di Vercel → Domains, dan arahkan DNS-nya.`
+      : `customDomain dihapus dari "${cleanSlug}".`,
   };
 }
 
@@ -638,7 +654,7 @@ function sanitizeBaseName(raw: string): string {
  * "subfolder" automatically; R2/S3 has no separate folder-creation step.
  */
 export async function uploadAssetAction(token: string, formData: FormData): Promise<UploadAssetResult> {
-  assertAdminAccess(token);
+  assertAdminIdentity(token);
   await requireSession();
 
   const slug = String(formData.get('slug') || '').trim();

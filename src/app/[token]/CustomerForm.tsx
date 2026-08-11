@@ -329,7 +329,7 @@ export default function CustomerForm({ token }: { token: string }) {
           <div className="flex flex-col gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mb-1.5">
-                Link untuk customer (setelah deploy)
+                Link untuk customer (sudah aktif)
               </p>
               <div className="flex items-center gap-2 rounded-lg border border-emerald-300/70 dark:border-emerald-800 bg-white dark:bg-neutral-950 px-3 py-2">
                 <LinkSimple size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
@@ -369,7 +369,7 @@ export default function CustomerForm({ token }: { token: string }) {
             {result.promoUrl && (
               <div>
                 <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mb-1.5">
-                  Kit Promosi Instan — link production (aktif setelah deploy)
+                  Kit Promosi Instan — link production (sudah aktif)
                 </p>
                 <div className="flex items-center gap-2 rounded-lg border border-emerald-300/70 dark:border-emerald-800 bg-white dark:bg-neutral-950 px-3 py-2">
                   <Sparkle size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />

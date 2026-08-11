@@ -8,6 +8,7 @@ import { Pool } from 'pg';
 import crypto from 'node:crypto';
 import type { ServiceInput, CatalogItemInput } from './customerScaffold';
 import type { AdminRole } from './adminAuth';
+import type { CustomerConfig } from '@/types/config';
 
 type SqlTag = (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown[]>;
 
@@ -325,4 +326,64 @@ export async function isRateLimited(bucket: RateLimitBucket, ip: string, maxHits
 export async function recordRateLimitHit(bucket: RateLimitBucket, ip: string): Promise<void> {
   const db = sql();
   await db`insert into rate_limits (bucket, ip) values (${bucket}, ${ip})`;
+}
+
+// --- Customers (created via the admin panel, works in production) --------
+//
+// This is the source of truth for customers created from now on — see
+// migrations/0002_customers.sql for why. The original handful of demo
+// customers under src/customers/*/config.ts stay file-based; getCustomerConfig
+// in src/lib/customers.ts checks this table first and falls back to the file
+// import, so both kinds of customer work identically to every reader
+// (sites/[customer]/page.tsx, the promo route, proxy.ts's host resolver).
+
+interface CustomerRow {
+  slug: string;
+  config: CustomerConfig;
+  custom_domain: string | null;
+  created_at: string;
+}
+
+export async function getCustomerFromDb(slug: string): Promise<CustomerConfig | null> {
+  const db = sql();
+  const rows = (await db`select config from customers where slug = ${slug}`) as { config: CustomerConfig }[];
+  return rows[0]?.config ?? null;
+}
+
+export async function getCustomerByCustomDomainFromDb(domain: string): Promise<{ slug: string; config: CustomerConfig } | null> {
+  const db = sql();
+  const rows = (await db`select slug, config from customers where custom_domain = ${domain}`) as { slug: string; config: CustomerConfig }[];
+  return rows[0] ? { slug: rows[0].slug, config: rows[0].config } : null;
+}
+
+export async function customerSlugExistsInDb(slug: string): Promise<boolean> {
+  const db = sql();
+  const rows = (await db`select 1 from customers where slug = ${slug}`) as unknown[];
+  return rows.length > 0;
+}
+
+export async function listCustomerSlugsFromDb(): Promise<string[]> {
+  const db = sql();
+  const rows = (await db`select slug from customers order by created_at asc`) as { slug: string }[];
+  return rows.map((r) => r.slug);
+}
+
+export async function insertCustomerToDb(slug: string, config: CustomerConfig): Promise<void> {
+  const db = sql();
+  await db`
+    insert into customers (slug, config, custom_domain)
+    values (${slug}, ${JSON.stringify(config)}, ${config.customDomain ?? null})
+  `;
+}
+
+export async function updateCustomerCustomDomainInDb(slug: string, customDomain: string | null): Promise<CustomerConfig | null> {
+  const db = sql();
+  const rows = (await db`
+    update customers set
+      config = jsonb_set(config, '{customDomain}', ${customDomain ? JSON.stringify(customDomain) : 'null'}::jsonb, true),
+      custom_domain = ${customDomain}
+    where slug = ${slug}
+    returning config
+  `) as { config: CustomerConfig }[];
+  return rows[0]?.config ?? null;
 }
