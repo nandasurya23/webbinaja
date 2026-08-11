@@ -34,7 +34,7 @@ const steps = [
   },
   {
     title: "2. Kirim Data Bisnis",
-    desc: "Siapkan nama bisnis, deskripsi singkat, daftar menu/layanan beserta harga, kontak, dan foto-foto terbaik kamu. Kirim semuanya lewat WhatsApp.",
+    desc: "Siapkan nama bisnis, deskripsi singkat, daftar menu/layanan beserta harga, kontak, dan foto-foto terbaik kamu. isi formulir yang kami kirimkan, lalu kirim balik ke kami.",
     icon: <Code size={32} weight="duotone" />
   },
   {
