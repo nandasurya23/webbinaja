@@ -9,6 +9,7 @@ import crypto from 'node:crypto';
 import type { ServiceInput, CatalogItemInput } from './customerScaffold';
 import type { AdminRole } from './adminAuth';
 import type { CustomerConfig } from '@/types/config';
+import { getCustomerAssetUrl } from './assets';
 
 type SqlTag = (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown[]>;
 
@@ -517,6 +518,40 @@ export async function listCustomersPage(filters: CustomerListFilters): Promise<C
     items: (rows as CustomerRow[]).map(mapCustomerRow),
     total: (countRows[0] as { count: number })?.count ?? 0,
   };
+}
+
+export interface ShowcaseCustomer {
+  slug: string;
+  businessName: string;
+  template: string;
+  logoUrl?: string;
+  customDomain: string | null;
+}
+
+/**
+ * Backs the "website yang sudah live" trust section on the landing page
+ * (src/app/page.tsx) — real customers only (never the file-based template
+ * demos, which aren't real orders), excludes suspended ones, newest first.
+ * Called from an ISR page with a multi-minute revalidate window, not on
+ * every request, so this being a real DB query is cheap in aggregate
+ * despite the homepage being the highest-traffic page in the app.
+ */
+export async function listShowcaseCustomers(limit: number): Promise<ShowcaseCustomer[]> {
+  const db = sql();
+  const rows = (await db`
+    select slug, config, custom_domain from customers
+    where not suspended
+    order by created_at desc
+    limit ${limit}
+  `) as CustomerRow[];
+
+  return rows.map((r) => ({
+    slug: r.slug,
+    businessName: r.config.businessName,
+    template: r.config.template,
+    logoUrl: r.config.assets?.logo ? getCustomerAssetUrl(r.slug, r.config.assets.logo) : undefined,
+    customDomain: r.custom_domain,
+  }));
 }
 
 export async function insertCustomerToDb(slug: string, config: CustomerConfig): Promise<void> {

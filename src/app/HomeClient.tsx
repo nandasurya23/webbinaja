@@ -3,7 +3,14 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { m } from 'motion/react';
-import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, WhatsappLogo, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car, Camera } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, WhatsappLogo, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car, Camera, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
+
+export interface ShowcaseSite {
+  businessName: string;
+  template: string;
+  logoUrl?: string;
+  url: string;
+}
 
 const templates = [
   { id: 'barberagus', name: 'Barber', style: 'Ultra-Premium Brutalist', icon: <Storefront size={24} />, color: 'from-zinc-500 to-zinc-900' },
@@ -34,7 +41,18 @@ const steps = [
   }
 ];
 
-export default function HomeClient() {
+const TEMPLATE_LABELS: Record<string, string> = {
+  barber: 'Barbershop',
+  restaurant: 'Restoran',
+  professional: 'Jasa Profesional',
+  bakery: 'Bakery',
+  rental: 'Rental',
+  gamecafe: 'Game Cafe',
+  gym: 'Gym',
+  petshop: 'Petshop',
+};
+
+export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: ShowcaseSite[] }) {
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans selection:bg-white selection:text-black overflow-x-hidden">
       
@@ -130,6 +148,59 @@ export default function HomeClient() {
           ))}
         </div>
       </section>
+
+      {/* Website customer yang sudah live — bukti sosial nyata, bukan mockup.
+          Cuma render kalau ada datanya (showcaseSites dari Neon, diambil di
+          page.tsx dengan ISR 5 menit) — tidak ada network request tambahan
+          di sisi browser, tidak ada layout shift kalau kosong. */}
+      {showcaseSites.length > 0 && (
+        <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
+          <div className="flex flex-col items-center text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-xs font-bold mb-4 text-emerald-400">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Sekarang
+            </div>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Sudah Dipercaya Bisnis Nyata</h2>
+            <p className="text-zinc-400 max-w-xl font-medium">Bukan mockup — ini website customer kami yang beneran live dan diakses publik hari ini.</p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {showcaseSites.map((site, i) => (
+              <m.a
+                key={site.url}
+                href={site.url}
+                target="_blank"
+                rel="noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.05 }}
+                className="group flex items-center gap-3 bg-white/5 border border-white/10 rounded-xl p-4 hover:border-white/30 hover:bg-white/[0.07] transition-all duration-300"
+              >
+                {site.logoUrl ? (
+                  <Image
+                    src={site.logoUrl}
+                    alt={site.businessName}
+                    width={36}
+                    height={36}
+                    className="rounded-full object-cover shrink-0 h-9 w-9"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="h-9 w-9 rounded-full bg-white/10 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                    {site.businessName.trim().charAt(0).toUpperCase() || '?'}
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-white truncate">{site.businessName}</p>
+                  <p className="text-[11px] text-zinc-500 truncate">{TEMPLATE_LABELS[site.template] ?? site.template}</p>
+                </div>
+                <ArrowSquareOut size={14} className="text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0" />
+              </m.a>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Pricing Section */}
       <section id="pricing" className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
