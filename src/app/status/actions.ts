@@ -3,6 +3,7 @@
 import { getSubmissionByLookup, isRateLimited, recordRateLimitHit } from '@/lib/db';
 import { sanitizeWhatsapp } from '@/lib/url';
 import { clientIp } from '@/lib/clientIp';
+import { MAIN_DOMAIN } from '@/lib/customers';
 
 export type CheckStatusResult =
   | {
@@ -11,6 +12,8 @@ export type CheckStatusResult =
       workStatusLabel: string;
       paymentStatusLabel: string;
       queueNumber: number | null;
+      /** Only set once the site has actually been built (processedSlug exists) — not gated on workStatus, since an admin can forget to also flip that toggle. */
+      websiteUrl?: string;
     }
   | { ok: false; error: string };
 
@@ -63,5 +66,8 @@ export async function checkStatusAction(whatsappRaw: string, lookupCodeRaw: stri
     workStatusLabel: WORK_LABELS[submission.workStatus] ?? submission.workStatus,
     paymentStatusLabel: PAYMENT_LABELS[submission.paymentStatus] ?? submission.paymentStatus,
     queueNumber: submission.queueNumber,
+    ...(submission.status === 'processed' && submission.processedSlug && {
+      websiteUrl: `https://${submission.processedSlug}.${MAIN_DOMAIN}`,
+    }),
   };
 }

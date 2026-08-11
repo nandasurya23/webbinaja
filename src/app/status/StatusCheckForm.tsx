@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { WarningCircle, MagnifyingGlass, Hash } from '@phosphor-icons/react/dist/ssr';
+import { WarningCircle, MagnifyingGlass, Hash, LinkSimple } from '@phosphor-icons/react/dist/ssr';
 import { checkStatusAction, type CheckStatusResult } from './actions';
 
 const inputClass =
@@ -75,6 +75,18 @@ export default function StatusCheckForm() {
               <p className="font-medium text-white">{result.paymentStatusLabel}</p>
             </div>
           </div>
+
+          {result.websiteUrl && (
+            <a
+              href={result.websiteUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2.5 text-sm font-medium text-emerald-400 hover:bg-emerald-500/20 transition"
+            >
+              <LinkSimple size={16} weight="bold" />
+              <span className="truncate">{result.websiteUrl}</span>
+            </a>
+          )}
         </div>
       )}
     </div>

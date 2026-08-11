@@ -368,6 +368,29 @@ export async function listCustomerSlugsFromDb(): Promise<string[]> {
   return rows.map((r) => r.slug);
 }
 
+export interface CustomerListItem {
+  slug: string;
+  businessName: string;
+  template: string;
+  packageTier: string;
+  customDomain: string | null;
+  createdAt: string;
+}
+
+/** Powers the admin "Websites" list (src/app/[token]/websites) — every DB-backed customer, newest first. */
+export async function listCustomersFromDb(): Promise<CustomerListItem[]> {
+  const db = sql();
+  const rows = (await db`select slug, config, custom_domain, created_at from customers order by created_at desc`) as CustomerRow[];
+  return rows.map((r) => ({
+    slug: r.slug,
+    businessName: r.config.businessName,
+    template: r.config.template,
+    packageTier: r.config.package,
+    customDomain: r.custom_domain,
+    createdAt: r.created_at,
+  }));
+}
+
 export async function insertCustomerToDb(slug: string, config: CustomerConfig): Promise<void> {
   const db = sql();
   await db`

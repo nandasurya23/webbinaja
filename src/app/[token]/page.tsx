@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { Envelope, UsersThree } from '@phosphor-icons/react/dist/ssr';
+import { Envelope, UsersThree, Globe } from '@phosphor-icons/react/dist/ssr';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
 import LoginForm from './LoginForm';
 import CustomerForm from './CustomerForm';
@@ -37,6 +37,13 @@ export default async function AdminPage({ params }: { params: Promise<{ token: s
               >
                 <Envelope size={14} />
                 Inbox Submission
+              </Link>
+              <Link
+                href={`/${token}/websites`}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
+              >
+                <Globe size={14} />
+                Website
               </Link>
               {session.role === 'super_admin' && (
                 <Link
