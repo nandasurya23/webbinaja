@@ -3,8 +3,10 @@ import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
-import { listSubmissions, type Submission, type WorkStatus, type PaymentStatus } from '@/lib/db';
+import { listSubmissionsPage, type Submission, type WorkStatus, type PaymentStatus } from '@/lib/db';
 import LoginForm from '../LoginForm';
+import ListSearchFilterBar from '../ListSearchFilterBar';
+import Pagination from '../Pagination';
 import { ArrowLeft, Envelope, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
@@ -23,12 +25,28 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   rejected: 'Ditolak',
 };
 
+const PAGE_SIZE = 20;
+
+function isWorkStatus(v: string): v is WorkStatus {
+  return v === 'not_started' || v === 'in_progress' || v === 'done';
+}
+
+function isPaymentStatus(v: string): v is PaymentStatus {
+  return v === 'unchecked' || v === 'confirmed' || v === 'rejected';
+}
+
 // Intentionally NO `if (NODE_ENV === 'production') notFound()` gate here —
 // unlike the main admin page (../page.tsx), this route only READS from
 // Neon, never writes to the filesystem, so it's safe (and meant) to run in
 // production. See the plan notes in adminAuth.ts / actions.ts for why the
 // main admin page can't do the same.
-export default async function InboxPage({ params }: { params: Promise<{ token: string }> }) {
+export default async function InboxPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   if (!isAdminConfigured()) notFound();
 
   const { token } = await params;
@@ -49,12 +67,20 @@ export default async function InboxPage({ params }: { params: Promise<{ token: s
     );
   }
 
-  let submissions: Submission[];
+  const sp = await searchParams;
+  const search = sp.q ?? '';
+  const workStatus = sp.workStatus && isWorkStatus(sp.workStatus) ? sp.workStatus : undefined;
+  const paymentStatus = sp.paymentStatus && isPaymentStatus(sp.paymentStatus) ? sp.paymentStatus : undefined;
+  const page = Math.max(1, Number(sp.page) || 1);
+
+  let submissions: Submission[] = [];
+  let total = 0;
   let loadError: string | null = null;
   try {
-    submissions = await listSubmissions();
+    const result = await listSubmissionsPage({ search, workStatus, paymentStatus, page, pageSize: PAGE_SIZE });
+    submissions = result.items;
+    total = result.total;
   } catch {
-    submissions = [];
     loadError = 'Gagal memuat data — pastikan DATABASE_URL sudah dikonfigurasi.';
   }
 
@@ -67,16 +93,34 @@ export default async function InboxPage({ params }: { params: Promise<{ token: s
         </Link>
 
         <h1 className="text-3xl font-semibold tracking-tight mb-1">Inbox Submission</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
           Data yang dikirim customer lewat form pemesanan publik.
         </p>
+
+        <ListSearchFilterBar
+          searchPlaceholder="Cari nama bisnis atau nomor WhatsApp..."
+          filters={[
+            {
+              param: 'workStatus',
+              allLabel: 'Semua status pengerjaan',
+              options: Object.entries(WORK_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+            },
+            {
+              param: 'paymentStatus',
+              allLabel: 'Semua status pembayaran',
+              options: Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+            },
+          ]}
+        />
 
         {loadError && (
           <p className="text-sm text-red-600 dark:text-red-400 mb-6">{loadError}</p>
         )}
 
         {submissions.length === 0 && !loadError && (
-          <p className="text-sm text-neutral-400">Belum ada submission masuk.</p>
+          <p className="text-sm text-neutral-400">
+            {search || workStatus || paymentStatus ? 'Tidak ada submission yang cocok.' : 'Belum ada submission masuk.'}
+          </p>
         )}
 
         <ul className="flex flex-col gap-3">
@@ -131,6 +175,8 @@ export default async function InboxPage({ params }: { params: Promise<{ token: s
             </li>
           ))}
         </ul>
+
+        <Pagination page={page} pageSize={PAGE_SIZE} total={total} basePath={`/${token}/inbox`} searchParams={sp} />
       </main>
     </div>
   );

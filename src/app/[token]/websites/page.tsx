@@ -3,9 +3,12 @@ import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
-import { listCustomersFromDb } from '@/lib/db';
+import { listCustomersPage } from '@/lib/db';
 import { MAIN_DOMAIN } from '@/lib/customers';
+import { CUSTOMER_TEMPLATES, isKnownTemplate } from '@/lib/customerScaffold';
 import LoginForm from '../LoginForm';
+import ListSearchFilterBar from '../ListSearchFilterBar';
+import Pagination from '../Pagination';
 import { ArrowLeft, Globe, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
@@ -17,12 +20,24 @@ const PACKAGE_LABELS: Record<string, string> = {
   business: 'Business Kit',
 };
 
-// Only reads from Neon (listCustomersFromDb) — no filesystem writes, so this
+const PAGE_SIZE = 20;
+
+function isKnownPackage(v: string): v is 'basic' | 'business' {
+  return v === 'basic' || v === 'business';
+}
+
+// Only reads from Neon (listCustomersPage) — no filesystem writes, so this
 // runs in production the same as the inbox and manage-admins pages. Lists
 // DB-backed customers only (created via createCustomerAction); the 8
 // file-based demo sites under src/customers/ aren't included here since
 // they're template showcases, not real orders, and have no DB row to list.
-export default async function WebsitesPage({ params }: { params: Promise<{ token: string }> }) {
+export default async function WebsitesPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   if (!isAdminConfigured()) notFound();
 
   const { token } = await params;
@@ -43,12 +58,20 @@ export default async function WebsitesPage({ params }: { params: Promise<{ token
     );
   }
 
-  let websites: Awaited<ReturnType<typeof listCustomersFromDb>>;
+  const sp = await searchParams;
+  const search = sp.q ?? '';
+  const template = sp.template && isKnownTemplate(sp.template) ? sp.template : undefined;
+  const packageTier = sp.packageTier && isKnownPackage(sp.packageTier) ? sp.packageTier : undefined;
+  const page = Math.max(1, Number(sp.page) || 1);
+
+  let websites: Awaited<ReturnType<typeof listCustomersPage>>['items'] = [];
+  let total = 0;
   let loadError: string | null = null;
   try {
-    websites = await listCustomersFromDb();
+    const result = await listCustomersPage({ search, template, packageTier, page, pageSize: PAGE_SIZE });
+    websites = result.items;
+    total = result.total;
   } catch {
-    websites = [];
     loadError = 'Gagal memuat data — pastikan DATABASE_URL sudah dikonfigurasi.';
   }
 
@@ -61,14 +84,32 @@ export default async function WebsitesPage({ params }: { params: Promise<{ token
         </Link>
 
         <h1 className="text-3xl font-semibold tracking-tight mb-1">Website</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">
-          Semua website customer yang sudah dibuat lewat form "Buat Customer" ({websites.length}).
+        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
+          Semua website customer yang sudah dibuat lewat form "Buat Customer" ({total}).
         </p>
+
+        <ListSearchFilterBar
+          searchPlaceholder="Cari nama bisnis atau slug..."
+          filters={[
+            {
+              param: 'template',
+              allLabel: 'Semua template',
+              options: CUSTOMER_TEMPLATES.map((t) => ({ value: t, label: t })),
+            },
+            {
+              param: 'packageTier',
+              allLabel: 'Semua paket',
+              options: Object.entries(PACKAGE_LABELS).map(([value, label]) => ({ value, label })),
+            },
+          ]}
+        />
 
         {loadError && <p className="text-sm text-red-600 dark:text-red-400 mb-6">{loadError}</p>}
 
         {websites.length === 0 && !loadError && (
-          <p className="text-sm text-neutral-400">Belum ada website yang dibuat.</p>
+          <p className="text-sm text-neutral-400">
+            {search || template || packageTier ? 'Tidak ada website yang cocok.' : 'Belum ada website yang dibuat.'}
+          </p>
         )}
 
         <ul className="flex flex-col gap-3">
@@ -104,6 +145,8 @@ export default async function WebsitesPage({ params }: { params: Promise<{ token
             );
           })}
         </ul>
+
+        <Pagination page={page} pageSize={PAGE_SIZE} total={total} basePath={`/${token}/websites`} searchParams={sp} />
       </main>
     </div>
   );

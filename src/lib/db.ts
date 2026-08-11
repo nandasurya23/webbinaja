@@ -44,6 +44,28 @@ function sql(): SqlTag {
   return neon(url) as unknown as SqlTag;
 }
 
+type RawQuery = (text: string, params: unknown[]) => Promise<unknown[]>;
+
+/**
+ * For queries whose WHERE clause is conditional (search/filter combos on the
+ * paginated list pages) — the tagged-template `sql()` above can't express
+ * "include this condition only if the filter is set" without building the
+ * template string dynamically, which defeats its safety. This takes plain
+ * `$1, $2, ...`-style SQL + a params array instead (same shape `pg.Pool.query`
+ * and `neon().query` both already accept), still fully parameterized.
+ */
+function rawSql(): RawQuery {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error('DATABASE_URL is not set.');
+  if (url.includes('localhost') || url.includes('127.0.0.1')) {
+    localPool ??= new Pool({ connectionString: url });
+    const pool = localPool;
+    return async (text, params) => (await pool.query(text, params)).rows;
+  }
+  const client = neon(url);
+  return async (text, params) => (await client.query(text, params)) as unknown[];
+}
+
 export type SubmissionStatus = 'pending' | 'processed';
 export type WorkStatus = 'not_started' | 'in_progress' | 'done';
 export type PaymentStatus = 'unchecked' | 'confirmed' | 'rejected';
@@ -184,10 +206,52 @@ export async function insertSubmission(input: NewSubmissionInput): Promise<{ id:
   return { id: rows[0].id, lookupCode: rows[0].lookup_code };
 }
 
-export async function listSubmissions(): Promise<Submission[]> {
-  const db = sql();
-  const rows = (await db`select * from submissions order by created_at desc`) as SubmissionRow[];
-  return rows.map(mapRow);
+export interface SubmissionListFilters {
+  /** Matched (case-insensitive, substring) against business_name OR whatsapp. */
+  search?: string;
+  workStatus?: WorkStatus;
+  paymentStatus?: PaymentStatus;
+  page: number;
+  pageSize: number;
+}
+
+export interface SubmissionListResult {
+  items: Submission[];
+  total: number;
+}
+
+/**
+ * Backs the Inbox list (src/app/[token]/inbox/page.tsx) — filtered and
+ * paginated in SQL (LIMIT/OFFSET + a separate COUNT), not fetched-then-sliced
+ * in JS, so the query cost stays bounded as submissions grow regardless of
+ * how many total rows exist.
+ */
+export async function listSubmissionsPage(filters: SubmissionListFilters): Promise<SubmissionListResult> {
+  const query = rawSql();
+  const search = filters.search?.trim() ? `%${filters.search.trim()}%` : null;
+  const page = Math.max(1, filters.page);
+  const pageSize = Math.min(Math.max(1, filters.pageSize), 100);
+  const offset = (page - 1) * pageSize;
+
+  const params = [search, filters.workStatus ?? null, filters.paymentStatus ?? null];
+  const whereClause = `
+    where ($1::text is null or business_name ilike $1 or whatsapp ilike $1)
+      and ($2::text is null or work_status = $2)
+      and ($3::text is null or payment_status = $3)
+  `;
+
+  const [rows, countRows] = await Promise.all([
+    query(
+      `select * from submissions ${whereClause} order by created_at desc limit $4 offset $5`,
+      [...params, pageSize, offset]
+    ),
+    query(`select count(*)::int as count from submissions ${whereClause}`, params),
+  ]);
+
+  return {
+    items: (rows as SubmissionRow[]).map(mapRow),
+    total: (countRows[0] as { count: number })?.count ?? 0,
+  };
 }
 
 export async function getSubmission(id: string): Promise<Submission | null> {
@@ -377,18 +441,62 @@ export interface CustomerListItem {
   createdAt: string;
 }
 
-/** Powers the admin "Websites" list (src/app/[token]/websites) — every DB-backed customer, newest first. */
-export async function listCustomersFromDb(): Promise<CustomerListItem[]> {
-  const db = sql();
-  const rows = (await db`select slug, config, custom_domain, created_at from customers order by created_at desc`) as CustomerRow[];
-  return rows.map((r) => ({
+function mapCustomerRow(r: CustomerRow): CustomerListItem {
+  return {
     slug: r.slug,
     businessName: r.config.businessName,
     template: r.config.template,
     packageTier: r.config.package,
     customDomain: r.custom_domain,
     createdAt: r.created_at,
-  }));
+  };
+}
+
+export interface CustomerListFilters {
+  /** Matched (case-insensitive, substring) against businessName OR slug. */
+  search?: string;
+  template?: string;
+  packageTier?: string;
+  page: number;
+  pageSize: number;
+}
+
+export interface CustomerListResult {
+  items: CustomerListItem[];
+  total: number;
+}
+
+/**
+ * Backs the admin "Websites" list (src/app/[token]/websites) — filtered and
+ * paginated in SQL, same reasoning as listSubmissionsPage. businessName/template
+ * live inside the `config` JSONB column, so the filters read through `->>`.
+ */
+export async function listCustomersPage(filters: CustomerListFilters): Promise<CustomerListResult> {
+  const query = rawSql();
+  const search = filters.search?.trim() ? `%${filters.search.trim()}%` : null;
+  const page = Math.max(1, filters.page);
+  const pageSize = Math.min(Math.max(1, filters.pageSize), 100);
+  const offset = (page - 1) * pageSize;
+
+  const params = [search, filters.template ?? null, filters.packageTier ?? null];
+  const whereClause = `
+    where ($1::text is null or config->>'businessName' ilike $1 or slug ilike $1)
+      and ($2::text is null or config->>'template' = $2)
+      and ($3::text is null or config->>'package' = $3)
+  `;
+
+  const [rows, countRows] = await Promise.all([
+    query(
+      `select slug, config, custom_domain, created_at from customers ${whereClause} order by created_at desc limit $4 offset $5`,
+      [...params, pageSize, offset]
+    ),
+    query(`select count(*)::int as count from customers ${whereClause}`, params),
+  ]);
+
+  return {
+    items: (rows as CustomerRow[]).map(mapCustomerRow),
+    total: (countRows[0] as { count: number })?.count ?? 0,
+  };
 }
 
 export async function insertCustomerToDb(slug: string, config: CustomerConfig): Promise<void> {
