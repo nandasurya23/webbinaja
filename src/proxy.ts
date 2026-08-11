@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { resolveCustomerByHost, MAIN_DOMAIN } from '@/lib/customers';
+import { resolveCustomerHostStatus, MAIN_DOMAIN } from '@/lib/customers';
 
 export async function proxy(req: NextRequest) {
   const url = req.nextUrl;
@@ -22,13 +22,20 @@ export async function proxy(req: NextRequest) {
   }
 
   // Subdomains of webbinaja.com AND registered custom domains (Business Kit
-  // feature). resolveCustomerByHost already checks both cases against the
+  // feature). resolveCustomerHostStatus checks both cases against the
   // customer configs (see src/lib/customers.ts), so a bare custom domain
   // like "tokokue.com" resolves correctly here instead of falling through
-  // to the main landing page.
-  const match = await resolveCustomerByHost(hostname);
-  if (match) {
+  // to the main landing page. Suspended sites are routed to a dedicated
+  // notice page instead — without this, a suspended site's visitors would
+  // silently see the main marketing homepage (NextResponse.next() renders
+  // "/" regardless of hostname).
+  const match = await resolveCustomerHostStatus(hostname);
+  if (match.status === 'active') {
     url.pathname = `/sites/${match.slug}${url.pathname}`;
+    return NextResponse.rewrite(url);
+  }
+  if (match.status === 'suspended') {
+    url.pathname = '/site-suspended';
     return NextResponse.rewrite(url);
   }
 

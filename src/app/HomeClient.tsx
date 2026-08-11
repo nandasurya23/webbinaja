@@ -3,7 +3,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { m } from 'motion/react';
-import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, WhatsappLogo, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car, Camera, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car, Camera, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 
 export interface ShowcaseSite {
   businessName: string;
@@ -77,12 +77,12 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
           <a href="#pricing" className="hover:text-white transition-colors">Harga</a>
           <a href="#workflow" className="hover:text-white transition-colors">Cara Pesan</a>
         </div>
-        <a 
-          href="#workflow"
+        <Link
+          href="/pesan"
           className="flex items-center gap-2 px-5 py-2 bg-white text-black font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors rounded"
         >
           Pesan Sekarang
-        </a>
+        </Link>
       </nav>
 
       {/* Hero Section */}
@@ -310,14 +310,12 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               </div>
             </div>
             
-            <a 
-              href="https://wa.me/6281339684249?text=Halo%20WebbinAja,%20saya%20ingin%20memesan%20Paket%20Basic%20(Rp%20499k)!"
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              href="/pesan?package=basic"
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300 rounded"
             >
               Pilih Paket Basic
-            </a>
+            </Link>
           </div>
 
           {/* Paket Business Kit */}
@@ -375,14 +373,12 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               </div>
             </div>
 
-            <a
-              href="https://wa.me/6281339684249?text=Halo%20WebbinAja,%20saya%20ingin%20memesan%20Paket%20Business%20Kit%20(Rp%20799k)!"
-              target="_blank"
-              rel="noreferrer"
+            <Link
+              href="/pesan?package=business_kit"
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-blue-500 transition-all duration-300 rounded shadow-[0_0_20px_rgba(37,99,235,0.4)] relative z-10"
             >
               Pilih Paket Business Kit
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -430,22 +426,14 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
         >
           <div>
             <h3 className="text-2xl md:text-3xl font-black text-white font-outfit mb-2">Siap Punya Website Sendiri?</h3>
-            <p className="text-zinc-400 font-medium max-w-md">Hubungi kami sekarang, atau isi form pemesanan untuk mulai kirim data bisnis kamu.</p>
+            <p className="text-zinc-400 font-medium max-w-md">Isi form pemesanan untuk mulai kirim data bisnis kamu — konfirmasi pembayaran lewat WhatsApp setelah data terkirim.</p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
-            <a
-              href="https://wa.me/6281339684249?text=Halo%20WebbinAja,%20saya%20tertarik%20untuk%20memesan%20website!"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold uppercase tracking-wider hover:bg-blue-500 transition-colors rounded shadow-[0_0_30px_rgba(37,99,235,0.3)] w-full sm:w-auto"
-            >
-              <WhatsappLogo size={24} weight="fill" /> Hubungi WhatsApp
-            </a>
             <Link
               href="/pesan"
-              className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-white/20 text-white font-bold uppercase tracking-wider hover:bg-white/5 transition-colors rounded w-full sm:w-auto"
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold uppercase tracking-wider hover:bg-blue-500 transition-colors rounded shadow-[0_0_30px_rgba(37,99,235,0.3)] w-full sm:w-auto"
             >
-              Isi Form Pemesanan
+              Isi Form Pemesanan <ArrowRight size={20} weight="bold" />
             </Link>
           </div>
         </m.div>

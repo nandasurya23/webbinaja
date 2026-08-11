@@ -86,6 +86,7 @@ export interface Submission {
   logoFilename: string | null;
   heroFilename: string | null;
   ambianceFilename: string | null;
+  packageTier: string | null;
   gallery: string[];
   services: ServiceInput[];
   catalog: CatalogItemInput[];
@@ -118,6 +119,7 @@ export interface NewSubmissionInput {
   logoFilename?: string;
   heroFilename?: string;
   ambianceFilename?: string;
+  packageTier?: string;
   gallery: string[];
   services: ServiceInput[];
   catalog: CatalogItemInput[];
@@ -140,6 +142,7 @@ interface SubmissionRow {
   logo_filename: string | null;
   hero_filename: string | null;
   ambiance_filename: string | null;
+  package_tier: string | null;
   gallery: string[];
   services: ServiceInput[];
   catalog: CatalogItemInput[];
@@ -167,6 +170,7 @@ function mapRow(row: SubmissionRow): Submission {
     logoFilename: row.logo_filename,
     heroFilename: row.hero_filename,
     ambianceFilename: row.ambiance_filename,
+    packageTier: row.package_tier,
     gallery: row.gallery ?? [],
     services: row.services ?? [],
     catalog: row.catalog ?? [],
@@ -195,11 +199,12 @@ export async function insertSubmission(input: NewSubmissionInput): Promise<{ id:
     insert into submissions (
       id, business_name, template, tagline, description, whatsapp, address,
       maps_link, instagram, facebook, logo_filename, hero_filename,
-      ambiance_filename, gallery, services, catalog, lookup_code
+      ambiance_filename, package_tier, gallery, services, catalog, lookup_code
     ) values (
       ${input.id}, ${input.businessName}, ${input.template}, ${input.tagline}, ${input.description},
       ${input.whatsapp}, ${input.address}, ${input.mapsLink}, ${input.instagram}, ${input.facebook},
       ${input.logoFilename ?? null}, ${input.heroFilename ?? null}, ${input.ambianceFilename ?? null},
+      ${input.packageTier ?? null},
       ${JSON.stringify(input.gallery)}, ${JSON.stringify(input.services)}, ${JSON.stringify(input.catalog)}, ${lookupCode}
     )
     returning id, lookup_code
@@ -428,6 +433,26 @@ export async function getCustomerByCustomDomainFromDb(domain: string): Promise<{
   const db = sql();
   const rows = (await db`select slug, config from customers where custom_domain = ${domain} and not suspended`) as { slug: string; config: CustomerConfig }[];
   return rows[0] ? { slug: rows[0].slug, config: rows[0].config } : null;
+}
+
+/**
+ * Unlike getCustomerFromDb (which filters out suspended rows so callers see
+ * "not found"), this tells proxy.ts's host resolver whether a slug is
+ * suspended vs never existed at all — so a suspended site's visitors get a
+ * dedicated "website dinonaktifkan" page instead of silently falling
+ * through to the main marketing homepage (NextResponse.next() with an
+ * unrewritten path renders "/" regardless of hostname).
+ */
+export async function getCustomerSuspendedBySlugFromDb(slug: string): Promise<boolean | null> {
+  const db = sql();
+  const rows = (await db`select suspended from customers where slug = ${slug}`) as { suspended: boolean }[];
+  return rows.length > 0 ? rows[0].suspended : null;
+}
+
+export async function getCustomerSuspendedByCustomDomainFromDb(domain: string): Promise<{ slug: string; suspended: boolean } | null> {
+  const db = sql();
+  const rows = (await db`select slug, suspended from customers where custom_domain = ${domain}`) as { slug: string; suspended: boolean }[];
+  return rows[0] ?? null;
 }
 
 /** Admin-only — suspend/reactivate a website without touching its data. See migrations/0003_customers_suspended.sql. */
