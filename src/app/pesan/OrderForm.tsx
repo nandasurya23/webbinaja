@@ -138,6 +138,44 @@ function UploadButton({
   );
 }
 
+/**
+ * Logo/hero/ambiance row for the public order form — upload-only, no
+ * editable filename text field. The customer never needs to see or type a
+ * filename (that used to sit in a text input next to the upload button,
+ * confusing since there was nothing meaningful to type there); this just
+ * shows the label, an uploaded/not-uploaded status, and the upload button.
+ */
+function PhotoSlot({
+  label,
+  filename,
+  submissionId,
+  kind,
+  onUploaded,
+}: {
+  label: string;
+  filename: string;
+  submissionId: string;
+  kind: 'logo' | 'hero' | 'ambiance';
+  onUploaded: (filename: string) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5">
+      <div className="flex items-center gap-2 text-sm min-w-0">
+        <span className="font-medium text-zinc-300 shrink-0">{label}</span>
+        {filename ? (
+          <span className="flex items-center gap-1 text-xs text-emerald-400 truncate">
+            <CheckCircle size={13} weight="fill" />
+            Sudah diunggah
+          </span>
+        ) : (
+          <span className="text-xs text-zinc-500">Belum diunggah</span>
+        )}
+      </div>
+      <UploadButton submissionId={submissionId} kind={kind} baseNameHint={kind} onUploaded={onUploaded} />
+    </div>
+  );
+}
+
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
@@ -310,24 +348,15 @@ export default function OrderForm() {
       <div className="flex flex-col gap-4">
         <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Foto</span>
         <div className="flex flex-col gap-3">
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <Field label="Logo" placeholder="Belum diunggah" value={logo} onChange={setLogo} />
-            </div>
-            <UploadButton submissionId={submissionId} kind="logo" baseNameHint="logo" onUploaded={setLogo} />
-          </div>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <Field label="Foto utama (hero)" placeholder="Belum diunggah" value={hero} onChange={setHero} />
-            </div>
-            <UploadButton submissionId={submissionId} kind="hero" baseNameHint="hero" onUploaded={setHero} />
-          </div>
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <Field label="Foto suasana (opsional)" placeholder="Belum diunggah" value={ambiance} onChange={setAmbiance} />
-            </div>
-            <UploadButton submissionId={submissionId} kind="ambiance" baseNameHint="ambiance" onUploaded={setAmbiance} />
-          </div>
+          <PhotoSlot label="Logo" filename={logo} submissionId={submissionId} kind="logo" onUploaded={setLogo} />
+          <PhotoSlot label="Foto utama (hero)" filename={hero} submissionId={submissionId} kind="hero" onUploaded={setHero} />
+          <PhotoSlot
+            label="Foto suasana (opsional)"
+            filename={ambiance}
+            submissionId={submissionId}
+            kind="ambiance"
+            onUploaded={setAmbiance}
+          />
         </div>
 
         <div className="flex flex-col gap-2">
