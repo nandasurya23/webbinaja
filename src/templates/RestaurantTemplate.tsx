@@ -1,9 +1,10 @@
 "use client";
 import React from 'react';
 import { CustomerConfig } from '@/types/config';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
+import { m, useScroll, useTransform } from 'motion/react';
 import Image from 'next/image';
-import { ArrowRight, MapPin, InstagramLogo, FacebookLogo } from '@phosphor-icons/react';
+import { ArrowRight, MapPin, InstagramLogo, FacebookLogo } from '@phosphor-icons/react/dist/ssr';
 
 export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
   const { scrollY } = useScroll();
@@ -28,7 +29,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
         
         <div className="flex justify-end">
           <a 
-            href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20reservasi%20meja`}
+            href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20reservasi%20meja`}
             target="_blank"
             rel="noreferrer"
             className="flex items-center gap-4 uppercase tracking-[0.3em] text-[10px] font-medium text-white hover:text-[#d4af37] transition-all group"
@@ -41,37 +42,38 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
 
       {/* Editorial Hero */}
       <section id="hero" className="relative w-full h-[100dvh] overflow-hidden flex flex-col justify-center bg-[#0c0d0a]">
-        <motion.div style={{ y: y1, scale: 1.05 }} className="absolute inset-0 z-0">
+        <m.div style={{ y: y1, scale: 1.05 }} className="absolute inset-0 z-0">
           {config.images?.hero ? (
             <Image 
-              src={config.images.hero} 
-              alt={config.businessName} 
-              fill 
+              src={config.images.hero}
+              alt={config.businessName}
+              fill
+              sizes="100vw"
               priority
               className="object-cover opacity-60 brightness-75 contrast-125" 
             />
           ) : (
             <div className="absolute inset-0 bg-[#1a1c16]" />
           )}
-        </motion.div>
+        </m.div>
         
         {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-[#0c0d0a]/80 via-transparent to-[#0c0d0a] z-10" />
 
         <div className="relative z-20 px-8 py-12 md:px-16 flex flex-col items-center text-center mt-20">
-          <motion.div
+          <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="text-5xl sm:text-6xl md:text-[7rem] lg:text-[9rem] font-light tracking-[-0.02em] text-white leading-[0.85] font-geist-sans mb-8">
+            <h1 className="text-5xl sm:text-6xl md:text-[7rem] lg:text-[9rem] font-light tracking-[-0.02em] text-white leading-[0.85] font-sans mb-8">
               {config.tagline.split(' ').map((word, i) => (
                 <span key={i} className="block italic">{word}</span>
               ))}
             </h1>
-          </motion.div>
+          </m.div>
           
-          <motion.div 
+          <m.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.8 }}
@@ -80,7 +82,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
           >
             <span className="text-[10px] uppercase tracking-[0.4em] text-[#d4af37]">Discover</span>
             <div className="w-[1px] h-16 bg-[#d4af37]/30 mx-auto mt-6 animate-pulse"></div>
-          </motion.div>
+          </m.div>
         </div>
       </section>
 
@@ -88,15 +90,15 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
       <section id="about" className="py-32 md:py-48 px-8 md:px-16 max-w-5xl mx-auto text-center relative">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1px] h-24 bg-[#d4af37]/20"></div>
         
-        <motion.p 
+        <m.p 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.4 }}
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-          className="text-2xl md:text-4xl lg:text-5xl leading-[1.6] text-[#b5b3ad] font-light font-geist-sans"
+          className="text-2xl md:text-4xl lg:text-5xl leading-[1.6] text-[#b5b3ad] font-light font-sans"
         >
           {config.description}
-        </motion.p>
+        </m.p>
       </section>
 
       {/* Fine Dining Menu */}
@@ -111,7 +113,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
           
           <div className="flex flex-col gap-12 md:gap-20">
             {config.services.map((svc, i) => (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 30 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true, margin: "-100px" }}
@@ -121,7 +123,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
               >
                 <div className="flex flex-col md:flex-row justify-between items-baseline gap-4 md:gap-12 relative z-10">
                   <div className="md:w-3/4">
-                    <h3 className="text-3xl md:text-5xl font-light mb-4 text-[#f4f1eb] font-geist-sans group-hover:text-[#d4af37] transition-colors duration-500">
+                    <h3 className="text-3xl md:text-5xl font-light mb-4 text-[#f4f1eb] font-sans group-hover:text-[#d4af37] transition-colors duration-500">
                       {svc.name}
                     </h3>
                   </div>
@@ -137,7 +139,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
                   {/* Dotted Leader for desktop */}
                   <div className="hidden md:block absolute left-0 bottom-6 w-full border-b border-dotted border-[#d4af37]/20 -z-10 group-hover:border-[#d4af37]/40 transition-colors duration-500"></div>
                 </div>
-              </motion.div>
+              </m.div>
             ))}
           </div>
         </div>
@@ -156,7 +158,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 md:gap-16">
               {config.catalog.map((item, i) => (
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, y: 40 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.2 }}
@@ -165,15 +167,15 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
                   className="group flex flex-col items-center text-center cursor-pointer"
                 >
                   <div className="w-full aspect-[4/5] relative overflow-hidden mb-8 border border-[#d4af37]/10">
-                    <Image src={item.image} alt={item.name} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)]" />
+                    <Image src={item.image} alt={item.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-[1.5s] ease-[cubic-bezier(0.16,1,0.3,1)]" />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0c0d0a]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
                   </div>
-                  <h3 className="text-2xl md:text-3xl font-light mb-3 text-[#f4f1eb] font-geist-sans group-hover:text-[#d4af37] transition-colors duration-500">
+                  <h3 className="text-2xl md:text-3xl font-light mb-3 text-[#f4f1eb] font-sans group-hover:text-[#d4af37] transition-colors duration-500">
                     {item.name}
                   </h3>
                   {item.desc && <p className="text-[#8c8a85] text-sm max-w-xs mb-6 leading-relaxed italic">{item.desc}</p>}
                   <span className="text-lg text-[#d4af37] font-light font-outfit tracking-widest">{item.price}</span>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           </div>
@@ -186,7 +188,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
            
            <div className="w-full md:w-[45%] aspect-[3/4] relative overflow-hidden bg-[#11120e] p-4 border border-[#d4af37]/10">
              <div className="w-full h-full relative overflow-hidden">
-               <Image src={config.images.gallery[0]} alt="Ambiance" fill className="object-cover hover:scale-110 transition-transform duration-[2s] ease-[cubic-bezier(0.16,1,0.3,1)]" />
+               <Image src={config.images.gallery[0]} alt="Ambiance" fill sizes="(max-width: 768px) 100vw, 45vw" className="object-cover hover:scale-110 transition-transform duration-[2s] ease-[cubic-bezier(0.16,1,0.3,1)]" />
              </div>
            </div>
            
@@ -195,13 +197,13 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
              
              <div className="aspect-[4/3] relative overflow-hidden bg-[#11120e] w-[85%] mx-auto md:ml-auto md:mr-0 p-4 border border-[#d4af37]/10">
                <div className="w-full h-full relative overflow-hidden">
-                 {config.images.gallery[1] && <Image src={config.images.gallery[1]} alt="Dish" fill className="object-cover hover:scale-110 transition-transform duration-[2s] ease-[cubic-bezier(0.16,1,0.3,1)]" />}
+                 {config.images.gallery[1] && <Image src={config.images.gallery[1]} alt="Dish" fill sizes="(max-width: 768px) 85vw, 47vw" className="object-cover hover:scale-110 transition-transform duration-[2s] ease-[cubic-bezier(0.16,1,0.3,1)]" />}
                </div>
              </div>
              
              <div className="text-center md:text-left md:pl-16">
                <a 
-                 href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20reservasi%20meja`}
+                 href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20reservasi%20meja`}
                  target="_blank"
                  rel="noreferrer"
                  className="inline-flex items-center gap-6 text-lg md:text-xl uppercase tracking-[0.3em] font-outfit font-light text-[#d4af37] hover:text-white transition-colors duration-500 group"
@@ -223,7 +225,7 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
             {config.contact.address}
           </p>
           <a 
-            href={config.contact.mapsLink} 
+            href={sanitizeUrl(config.contact.mapsLink)} 
             target="_blank" 
             rel="noreferrer" 
             className="flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.3em] text-[#d4af37] hover:text-white transition-colors duration-500"
@@ -234,16 +236,16 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
 
         <div className="flex flex-col gap-12 w-full">
           <div className="flex flex-wrap justify-center gap-10 md:gap-16">
-            <a href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20reservasi%20meja`} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-[#8c8a85] hover:text-[#d4af37] transition-colors duration-500 flex items-center gap-2">
+            <a href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20reservasi%20meja`} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-[#8c8a85] hover:text-[#d4af37] transition-colors duration-500 flex items-center gap-2">
               WhatsApp
             </a>
             {config.contact.instagram && (
-              <a href={config.contact.instagram} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-[#8c8a85] hover:text-[#d4af37] transition-colors duration-500 flex items-center gap-2">
+              <a href={sanitizeUrl(config.contact.instagram)} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-[#8c8a85] hover:text-[#d4af37] transition-colors duration-500 flex items-center gap-2">
                 <InstagramLogo size={16} weight="light" /> Instagram
               </a>
             )}
             {config.contact.facebook && (
-              <a href={config.contact.facebook} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-[#8c8a85] hover:text-[#d4af37] transition-colors duration-500 flex items-center gap-2">
+              <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-[#8c8a85] hover:text-[#d4af37] transition-colors duration-500 flex items-center gap-2">
                 <FacebookLogo size={16} weight="light" /> Facebook
               </a>
             )}

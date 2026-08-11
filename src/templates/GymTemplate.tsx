@@ -1,9 +1,10 @@
 "use client";
 import React from 'react';
 import { CustomerConfig } from '@/types/config';
-import { motion, useScroll, useTransform } from 'motion/react';
+import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
+import { m, useScroll, useTransform } from 'motion/react';
 import Image from 'next/image';
-import { Barbell, Trophy, Flame, Heartbeat, PersonSimpleRun, Lightning, ArrowRight, MapPin, InstagramLogo, FacebookLogo } from '@phosphor-icons/react';
+import { Barbell, Trophy, Flame, Heartbeat, PersonSimpleRun, Lightning, ArrowRight, MapPin, InstagramLogo, FacebookLogo } from '@phosphor-icons/react/dist/ssr';
 
 export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
   const { scrollY } = useScroll();
@@ -18,7 +19,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
           {config.businessName}
         </div>
         <a 
-          href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20daftar%20membership/kelas`}
+          href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20daftar%20membership/kelas`}
           target="_blank"
           rel="noreferrer"
           className="pointer-events-auto px-8 py-3 bg-red-600 text-white font-black italic skew-x-[-15deg] hover:bg-white hover:text-red-600 transition-colors shadow-[8px_8px_0_0_#ffffff] hover:shadow-[4px_4px_0_0_#ff0000] active:shadow-none active:translate-x-1 active:translate-y-1"
@@ -33,9 +34,9 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
         {/* Abstract Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
            {config.images?.hero && (
-             <motion.div style={{ y: y1 }} className="absolute inset-0 opacity-40 grayscale contrast-150 mix-blend-luminosity">
-                <Image src={config.images.hero} alt="Gym Hero" fill className="object-cover" priority />
-             </motion.div>
+             <m.div style={{ y: y1 }} className="absolute inset-0 opacity-40 grayscale contrast-150 mix-blend-luminosity">
+                <Image src={config.images.hero} alt="Gym Hero" fill sizes="100vw" className="object-cover" priority />
+             </m.div>
            )}
            <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/80 to-transparent" />
            
@@ -45,7 +46,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
         </div>
 
         <div className="relative z-10 w-full md:w-3/4 lg:w-2/3">
-          <motion.h1 
+          <m.h1 
             initial={{ opacity: 0, x: -50 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             className="text-7xl sm:text-8xl md:text-[9rem] lg:text-[11rem] font-black italic leading-[0.8] tracking-tighter mb-12 font-outfit"
           >
@@ -55,14 +56,14 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
             <span className="block text-white drop-shadow-[0_0_30px_rgba(220,38,38,0.5)]">
               {config.tagline.split(' ').slice(1).join(' ')}
             </span>
-          </motion.h1>
+          </m.h1>
           
-          <motion.p 
+          <m.p 
             initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
             className="text-2xl md:text-4xl font-black italic max-w-2xl text-zinc-400 font-outfit"
           >
             {config.description}
-          </motion.p>
+          </m.p>
         </div>
       </section>
 
@@ -71,13 +72,13 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
         <section className="w-full bg-red-600 py-12 overflow-hidden border-b-[12px] border-zinc-900">
           <div className="flex gap-4 px-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory">
             {config.images.gallery.map((img, i) => (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}
                 key={i} 
                 className="flex-none w-[80vw] md:w-[40vw] lg:w-[30vw] aspect-video relative skew-x-[-10deg] overflow-hidden snap-center bg-zinc-950 border-4 border-zinc-900 group"
               >
-                <Image src={img} alt="Gallery" fill className="object-cover skew-x-[10deg] scale-125 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
-              </motion.div>
+                <Image src={img} alt="Gallery" fill sizes="(max-width: 768px) 80vw, (max-width: 1024px) 40vw, 30vw" className="object-cover skew-x-[10deg] scale-125 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
+              </m.div>
             ))}
           </div>
         </section>
@@ -85,12 +86,12 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
 
       {/* Memberships / Services */}
       <section className="py-32 px-6 max-w-[1600px] mx-auto">
-        <motion.h2 
+        <m.h2 
           initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
           className="text-6xl md:text-8xl font-black italic mb-20 text-white font-outfit tracking-tighter"
         >
           Programs
-        </motion.h2>
+        </m.h2>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
           {config.services.map((svc, i) => {
@@ -104,7 +105,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
             ];
             const Icon = iconsList[i % iconsList.length];
             return (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 50 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true, amount: 0.2 }} 
@@ -129,7 +130,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
                   <span>View Details</span>
                   <ArrowRight weight="bold" size={24} />
                 </div>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>
@@ -155,19 +156,19 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
           </div>
           
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 font-black italic text-xl md:text-3xl">
-            <a href={config.contact.mapsLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
+            <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
               <MapPin weight="fill" /> Location
             </a>
-            <a href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20daftar%20membership/kelas`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
+            <a href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20daftar%20membership/kelas`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
               Join
             </a>
             {config.contact.instagram && (
-              <a href={config.contact.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
+              <a href={sanitizeUrl(config.contact.instagram)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
                 <InstagramLogo weight="fill" /> IG
               </a>
             )}
             {config.contact.facebook && (
-              <a href={config.contact.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
+              <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-white hover:text-black transition-colors">
                 <FacebookLogo weight="fill" /> FB
               </a>
             )}

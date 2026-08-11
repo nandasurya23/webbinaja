@@ -31,7 +31,15 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
+# .env.local holds R2 upload credentials used only by scripts/assets/cli.ts —
+# never read by the Next.js app, never commit it. .env.local.example has no
+# secrets and is intentionally tracked as a template.
 .env*
+!.env*.example
+
+# raw customer photos staged locally before running assets:upload — never
+# committed, and never uploaded anywhere except R2 by the CLI.
+/customer-input/
 
 # vercel
 .vercel

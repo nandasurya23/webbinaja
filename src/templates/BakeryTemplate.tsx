@@ -1,10 +1,11 @@
 "use client";
 import React from 'react';
 import { CustomerConfig } from '@/types/config';
-import { motion } from 'motion/react';
+import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
+import { m } from 'motion/react';
 import Image from 'next/image';
 import { Slider } from '@/components/Slider';
-import { Cake, Coffee, Cookie, IceCream, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react';
+import { Cake, Coffee, Cookie, IceCream, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -16,7 +17,7 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
           {config.businessName}
         </div>
         <a 
-          href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20pesan%20kue/roti`}
+          href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20pesan%20kue/roti`}
           target="_blank"
           rel="noreferrer"
           className="px-6 py-3 rounded-full bg-orange-900 text-orange-50 font-medium hover:bg-orange-950 transition-colors flex items-center gap-2 group"
@@ -28,22 +29,22 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
 
       {/* Hero: Sweet & Soft */}
       <section className="px-6 py-12 md:py-24 max-w-7xl mx-auto flex flex-col items-center text-center">
-        <motion.h1 
+        <m.h1 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="text-5xl sm:text-6xl md:text-8xl font-medium tracking-tight mb-8 max-w-4xl leading-[1.05] text-orange-950 font-outfit"
         >
           {config.tagline}
-        </motion.h1>
+        </m.h1>
         
-        <motion.p 
+        <m.p 
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="text-xl md:text-2xl max-w-2xl leading-relaxed mb-16 text-stone-600 font-medium"
         >
           {config.description}
-        </motion.p>
+        </m.p>
         
         {/* Dynamic Slider for Gallery */}
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
           className="w-full relative z-10"
         >
@@ -51,10 +52,10 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
             <Slider images={config.images.gallery} aspectRatio="aspect-[4/3] md:aspect-[16/9]" rounded="rounded-[2rem] md:rounded-[3rem]" />
           ) : config.images?.hero ? (
             <div className="w-full aspect-[4/3] md:aspect-video relative rounded-[2rem] md:rounded-[3rem] overflow-hidden bg-stone-200">
-              <Image src={config.images.hero} alt="Hero" fill className="object-cover" />
+              <Image src={config.images.hero} alt="Hero" fill sizes="100vw" priority className="object-cover" />
             </div>
           ) : null}
-        </motion.div>
+        </m.div>
       </section>
 
       {/* Menu Options (Bento Grid Style) */}
@@ -74,7 +75,7 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
             ];
             const Icon = iconsList[i % iconsList.length];
             return (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 20 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true, amount: 0.2 }} 
@@ -90,7 +91,7 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
                 <div className="text-xl md:text-2xl font-medium text-orange-900 font-outfit mt-auto">
                   {svc.price}
                 </div>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>
@@ -102,19 +103,19 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
         <p className="text-orange-200/80 mb-12 text-lg max-w-sm">{config.contact.address}</p>
         
         <div className="flex flex-wrap justify-center gap-6 md:gap-12 font-medium">
-          <a href={config.contact.mapsLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
+          <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
             <MapPin size={20} /> Location
           </a>
-          <a href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20pesan%20kue/roti`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
+          <a href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20pesan%20kue/roti`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
             WhatsApp
           </a>
           {config.contact.instagram && (
-            <a href={config.contact.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
+            <a href={sanitizeUrl(config.contact.instagram)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
               <InstagramLogo size={20} /> Instagram
             </a>
           )}
           {config.contact.facebook && (
-            <a href={config.contact.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
+            <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-orange-300 transition-colors">
               <FacebookLogo size={20} /> Facebook
             </a>
           )}

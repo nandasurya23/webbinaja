@@ -9,13 +9,27 @@ export interface Testimonial {
   text: string;
 }
 
+/**
+ * Bare R2 object filenames for this customer (e.g. "hero.webp"), not full
+ * URLs. `getCustomerAssetUrl`/`resolveCustomerImages` in `@/lib/assets`
+ * turn these into `https://cdn.webbinaja.com/{slug}/{filename}`.
+ */
+export interface CustomerAssets {
+  logo?: string;
+  hero?: string;
+  gallery?: string[];
+  ambiance?: string;
+}
+
 export interface CustomerConfig {
-  package: 'basic' | 'pro' | 'custom';
+  package: 'basic' | 'business';
   businessName: string;
   tagline: string;
   description: string;
   template: 'barber' | 'restaurant' | 'professional' | 'bakery' | 'rental' | 'gamecafe' | 'gym' | 'petshop' | 'custom';
   customDomain?: string;
+  /** R2 asset filenames for this customer. Preferred over `images`. */
+  assets?: CustomerAssets;
   seo?: {
     title?: string;
     description?: string;

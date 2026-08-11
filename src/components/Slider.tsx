@@ -1,18 +1,29 @@
 "use client";
 import React, { useRef } from 'react';
 import Image from 'next/image';
-import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { CaretLeft, CaretRight } from '@phosphor-icons/react/dist/ssr';
 
 interface SliderProps {
   images: string[];
   aspectRatio?: string; // e.g., 'aspect-video', 'aspect-[4/3]'
   rounded?: string; // e.g., 'rounded-2xl'
+  /**
+   * When true, each slide fills the full track width instead of the
+   * default "peek" width (50-80%, showing a sliver of the next slide).
+   * Use this when the slider sits inside a container styled to look like a
+   * single-photo frame/mockup (e.g. decorative browser dots or a HUD
+   * overlay) — the peek effect there reads as a broken/cropped image
+   * rather than a carousel, since there's no visual room for "next slide
+   * incoming" framing.
+   */
+  fullWidth?: boolean;
 }
 
-export const Slider: React.FC<SliderProps> = ({ 
-  images, 
+export const Slider: React.FC<SliderProps> = ({
+  images,
   aspectRatio = 'aspect-video',
-  rounded = 'rounded-3xl' 
+  rounded = 'rounded-3xl',
+  fullWidth = false,
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -36,15 +47,16 @@ export const Slider: React.FC<SliderProps> = ({
         className="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 md:gap-6 w-full"
       >
         {images.map((src, i) => (
-          <div 
-            key={i} 
-            className={`flex-none w-full sm:w-[80%] md:w-[60%] lg:w-[50%] snap-center relative ${aspectRatio} ${rounded} overflow-hidden bg-neutral-100 shadow-sm border border-black/5`}
+          <div
+            key={i}
+            className={`flex-none ${fullWidth ? 'w-full' : 'w-full sm:w-[80%] md:w-[60%] lg:w-[50%]'} snap-center relative ${aspectRatio} ${rounded} overflow-hidden bg-neutral-100 shadow-sm border border-black/5`}
           >
-            <Image 
-              src={src} 
-              alt={`Gallery image ${i + 1}`} 
-              fill 
-              sizes="(max-width: 768px) 100vw, 50vw"
+            <Image
+              src={src}
+              alt={`Gallery image ${i + 1}`}
+              fill
+              sizes={fullWidth ? '100vw' : '(max-width: 768px) 100vw, 50vw'}
+              priority={fullWidth && i === 0}
               className="object-cover"
             />
           </div>

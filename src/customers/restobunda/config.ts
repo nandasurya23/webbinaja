@@ -32,8 +32,8 @@ export const config = {
     ]
   },
   catalog: [
-    { name: "Nasi Goreng Spesial Bunda", price: "Rp 35.000", desc: "Nasi goreng dengan bumbu rempah pilihan, telur mata sapi, ayam suwir, dan udang.", image: "https://images.unsplash.com/photo-1603048297172-c92544798d5e?auto=format&fit=crop&q=80&w=800" },
-    { name: "Sate Ayam Madura", price: "Rp 30.000", desc: "Sate daging ayam full dengan bumbu kacang kental.", image: "https://images.unsplash.com/photo-1555126634-323283e090fa?auto=format&fit=crop&q=80&w=800" },
-    { name: "Soto Ayam Ambengan", price: "Rp 28.000", desc: "Soto ayam kuah kuning segar dengan koya kerupuk udang.", image: "https://images.unsplash.com/photo-1548943487-a2e4e43b4859?auto=format&fit=crop&q=80&w=800" }
+    { name: "Nasi Goreng Spesial Bunda", price: "Rp 35.000", desc: "Nasi goreng dengan bumbu rempah pilihan, telur mata sapi, ayam suwir, dan udang.", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?auto=format&fit=crop&q=80&w=800" },
+    { name: "Sate Ayam Madura", price: "Rp 30.000", desc: "Sate daging ayam full dengan bumbu kacang kental.", image: "https://images.unsplash.com/photo-1529563021893-cc83c992d75d?auto=format&fit=crop&q=80&w=800" },
+    { name: "Soto Ayam Ambengan", price: "Rp 28.000", desc: "Soto ayam kuah kuning segar dengan koya kerupuk udang.", image: "https://images.unsplash.com/photo-1569562211093-4ed0d0758f12?auto=format&fit=crop&q=80&w=800" }
   ]
 };

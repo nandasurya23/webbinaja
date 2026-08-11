@@ -1,9 +1,10 @@
 "use client";
 import React from 'react';
 import { CustomerConfig } from '@/types/config';
-import { motion } from 'motion/react';
+import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
+import { m } from 'motion/react';
 import Image from 'next/image';
-import { PawPrint, Bone, Cat, Dog, FishSimple, Heart, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react';
+import { PawPrint, Bone, Cat, Dog, FishSimple, Heart, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -15,7 +16,7 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
           {config.businessName} <PawPrint weight="fill" className="text-[#FFBA08]" />
         </div>
         <a 
-          href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`}
+          href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`}
           target="_blank"
           rel="noreferrer"
           className="hidden md:flex items-center gap-2 px-8 py-3 bg-[#E85D04] text-white font-bold rounded-full hover:bg-[#DC2F02] hover:-translate-y-1 transition-all shadow-[0_4px_14px_rgba(232,93,4,0.3)]"
@@ -31,75 +32,75 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
           
           {/* Main Text Content */}
           <div className="lg:col-span-6 flex flex-col justify-center px-4 md:px-12 py-12">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.9 }} 
               animate={{ opacity: 1, scale: 1 }} 
               transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
               className="inline-flex items-center gap-2 px-4 py-2 bg-[#FFBA08]/20 text-[#DC2F02] rounded-full font-bold text-sm w-max mb-8"
             >
               <Heart weight="fill" /> For Your Furry Friends
-            </motion.div>
+            </m.div>
             
-            <motion.h1 
+            <m.h1 
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
               className="text-5xl md:text-7xl lg:text-[5.5rem] font-black tracking-tight mb-8 leading-[1.05] text-[#370617] font-outfit"
             >
               {config.tagline}
-            </motion.h1>
+            </m.h1>
             
-            <motion.p 
+            <m.p 
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
               className="text-lg md:text-2xl max-w-xl text-[#6A040F] font-medium leading-relaxed mb-12"
             >
               {config.description}
-            </motion.p>
+            </m.p>
             
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}>
               <a 
-                href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`}
+                href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-2 px-8 py-4 bg-[#FFBA08] text-[#370617] font-bold text-lg rounded-full hover:bg-[#FAA307] hover:scale-105 transition-all shadow-[0_8px_24px_rgba(255,186,8,0.4)]"
               >
                 Book a Visit <PawPrint weight="fill" />
               </a>
-            </motion.div>
+            </m.div>
           </div>
           
           {/* Irregular Image Grid */}
           <div className="lg:col-span-6 grid grid-cols-2 grid-rows-2 gap-4 md:gap-6 h-[50vh] lg:h-auto">
             {config.images?.gallery && config.images.gallery.length >= 2 ? (
               <>
-                <motion.div 
+                <m.div 
                   initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}
                   className="row-span-2 relative overflow-hidden bg-[#FFBA08]/20 rounded-[2rem] md:rounded-[3rem] md:rounded-tr-[5rem] md:rounded-bl-[5rem]"
                 >
-                  <Image src={config.images.gallery[0]} alt="Pet 1" fill className="object-cover" />
-                </motion.div>
-                <motion.div 
+                  <Image src={config.images.gallery[0]} alt="Pet 1" fill sizes="(max-width: 1024px) 50vw, 25vw" priority className="object-cover" />
+                </m.div>
+                <m.div 
                   initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
                   className="relative overflow-hidden bg-[#E85D04]/20 rounded-[2rem] md:rounded-[3rem] md:rounded-tl-[4rem]"
                 >
-                  <Image src={config.images.gallery[1]} alt="Pet 2" fill className="object-cover" />
-                </motion.div>
-                <motion.div 
+                  <Image src={config.images.gallery[1]} alt="Pet 2" fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" />
+                </m.div>
+                <m.div 
                   initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }}
                   className="relative overflow-hidden bg-[#9D0208]/10 rounded-[2rem] md:rounded-[3rem] md:rounded-br-[4rem] flex items-center justify-center"
                 >
                   {config.images.gallery[2] ? (
-                    <Image src={config.images.gallery[2]} alt="Pet 3" fill className="object-cover" />
+                    <Image src={config.images.gallery[2]} alt="Pet 3" fill sizes="(max-width: 1024px) 50vw, 25vw" className="object-cover" />
                   ) : (
                     <PawPrint weight="duotone" size={64} className="text-[#E85D04]/40" />
                   )}
-                </motion.div>
+                </m.div>
               </>
             ) : config.images?.hero ? (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}
                 className="col-span-2 row-span-2 relative overflow-hidden bg-[#FFBA08]/20 rounded-[3rem] md:rounded-[5rem] rounded-tr-none md:rounded-bl-none"
               >
-                <Image src={config.images.hero} alt="Hero Pet" fill className="object-cover" />
-              </motion.div>
+                <Image src={config.images.hero} alt="Hero Pet" fill sizes="100vw" priority className="object-cover" />
+              </m.div>
             ) : null}
           </div>
           
@@ -134,7 +135,7 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
             const radius = radiusClasses[i % radiusClasses.length];
             
             return (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 30 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true, amount: 0.2 }} 
@@ -150,7 +151,7 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
                 <div className="text-xl md:text-2xl font-black text-[#E85D04] mt-auto font-outfit px-4 py-2 bg-[#FFBA08]/10 rounded-full">
                   {svc.price}
                 </div>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>
@@ -168,19 +169,19 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
           <p className="text-[#FFBA08] font-bold text-lg md:text-xl mb-12 max-w-md mx-auto">{config.contact.address}</p>
           
           <div className="flex flex-wrap justify-center gap-6 md:gap-12 font-bold text-lg">
-            <a href={config.contact.mapsLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
+            <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
               <MapPin weight="fill" /> Google Maps
             </a>
-            <a href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
+            <a href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
               WhatsApp
             </a>
             {config.contact.instagram && (
-              <a href={config.contact.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
+              <a href={sanitizeUrl(config.contact.instagram)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
                 <InstagramLogo weight="fill" /> Instagram
               </a>
             )}
             {config.contact.facebook && (
-              <a href={config.contact.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
+              <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-[#FFBA08] transition-colors bg-[#DC2F02] px-6 py-3 rounded-full">
                 <FacebookLogo weight="fill" /> Facebook
               </a>
             )}

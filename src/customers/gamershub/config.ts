@@ -27,12 +27,12 @@ export const config: CustomerConfig = {
     hero: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600&auto=format&fit=crop",
     gallery: [
       "https://images.unsplash.com/photo-1598550476439-6847785fcea6?q=80&w=800&auto=format&fit=crop",
-      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?q=80&w=800&auto=format&fit=crop",
       "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800&auto=format&fit=crop"
     ]
   },
   catalog: [
-    { name: "Energy Drink 'Mana Potion'", price: "Rp 15.000", desc: "Minuman energi racikan khusus, boost fokus gaming.", image: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&q=80&w=800" },
+    { name: "Energy Drink 'Mana Potion'", price: "Rp 15.000", desc: "Minuman energi racikan khusus, boost fokus gaming.", image: "https://images.unsplash.com/photo-1622597467836-f3285f2131b8?auto=format&fit=crop&q=80&w=800" },
     { name: "Indomie Double Egg", price: "Rp 20.000", desc: "Kunci kemenangan saat begadang, ekstra telur dan keju.", image: "https://images.unsplash.com/photo-1612929633738-8fe44f7ec841?auto=format&fit=crop&q=80&w=800" },
     { name: "RGB Mechanical Keyboard", price: "Rp 850.000", desc: "Keyboard TKL switch merah (Merchandise Khusus).", image: "https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=800" }
   ]

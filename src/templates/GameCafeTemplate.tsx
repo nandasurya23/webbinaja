@@ -1,10 +1,11 @@
 "use client";
 import React from 'react';
 import { CustomerConfig } from '@/types/config';
-import { motion } from 'motion/react';
+import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
+import { m } from 'motion/react';
 import Image from 'next/image';
 import { Slider } from '@/components/Slider';
-import { Desktop, GameController, Headset, Keyboard, Mouse, Cpu, MapPin, InstagramLogo, FacebookLogo, ArrowRight, Crosshair } from '@phosphor-icons/react';
+import { Desktop, GameController, Headset, Keyboard, Mouse, Cpu, MapPin, InstagramLogo, FacebookLogo, ArrowRight, Crosshair } from '@phosphor-icons/react/dist/ssr';
 
 export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -33,7 +34,7 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
         </div>
         
         <a 
-          href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20PC/Konsol`}
+          href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20PC/Konsol`}
           target="_blank"
           rel="noreferrer"
           className="flex items-center gap-2 px-6 py-2 bg-[#00f2fe]/10 border border-[#00f2fe]/50 text-[#00f2fe] font-bold text-xs uppercase tracking-widest hover:bg-[#00f2fe] hover:text-black hover:shadow-[0_0_20px_rgba(0,242,254,0.6)] transition-all duration-300 skew-x-[-15deg]"
@@ -52,15 +53,15 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
           
           <div className="lg:col-span-6 flex flex-col items-start relative">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
               className="inline-flex items-center gap-2 px-3 py-1 bg-black/60 border border-[#00f2fe]/50 text-[#00f2fe] text-xs font-mono mb-8 uppercase tracking-[0.3em] backdrop-blur"
             >
               <div className="w-2 h-2 bg-[#00f2fe] animate-pulse shadow-[0_0_10px_rgba(0,242,254,1)]" />
               SYS.STATUS: OPTIMAL
-            </motion.div>
+            </m.div>
             
-            <motion.h1 
+            <m.h1 
               initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
               className="text-6xl sm:text-7xl md:text-8xl lg:text-[7rem] font-black uppercase tracking-tighter leading-[0.9] text-white mb-8 font-outfit"
             >
@@ -69,18 +70,18 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
                   {word}{" "}
                 </span>
               ))}
-            </motion.h1>
+            </m.h1>
             
-            <motion.p 
+            <m.p 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3, duration: 0.8 }}
               className="text-lg md:text-2xl text-slate-400 max-w-xl mb-12 font-mono"
             >
               {config.description}
-            </motion.p>
+            </m.p>
             
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
+            <m.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
               <a 
-                href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20PC/Konsol`}
+                href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20PC/Konsol`}
                 target="_blank"
                 rel="noreferrer"
                 className="relative inline-flex items-center gap-3 px-10 py-5 bg-transparent border-2 border-[#00f2fe] text-[#00f2fe] font-black text-xl uppercase tracking-widest hover:bg-[#00f2fe] hover:text-black transition-all duration-300 shadow-[0_0_20px_rgba(0,242,254,0.3)] hover:shadow-[0_0_40px_rgba(0,242,254,0.8)] skew-x-[-15deg] group overflow-hidden"
@@ -90,11 +91,11 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
                   <Crosshair weight="bold" className="animate-spin-slow" /> ENGAGE
                 </span>
               </a>
-            </motion.div>
+            </m.div>
           </div>
           
           <div className="lg:col-span-6 relative flex justify-end">
-            <motion.div 
+            <m.div 
               initial={{ opacity: 0, scale: 0.9, rotateX: 10 }} animate={{ opacity: 1, scale: 1, rotateX: 0 }} transition={{ duration: 1, delay: 0.2 }}
               style={{ perspective: 1000 }}
               className="w-full relative"
@@ -116,15 +117,15 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
                 
                 <div className="w-full aspect-[4/3] md:aspect-video relative rounded-lg overflow-hidden bg-[#030712]">
                   {config.images?.gallery && config.images.gallery.length > 0 ? (
-                    <Slider images={config.images.gallery} aspectRatio="aspect-[4/3] md:aspect-video" rounded="rounded-lg" />
+                    <Slider images={config.images.gallery} aspectRatio="aspect-[4/3] md:aspect-video" rounded="rounded-lg" fullWidth />
                   ) : config.images?.hero ? (
-                    <Image src={config.images.hero} alt="Game Cafe" fill className="object-cover mix-blend-luminosity contrast-125" />
+                    <Image src={config.images.hero} alt="Game Cafe" fill sizes="100vw" priority className="object-cover mix-blend-luminosity contrast-125" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center font-mono text-[#00f2fe] animate-pulse">NO_SIGNAL</div>
                   )}
                 </div>
               </div>
-            </motion.div>
+            </m.div>
           </div>
           
         </div>
@@ -153,7 +154,7 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
             ];
             const Icon = iconsList[i % iconsList.length];
             return (
-              <motion.div 
+              <m.div 
                 initial={{ opacity: 0, y: 30 }} 
                 whileInView={{ opacity: 1, y: 0 }} 
                 viewport={{ once: true, amount: 0.2 }} 
@@ -187,7 +188,7 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
                   <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-white/20 group-hover:border-[#00f2fe] transition-colors"></div>
                   <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-white/20 group-hover:border-[#00f2fe] transition-colors"></div>
                 </div>
-              </motion.div>
+              </m.div>
             );
           })}
         </div>
@@ -212,7 +213,7 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
                   {item.price}
                 </div>
                 <div className="w-full aspect-[4/3] relative overflow-hidden bg-[#020617]">
-                  <Image src={item.image} alt={item.name} fill className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
+                  <Image src={item.image} alt={item.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all duration-700" />
                   {/* Glitch Overlay */}
                   <div className="absolute inset-0 bg-[#00f2fe]/20 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 </div>
@@ -243,7 +244,13 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
             {config.images.gallery.map((img, i) => (
               <div key={i} className={`relative rounded-lg overflow-hidden border border-[#00f2fe]/20 group ${i === 0 ? 'md:col-span-2 md:row-span-2 aspect-video lg:aspect-auto' : 'aspect-square'}`}>
                 <div className="absolute inset-0 bg-[#00f2fe]/20 opacity-0 group-hover:opacity-100 mix-blend-color z-10 transition-opacity duration-500 pointer-events-none"></div>
-                <Image src={img} alt="Gallery image" fill className="object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" />
+                <Image
+                  src={img}
+                  alt="Gallery image"
+                  fill
+                  sizes={i === 0 ? '(max-width: 768px) 100vw, 66vw' : '(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw'}
+                  className="object-cover grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+                />
               </div>
             ))}
           </div>
@@ -270,19 +277,19 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
           </div>
           
           <div className="flex flex-wrap justify-center md:justify-end gap-6 md:gap-10 font-mono text-sm uppercase font-bold">
-            <a href={config.contact.mapsLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#00f2fe] hover:drop-shadow-[0_0_10px_rgba(0,242,254,0.8)] transition-all">
+            <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#00f2fe] hover:drop-shadow-[0_0_10px_rgba(0,242,254,0.8)] transition-all">
               <MapPin weight="fill" /> Nav
             </a>
-            <a href={`https://wa.me/${config.contact.whatsapp}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20PC/Konsol`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#00f2fe] hover:drop-shadow-[0_0_10px_rgba(0,242,254,0.8)] transition-all">
+            <a href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20PC/Konsol`} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#00f2fe] hover:drop-shadow-[0_0_10px_rgba(0,242,254,0.8)] transition-all">
               Comms
             </a>
             {config.contact.instagram && (
-              <a href={config.contact.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#ff0844] hover:drop-shadow-[0_0_10px_rgba(255,8,68,0.8)] transition-all">
+              <a href={sanitizeUrl(config.contact.instagram)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#ff0844] hover:drop-shadow-[0_0_10px_rgba(255,8,68,0.8)] transition-all">
                 <InstagramLogo weight="fill" /> IG
               </a>
             )}
             {config.contact.facebook && (
-              <a href={config.contact.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#3b82f6] hover:drop-shadow-[0_0_10px_rgba(59,130,246,0.8)] transition-all">
+              <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-slate-400 hover:text-[#3b82f6] hover:drop-shadow-[0_0_10px_rgba(59,130,246,0.8)] transition-all">
                 <FacebookLogo weight="fill" /> FB
               </a>
             )}

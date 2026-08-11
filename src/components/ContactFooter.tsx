@@ -1,8 +1,9 @@
 "use client";
 import React from 'react';
-import { MapPin, WhatsappLogo } from '@phosphor-icons/react';
-import { motion } from 'motion/react';
+import { MapPin, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
+import { m } from 'motion/react';
 import { cn } from '@/lib/utils';
+import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 
 interface ContactFooterProps {
   businessName: string;
@@ -18,7 +19,7 @@ export const ContactFooter: React.FC<ContactFooterProps> = ({
 }) => {
   return (
     <footer className={cn("w-full bg-zinc-950 text-white py-24 px-6 md:px-12", className)}>
-      <motion.div 
+      <m.div 
         initial={{ opacity: 0, y: 24 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
@@ -37,7 +38,7 @@ export const ContactFooter: React.FC<ContactFooterProps> = ({
         <div className="md:w-1/3 space-y-12">
           <div>
             <h4 className="text-xs uppercase tracking-[0.2em] text-zinc-500 font-medium mb-6">Location</h4>
-            <a href={mapsLink} target="_blank" rel="noreferrer" className="flex items-start gap-4 hover:text-white text-zinc-300 transition-colors group">
+            <a href={sanitizeUrl(mapsLink)} target="_blank" rel="noreferrer" className="flex items-start gap-4 hover:text-white text-zinc-300 transition-colors group">
               <MapPin weight="regular" size={24} className="mt-1 flex-shrink-0 text-zinc-500 group-hover:text-white transition-colors" />
               <span className="text-lg leading-relaxed">{address}</span>
             </a>
@@ -45,13 +46,13 @@ export const ContactFooter: React.FC<ContactFooterProps> = ({
           
           <div>
             <h4 className="text-xs uppercase tracking-[0.2em] text-zinc-500 font-medium mb-6">Inquiries</h4>
-            <a href={`https://wa.me/${whatsapp}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 hover:text-white text-zinc-300 transition-colors group">
+            <a href={`https://wa.me/${sanitizeWhatsapp(whatsapp)}`} target="_blank" rel="noreferrer" className="flex items-center gap-4 hover:text-white text-zinc-300 transition-colors group">
               <WhatsappLogo weight="regular" size={24} className="flex-shrink-0 text-zinc-500 group-hover:text-white transition-colors" />
               <span className="text-lg">WhatsApp Us</span>
             </a>
           </div>
         </div>
-      </motion.div>
+      </m.div>
       
       <div className="max-w-7xl mx-auto mt-24 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center gap-4 text-zinc-600 text-sm">
         <span>&copy; {new Date().getFullYear()} {businessName}. All rights reserved.</span>
