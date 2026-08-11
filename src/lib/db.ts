@@ -9,7 +9,7 @@ import crypto from 'node:crypto';
 import type { ServiceInput, CatalogItemInput } from './customerScaffold';
 import type { AdminRole } from './adminAuth';
 import type { CustomerConfig } from '@/types/config';
-import { getCustomerAssetUrl } from './assets';
+import { getCustomerAssetUrl, resolveCustomerImages } from './assets';
 
 type SqlTag = (strings: TemplateStringsArray, ...values: unknown[]) => Promise<unknown[]>;
 
@@ -525,6 +525,7 @@ export interface ShowcaseCustomer {
   businessName: string;
   template: string;
   logoUrl?: string;
+  heroUrl?: string;
   customDomain: string | null;
 }
 
@@ -545,13 +546,17 @@ export async function listShowcaseCustomers(limit: number): Promise<ShowcaseCust
     limit ${limit}
   `) as CustomerRow[];
 
-  return rows.map((r) => ({
-    slug: r.slug,
-    businessName: r.config.businessName,
-    template: r.config.template,
-    logoUrl: r.config.assets?.logo ? getCustomerAssetUrl(r.slug, r.config.assets.logo) : undefined,
-    customDomain: r.custom_domain,
-  }));
+  return rows.map((r) => {
+    const images = resolveCustomerImages(r.slug, r.config.assets, r.config.images);
+    return {
+      slug: r.slug,
+      businessName: r.config.businessName,
+      template: r.config.template,
+      logoUrl: r.config.assets?.logo ? getCustomerAssetUrl(r.slug, r.config.assets.logo) : undefined,
+      heroUrl: images.hero,
+      customDomain: r.custom_domain,
+    };
+  });
 }
 
 export async function insertCustomerToDb(slug: string, config: CustomerConfig): Promise<void> {

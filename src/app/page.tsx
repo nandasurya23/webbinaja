@@ -31,12 +31,13 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function Home() {
-  const showcaseSites = await listShowcaseCustomers(8)
+  const showcaseSites = await listShowcaseCustomers(12)
     .then((customers) =>
       customers.map((c) => ({
         businessName: c.businessName,
         template: c.template,
         logoUrl: c.logoUrl,
+        heroUrl: c.heroUrl,
         url: c.customDomain ? `https://${c.customDomain}` : `https://${c.slug}.${MAIN_DOMAIN}`,
       }))
     )
