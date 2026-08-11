@@ -145,6 +145,7 @@ export interface SubmitOrderInput {
   id: string;
   businessName: string;
   template: string;
+  packageTier: string;
   tagline: string;
   description: string;
   whatsapp: string;
@@ -161,6 +162,11 @@ export interface SubmitOrderInput {
   // Honeypot — real users never see or fill this field (hidden via CSS).
   website: string;
 }
+
+const PACKAGE_LABELS: Record<string, string> = {
+  basic: 'Paket Basic (Rp 499k)',
+  business_kit: 'Paket Business Kit (Rp 799k)',
+};
 
 export type SubmitOrderResult =
   | { ok: true; whatsappUrl: string; lookupCode: string }
@@ -179,11 +185,16 @@ export async function submitOrderAction(input: SubmitOrderInput): Promise<Submit
   if (input.website.trim()) {
     // Fake code — nothing was actually inserted, so it won't match anything
     // at /status, but the bot has no way to tell that from a real one.
-    return { ok: true, whatsappUrl: buildWhatsappUrl(input.businessName), lookupCode: 'XXXXXXXX' };
+    return { ok: true, whatsappUrl: buildWhatsappUrl(input.businessName, input.packageTier), lookupCode: 'XXXXXXXX' };
   }
 
   if (!isValidSubmissionId(input.id)) {
     return { ok: false, error: 'Sesi form tidak valid — muat ulang halaman.' };
+  }
+
+  const packageTier = PACKAGE_LABELS[input.packageTier] ? input.packageTier : '';
+  if (!packageTier) {
+    return { ok: false, error: 'Pilih paket terlebih dahulu.' };
   }
 
   // Checked before any other validation — an unauthenticated endpoint that
@@ -265,6 +276,7 @@ export async function submitOrderAction(input: SubmitOrderInput): Promise<Submit
     logoFilename: input.logo.trim() || undefined,
     heroFilename: input.hero.trim() || undefined,
     ambianceFilename: input.ambiance.trim() || undefined,
+    packageTier,
     gallery,
     services,
     catalog,
@@ -277,10 +289,13 @@ export async function submitOrderAction(input: SubmitOrderInput): Promise<Submit
     return { ok: false, error: 'Gagal menyimpan data, coba lagi.' };
   }
 
-  return { ok: true, whatsappUrl: buildWhatsappUrl(businessName), lookupCode };
+  return { ok: true, whatsappUrl: buildWhatsappUrl(businessName, packageTier), lookupCode };
 }
 
-function buildWhatsappUrl(businessName: string): string {
-  const text = `Halo, saya sudah isi data pemesanan website untuk "${businessName}", mohon info pembayaran.`;
+function buildWhatsappUrl(businessName: string, packageTier: string): string {
+  const packageLabel = PACKAGE_LABELS[packageTier];
+  const text = packageLabel
+    ? `Halo, saya sudah isi data pemesanan website untuk "${businessName}" (${packageLabel}), mohon info pembayaran.`
+    : `Halo, saya sudah isi data pemesanan website untuk "${businessName}", mohon info pembayaran.`;
   return `https://wa.me/${BUSINESS_WHATSAPP}?text=${encodeURIComponent(text)}`;
 }

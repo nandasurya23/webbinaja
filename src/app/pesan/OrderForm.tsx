@@ -20,6 +20,11 @@ import { MAX_GALLERY_PHOTOS, MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
 type Service = { name: string; price: string; desc: string };
 type CatalogItem = { name: string; price: string; desc: string; image: string };
 
+const PACKAGES: { id: string; name: string; price: string }[] = [
+  { id: 'basic', name: 'Paket Basic', price: 'Rp 499.000' },
+  { id: 'business_kit', name: 'Paket Business Kit', price: 'Rp 799.000' },
+];
+
 const TEMPLATE_LABELS: Record<string, string> = {
   barber: 'Barbershop',
   restaurant: 'Restoran',
@@ -198,10 +203,13 @@ function CopyButton({ text }: { text: string }) {
 const emptyService = (): Service => ({ name: '', price: '', desc: '' });
 const emptyCatalogItem = (): CatalogItem => ({ name: '', price: '', desc: '', image: '' });
 
-export default function OrderForm() {
+export default function OrderForm({ initialPackage }: { initialPackage?: string }) {
   const submissionId = useMemo(() => crypto.randomUUID(), []);
 
   const [businessName, setBusinessName] = useState('');
+  const [packageTier, setPackageTier] = useState(
+    PACKAGES.some((p) => p.id === initialPackage) ? (initialPackage as string) : ''
+  );
   const [template, setTemplate] = useState('');
   const [tagline, setTagline] = useState('');
   const [description, setDescription] = useState('');
@@ -272,6 +280,7 @@ export default function OrderForm() {
           const res = await submitOrderAction({
             id: submissionId,
             businessName,
+            packageTier,
             template,
             tagline,
             description,
@@ -298,6 +307,27 @@ export default function OrderForm() {
           Website
           <input tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
         </label>
+      </div>
+
+      <div className="flex flex-col gap-1.5 text-sm">
+        <span className="font-medium text-zinc-300">
+          Paket <span className="text-amber-500">*</span>
+        </span>
+        <div className="grid sm:grid-cols-2 gap-2">
+          {PACKAGES.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => setPackageTier(p.id)}
+              className={`rounded-lg border px-3.5 py-2.5 text-sm font-medium transition text-left ${
+                packageTier === p.id ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-white/10 hover:border-white/30 text-zinc-300'
+              }`}
+            >
+              {p.name}
+              <span className="block text-xs font-normal text-zinc-500 mt-0.5">{p.price}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="grid sm:grid-cols-2 gap-4">

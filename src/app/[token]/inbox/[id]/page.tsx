@@ -14,6 +14,11 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+const PACKAGE_LABELS: Record<string, string> = {
+  basic: 'Paket Basic (Rp 499k)',
+  business_kit: 'Paket Business Kit (Rp 799k)',
+};
+
 function Photo({ submissionId, filename, label }: { submissionId: string; filename: string; label: string }) {
   const url = getSubmissionAssetUrl(submissionId, filename);
   if (!url) return null;
@@ -78,6 +83,11 @@ export default async function SubmissionDetailPage({
             {submission.status === 'processed' ? `Diproses → ${submission.processedSlug}` : 'Pending'}
           </span>
         </div>
+        {submission.packageTier && (
+          <span className="inline-flex items-center text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 mb-3">
+            {PACKAGE_LABELS[submission.packageTier] ?? submission.packageTier}
+          </span>
+        )}
         {submission.tagline && <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">{submission.tagline}</p>}
 
         <Link

@@ -2,7 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import { CustomerConfig } from '@/types/config';
 import { isValidCustomerSlug, resolveCustomerImages } from '@/lib/assets';
-import { getCustomerFromDb, getCustomerByCustomDomainFromDb } from '@/lib/db';
+import {
+  getCustomerFromDb,
+  getCustomerByCustomDomainFromDb,
+  getCustomerSuspendedBySlugFromDb,
+  getCustomerSuspendedByCustomDomainFromDb,
+} from '@/lib/db';
 
 // Define the root domain
 export const MAIN_DOMAIN = 'webbinaja.com';
@@ -131,4 +136,56 @@ export async function resolveCustomerByHost(hostname: string): Promise<{ slug: s
   }
 
   return null;
+}
+
+export type CustomerHostStatus =
+  | { status: 'active'; slug: string; config: CustomerConfig }
+  | { status: 'suspended'; slug: string }
+  | { status: 'not_found' };
+
+/**
+ * Like resolveCustomerByHost, but distinguishes "suspended" from "never
+ * existed" — resolveCustomerByHost's `null` conflates the two (see
+ * getCustomerFromDb's `and not suspended` filter), which used to leave
+ * proxy.ts unable to tell a suspended site apart from an unregistered
+ * hostname. proxy.ts uses this to route suspended visitors to a dedicated
+ * "website dinonaktifkan" page instead of falling through to the main
+ * marketing homepage.
+ */
+export async function resolveCustomerHostStatus(hostname: string): Promise<CustomerHostStatus> {
+  const cleanHost = hostname.split(':')[0];
+  if (cleanHost === MAIN_DOMAIN || cleanHost === 'localhost' || cleanHost === '127.0.0.1') {
+    return { status: 'not_found' };
+  }
+
+  if (cleanHost.endsWith(`.${MAIN_DOMAIN}`)) {
+    const slug = cleanHost.replace(`.${MAIN_DOMAIN}`, '');
+    if (isValidCustomerSlug(slug)) {
+      const suspended = await getCustomerSuspendedBySlugFromDb(slug).catch(() => null);
+      if (suspended === true) return { status: 'suspended', slug };
+      if (suspended === false) {
+        const config = await getCustomerConfig(slug);
+        if (config) return { status: 'active', slug, config };
+      }
+    }
+  }
+
+  const dbMatch = await getCustomerByCustomDomainFromDb(cleanHost).catch(() => null);
+  if (dbMatch) {
+    return { status: 'active', slug: dbMatch.slug, config: withResolvedImages(dbMatch.slug, dbMatch.config) };
+  }
+  const suspendedDomainMatch = await getCustomerSuspendedByCustomDomainFromDb(cleanHost).catch(() => null);
+  if (suspendedDomainMatch?.suspended) {
+    return { status: 'suspended', slug: suspendedDomainMatch.slug };
+  }
+
+  const slugs = getAllCustomerSlugs();
+  for (const slug of slugs) {
+    const config = await getCustomerConfig(slug);
+    if (config && config.customDomain === cleanHost) {
+      return { status: 'active', slug, config };
+    }
+  }
+
+  return { status: 'not_found' };
 }

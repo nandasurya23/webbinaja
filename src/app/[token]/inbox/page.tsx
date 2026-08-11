@@ -30,6 +30,11 @@ const STATUS_LABELS: Record<SubmissionStatus, string> = {
   processed: 'Sudah Jadi Website',
 };
 
+const PACKAGE_LABELS: Record<string, string> = {
+  basic: 'Basic',
+  business_kit: 'Business Kit',
+};
+
 const PAGE_SIZE = 20;
 
 function isSubmissionStatus(v: string): v is SubmissionStatus {
@@ -159,7 +164,14 @@ export default async function InboxPage({
                     <Envelope size={16} weight="bold" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{s.businessName}</p>
+                    <p className="font-medium truncate flex items-center gap-1.5">
+                      {s.businessName}
+                      {s.packageTier && (
+                        <span className="text-[10px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 shrink-0">
+                          {PACKAGE_LABELS[s.packageTier] ?? s.packageTier}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
                       <WhatsappLogo size={12} />
                       {s.whatsapp}

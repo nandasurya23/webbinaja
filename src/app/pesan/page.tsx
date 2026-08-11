@@ -6,7 +6,13 @@ export const metadata: Metadata = {
   description: 'Isi data bisnis Anda dan kami buatkan website-nya dalam 24 jam.',
 };
 
-export default function PesanPage() {
+export default async function PesanPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ package?: string }>;
+}) {
+  const { package: initialPackage } = await searchParams;
+
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans">
       <main className="max-w-2xl mx-auto px-6 py-16 sm:py-24">
@@ -16,7 +22,7 @@ export default function PesanPage() {
         <p className="text-zinc-400 mb-10">
           Isi data bisnis Anda di bawah ini. Setelah terkirim, Anda akan diarahkan ke WhatsApp untuk pembayaran.
         </p>
-        <OrderForm />
+        <OrderForm initialPackage={initialPackage} />
       </main>
     </div>
   );
