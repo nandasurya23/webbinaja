@@ -41,6 +41,7 @@ import {
   customerSlugExistsInDb,
   insertCustomerToDb,
   updateCustomerCustomDomainInDb,
+  setCustomerSuspendedInDb,
   type StatusPatch,
 } from '@/lib/db';
 import { getSubmissionAssetUrl, isValidSubmissionId } from '@/lib/assets';
@@ -612,6 +613,40 @@ export async function updateCustomDomainAction(token: string, slug: string, cust
     message: domain
       ? `customDomain diset ke "${domain}" untuk "${cleanSlug}". Jangan lupa tambahkan domain ini di Vercel → Domains, dan arahkan DNS-nya.`
       : `customDomain dihapus dari "${cleanSlug}".`,
+  };
+}
+
+/**
+ * Suspends or reactivates a DB-backed website — the row stays intact (see
+ * setCustomerSuspendedInDb / migrations/0003_customers_suspended.sql), it
+ * just stops resolving publicly while suspended. File-based demo customers
+ * have no suspended column to flip, so they're not eligible here either,
+ * same reasoning as updateCustomDomainAction above.
+ */
+export async function toggleCustomerSuspendedAction(token: string, slug: string, suspended: boolean): Promise<ActionResult> {
+  assertAdminIdentity(token);
+  await requireSession();
+
+  const cleanSlug = slug.trim();
+  if (!isValidCustomerSlug(cleanSlug)) {
+    return { ok: false, error: 'Slug tidak valid.' };
+  }
+
+  let found: boolean;
+  try {
+    found = await setCustomerSuspendedInDb(cleanSlug, suspended);
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+  if (!found) {
+    return { ok: false, error: `Customer "${cleanSlug}" tidak ditemukan.` };
+  }
+
+  revalidatePath(`/sites/${cleanSlug}`);
+
+  return {
+    ok: true,
+    message: suspended ? `"${cleanSlug}" disuspend — situsnya sekarang 404 untuk publik.` : `"${cleanSlug}" diaktifkan kembali.`,
   };
 }
 

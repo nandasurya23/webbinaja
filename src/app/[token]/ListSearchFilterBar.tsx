@@ -15,6 +15,8 @@ export interface FilterConfig {
   /** Shown as the empty/"all" option. */
   allLabel: string;
   options: FilterOption[];
+  /** Preselected value when the URL has no param yet (the page applies this same default server-side) — distinct from the "all" option, which is only reached by explicitly picking it. */
+  defaultValue?: string;
 }
 
 // Search updates the URL only after the user stops typing (debounced) —
@@ -80,7 +82,7 @@ export default function ListSearchFilterBar({
       {filters.map((f) => (
         <select
           key={f.param}
-          defaultValue={searchParams.get(f.param) ?? ''}
+          defaultValue={searchParams.get(f.param) ?? f.defaultValue ?? ''}
           onChange={(e) => updateParam(f.param, e.target.value)}
           className={selectClass}
         >

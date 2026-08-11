@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
-import { listSubmissionsPage, type Submission, type WorkStatus, type PaymentStatus } from '@/lib/db';
+import { listSubmissionsPage, type Submission, type SubmissionStatus, type WorkStatus, type PaymentStatus } from '@/lib/db';
 import LoginForm from '../LoginForm';
 import ListSearchFilterBar from '../ListSearchFilterBar';
 import Pagination from '../Pagination';
@@ -25,7 +25,16 @@ export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
   rejected: 'Ditolak',
 };
 
+const STATUS_LABELS: Record<SubmissionStatus, string> = {
+  pending: 'Belum Diproses',
+  processed: 'Sudah Jadi Website',
+};
+
 const PAGE_SIZE = 20;
+
+function isSubmissionStatus(v: string): v is SubmissionStatus {
+  return v === 'pending' || v === 'processed';
+}
 
 function isWorkStatus(v: string): v is WorkStatus {
   return v === 'not_started' || v === 'in_progress' || v === 'done';
@@ -69,6 +78,11 @@ export default async function InboxPage({
 
   const sp = await searchParams;
   const search = sp.q ?? '';
+  // 'pending' unless the operator explicitly asks for something else — an
+  // already-processed submission (its site is live) has no reason to keep
+  // showing up mixed in with ones still needing action; that's what was
+  // making the list look like it had duplicate/stale entries.
+  const status = sp.status && isSubmissionStatus(sp.status) ? sp.status : 'pending';
   const workStatus = sp.workStatus && isWorkStatus(sp.workStatus) ? sp.workStatus : undefined;
   const paymentStatus = sp.paymentStatus && isPaymentStatus(sp.paymentStatus) ? sp.paymentStatus : undefined;
   const page = Math.max(1, Number(sp.page) || 1);
@@ -77,7 +91,7 @@ export default async function InboxPage({
   let total = 0;
   let loadError: string | null = null;
   try {
-    const result = await listSubmissionsPage({ search, workStatus, paymentStatus, page, pageSize: PAGE_SIZE });
+    const result = await listSubmissionsPage({ search, status, workStatus, paymentStatus, page, pageSize: PAGE_SIZE });
     submissions = result.items;
     total = result.total;
   } catch {
@@ -101,6 +115,12 @@ export default async function InboxPage({
           searchPlaceholder="Cari nama bisnis atau nomor WhatsApp..."
           filters={[
             {
+              param: 'status',
+              allLabel: 'Semua (termasuk yang sudah jadi)',
+              defaultValue: 'pending',
+              options: Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),
+            },
+            {
               param: 'workStatus',
               allLabel: 'Semua status pengerjaan',
               options: Object.entries(WORK_STATUS_LABELS).map(([value, label]) => ({ value, label })),
@@ -119,7 +139,11 @@ export default async function InboxPage({
 
         {submissions.length === 0 && !loadError && (
           <p className="text-sm text-neutral-400">
-            {search || workStatus || paymentStatus ? 'Tidak ada submission yang cocok.' : 'Belum ada submission masuk.'}
+            {search || workStatus || paymentStatus
+              ? 'Tidak ada submission yang cocok.'
+              : status === 'pending'
+              ? 'Tidak ada submission yang belum diproses — cek filter "Semua" di atas untuk lihat yang sudah jadi website.'
+              : 'Belum ada submission masuk.'}
           </p>
         )}
 
@@ -147,6 +171,11 @@ export default async function InboxPage({
                     <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-500">#{s.queueNumber}</span>
                   )}
                   <div className="flex items-center gap-1.5">
+                    {s.status === 'processed' && (
+                      <span className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400">
+                        Website Jadi
+                      </span>
+                    )}
                     <span
                       className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full ${
                         s.workStatus === 'done'

@@ -26,7 +26,7 @@ export interface CustomerConfig {
   businessName: string;
   tagline: string;
   description: string;
-  template: 'barber' | 'restaurant' | 'professional' | 'bakery' | 'rental' | 'gamecafe' | 'gym' | 'petshop' | 'custom';
+  template: 'barber' | 'restaurant' | 'professional' | 'bakery' | 'rental' | 'gamecafe' | 'gym' | 'petshop';
   customDomain?: string;
   /** R2 asset filenames for this customer. Preferred over `images`. */
   assets?: CustomerAssets;

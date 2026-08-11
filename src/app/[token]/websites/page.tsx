@@ -9,6 +9,7 @@ import { CUSTOMER_TEMPLATES, isKnownTemplate } from '@/lib/customerScaffold';
 import LoginForm from '../LoginForm';
 import ListSearchFilterBar from '../ListSearchFilterBar';
 import Pagination from '../Pagination';
+import SuspendToggle from './SuspendToggle';
 import { ArrowLeft, Globe, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
@@ -62,13 +63,14 @@ export default async function WebsitesPage({
   const search = sp.q ?? '';
   const template = sp.template && isKnownTemplate(sp.template) ? sp.template : undefined;
   const packageTier = sp.packageTier && isKnownPackage(sp.packageTier) ? sp.packageTier : undefined;
+  const suspended = sp.status === 'suspended' ? true : sp.status === 'active' ? false : undefined;
   const page = Math.max(1, Number(sp.page) || 1);
 
   let websites: Awaited<ReturnType<typeof listCustomersPage>>['items'] = [];
   let total = 0;
   let loadError: string | null = null;
   try {
-    const result = await listCustomersPage({ search, template, packageTier, page, pageSize: PAGE_SIZE });
+    const result = await listCustomersPage({ search, template, packageTier, suspended, page, pageSize: PAGE_SIZE });
     websites = result.items;
     total = result.total;
   } catch {
@@ -101,6 +103,14 @@ export default async function WebsitesPage({
               allLabel: 'Semua paket',
               options: Object.entries(PACKAGE_LABELS).map(([value, label]) => ({ value, label })),
             },
+            {
+              param: 'status',
+              allLabel: 'Semua status (aktif + disuspend)',
+              options: [
+                { value: 'active', label: 'Aktif' },
+                { value: 'suspended', label: 'Disuspend' },
+              ],
+            },
           ]}
         />
 
@@ -118,29 +128,47 @@ export default async function WebsitesPage({
             return (
               <li
                 key={w.slug}
-                className="flex items-center justify-between gap-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-4 sm:p-5"
+                className={`flex items-center justify-between gap-4 rounded-xl border bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-4 sm:p-5 ${
+                  w.suspended ? 'border-red-200 dark:border-red-900' : 'border-neutral-200 dark:border-neutral-800'
+                }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex items-center justify-center h-9 w-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 shrink-0">
+                  <div
+                    className={`flex items-center justify-center h-9 w-9 rounded-full shrink-0 ${
+                      w.suspended ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-500'
+                    }`}
+                  >
                     <Globe size={16} weight="bold" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-medium truncate">{w.businessName}</p>
+                    <p className="font-medium truncate flex items-center gap-2">
+                      {w.businessName}
+                      {w.suspended && (
+                        <span className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400">
+                          Disuspend
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
                       {w.template} · {PACKAGE_LABELS[w.packageTier] ?? w.packageTier}
                       {w.customDomain && ` · custom domain`}
                     </p>
                   </div>
                 </div>
-                <a
-                  href={url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1.5 shrink-0 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
-                >
-                  Buka
-                  <ArrowSquareOut size={14} />
-                </a>
+                <div className="flex items-center gap-3 shrink-0">
+                  {!w.suspended && (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
+                    >
+                      Buka
+                      <ArrowSquareOut size={14} />
+                    </a>
+                  )}
+                  <SuspendToggle token={token} slug={w.slug} suspended={w.suspended} />
+                </div>
               </li>
             );
           })}

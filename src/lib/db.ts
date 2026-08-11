@@ -209,6 +209,8 @@ export async function insertSubmission(input: NewSubmissionInput): Promise<{ id:
 export interface SubmissionListFilters {
   /** Matched (case-insensitive, substring) against business_name OR whatsapp. */
   search?: string;
+  /** Defaults to 'pending' at the call site (src/app/[token]/inbox/page.tsx) — a submission whose site is already built and live has no reason to keep resurfacing in the default view alongside ones still needing action. */
+  status?: SubmissionStatus;
   workStatus?: WorkStatus;
   paymentStatus?: PaymentStatus;
   page: number;
@@ -233,16 +235,17 @@ export async function listSubmissionsPage(filters: SubmissionListFilters): Promi
   const pageSize = Math.min(Math.max(1, filters.pageSize), 100);
   const offset = (page - 1) * pageSize;
 
-  const params = [search, filters.workStatus ?? null, filters.paymentStatus ?? null];
+  const params = [search, filters.status ?? null, filters.workStatus ?? null, filters.paymentStatus ?? null];
   const whereClause = `
     where ($1::text is null or business_name ilike $1 or whatsapp ilike $1)
-      and ($2::text is null or work_status = $2)
-      and ($3::text is null or payment_status = $3)
+      and ($2::text is null or status = $2)
+      and ($3::text is null or work_status = $3)
+      and ($4::text is null or payment_status = $4)
   `;
 
   const [rows, countRows] = await Promise.all([
     query(
-      `select * from submissions ${whereClause} order by created_at desc limit $4 offset $5`,
+      `select * from submissions ${whereClause} order by created_at desc limit $5 offset $6`,
       [...params, pageSize, offset]
     ),
     query(`select count(*)::int as count from submissions ${whereClause}`, params),
@@ -406,18 +409,31 @@ interface CustomerRow {
   config: CustomerConfig;
   custom_domain: string | null;
   created_at: string;
+  suspended: boolean;
 }
 
+// `and not suspended` — a suspended site's row stays fully intact, it just
+// stops being resolvable by slug/custom-domain, so every public reader
+// (sites/[customer]/page.tsx, the promo route, proxy.ts's host resolver —
+// all go through getCustomerConfig in src/lib/customers.ts, which calls
+// this) 404s exactly as if the customer didn't exist, without deleting anything.
 export async function getCustomerFromDb(slug: string): Promise<CustomerConfig | null> {
   const db = sql();
-  const rows = (await db`select config from customers where slug = ${slug}`) as { config: CustomerConfig }[];
+  const rows = (await db`select config from customers where slug = ${slug} and not suspended`) as { config: CustomerConfig }[];
   return rows[0]?.config ?? null;
 }
 
 export async function getCustomerByCustomDomainFromDb(domain: string): Promise<{ slug: string; config: CustomerConfig } | null> {
   const db = sql();
-  const rows = (await db`select slug, config from customers where custom_domain = ${domain}`) as { slug: string; config: CustomerConfig }[];
+  const rows = (await db`select slug, config from customers where custom_domain = ${domain} and not suspended`) as { slug: string; config: CustomerConfig }[];
   return rows[0] ? { slug: rows[0].slug, config: rows[0].config } : null;
+}
+
+/** Admin-only — suspend/reactivate a website without touching its data. See migrations/0003_customers_suspended.sql. */
+export async function setCustomerSuspendedInDb(slug: string, suspended: boolean): Promise<boolean> {
+  const db = sql();
+  const rows = (await db`update customers set suspended = ${suspended} where slug = ${slug} returning slug`) as { slug: string }[];
+  return rows.length > 0;
 }
 
 export async function customerSlugExistsInDb(slug: string): Promise<boolean> {
@@ -439,6 +455,7 @@ export interface CustomerListItem {
   packageTier: string;
   customDomain: string | null;
   createdAt: string;
+  suspended: boolean;
 }
 
 function mapCustomerRow(r: CustomerRow): CustomerListItem {
@@ -449,6 +466,7 @@ function mapCustomerRow(r: CustomerRow): CustomerListItem {
     packageTier: r.config.package,
     customDomain: r.custom_domain,
     createdAt: r.created_at,
+    suspended: r.suspended,
   };
 }
 
@@ -457,6 +475,7 @@ export interface CustomerListFilters {
   search?: string;
   template?: string;
   packageTier?: string;
+  suspended?: boolean;
   page: number;
   pageSize: number;
 }
@@ -478,16 +497,17 @@ export async function listCustomersPage(filters: CustomerListFilters): Promise<C
   const pageSize = Math.min(Math.max(1, filters.pageSize), 100);
   const offset = (page - 1) * pageSize;
 
-  const params = [search, filters.template ?? null, filters.packageTier ?? null];
+  const params = [search, filters.template ?? null, filters.packageTier ?? null, filters.suspended ?? null];
   const whereClause = `
     where ($1::text is null or config->>'businessName' ilike $1 or slug ilike $1)
       and ($2::text is null or config->>'template' = $2)
       and ($3::text is null or config->>'package' = $3)
+      and ($4::boolean is null or suspended = $4)
   `;
 
   const [rows, countRows] = await Promise.all([
     query(
-      `select slug, config, custom_domain, created_at from customers ${whereClause} order by created_at desc limit $4 offset $5`,
+      `select slug, config, custom_domain, created_at, suspended from customers ${whereClause} order by created_at desc limit $5 offset $6`,
       [...params, pageSize, offset]
     ),
     query(`select count(*)::int as count from customers ${whereClause}`, params),
