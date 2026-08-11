@@ -1,11 +1,17 @@
 // Public read-only helpers for resolving customer asset URLs served from
-// Cloudflare R2 via the cdn.webbinaja.com custom domain. This module never
-// talks to R2 directly and holds no credentials — it only builds and
-// validates URLs. Uploading is done exclusively by scripts/assets/cli.ts.
+// Cloudflare R2. This module never talks to R2 directly and holds no
+// credentials — it only builds and validates URLs. Uploading is done
+// exclusively by scripts/assets/cli.ts.
 import { CustomerAssets } from '@/types/config';
 
-export const ASSET_CDN_DOMAIN = 'cdn.webbinaja.com';
-export const ASSET_CDN_BASE_URL = `https://${ASSET_CDN_DOMAIN}`;
+// Set via ASSET_CDN_DOMAIN in Vercel env vars — the bucket's public R2.dev
+// hostname (Settings → Public Access → "r2.dev subdomain" in the Cloudflare
+// dashboard, looks like "pub-xxxxxxxx.r2.dev"), or a real custom domain if
+// one is ever set up again. No default: an unset value would silently point
+// every asset URL at a domain nobody owns, which is worse than failing loudly
+// at build/asset-check time.
+export const ASSET_CDN_DOMAIN = process.env.ASSET_CDN_DOMAIN || process.env.R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') || '';
+export const ASSET_CDN_BASE_URL = ASSET_CDN_DOMAIN ? `https://${ASSET_CDN_DOMAIN}` : '';
 
 // Same slug shape used for subdomains: lowercase letters, digits, single
 // hyphens between segments. No leading/trailing hyphen, no dots, no slashes.
@@ -36,8 +42,27 @@ export function isValidAssetFilename(filename: string | undefined | null): filen
  * fails validation, so callers can fall back to a legacy/default image.
  */
 export function getCustomerAssetUrl(slug: string, filename: string): string | undefined {
-  if (!isValidCustomerSlug(slug) || !isValidAssetFilename(filename)) return undefined;
+  if (!ASSET_CDN_BASE_URL || !isValidCustomerSlug(slug) || !isValidAssetFilename(filename)) return undefined;
   return `${ASSET_CDN_BASE_URL}/${slug}/${filename}`;
+}
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+export function isValidSubmissionId(id: string | undefined | null): id is string {
+  return typeof id === 'string' && UUID_PATTERN.test(id);
+}
+
+/**
+ * Builds the public CDN URL for a photo uploaded via the public order form
+ * (src/app/pesan) before a customer slug exists — stored under
+ * `_submissions/<id>/...` rather than `<slug>/...`. Separate from
+ * `getCustomerAssetUrl` because submission ids are UUIDs, not slugs, and the
+ * leading underscore keeps this prefix visually and structurally distinct
+ * from real customer folders.
+ */
+export function getSubmissionAssetUrl(submissionId: string, filename: string): string | undefined {
+  if (!ASSET_CDN_BASE_URL || !isValidSubmissionId(submissionId) || !isValidAssetFilename(filename)) return undefined;
+  return `${ASSET_CDN_BASE_URL}/_submissions/${submissionId}/${filename}`;
 }
 
 export interface ResolvedCustomerImages {

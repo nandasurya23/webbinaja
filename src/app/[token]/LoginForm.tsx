@@ -6,6 +6,7 @@ import { LockKey, Eye, EyeSlash, ArrowRight, WarningCircle } from '@phosphor-ico
 import { loginAction } from './actions';
 
 export default function LoginForm({ token }: { token: string }) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +25,7 @@ export default function LoginForm({ token }: { token: string }) {
           e.preventDefault();
           setError(null);
           startTransition(async () => {
-            const res = await loginAction(token, password);
+            const res = await loginAction(token, username, password);
             if (res.ok) {
               router.refresh();
             } else {
@@ -34,13 +35,26 @@ export default function LoginForm({ token }: { token: string }) {
         }}
       >
         <label className="flex flex-col gap-1.5 text-sm">
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">Username</span>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            autoFocus
+            autoComplete="username"
+            placeholder="username"
+            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+            required
+          />
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium text-neutral-700 dark:text-neutral-300">Password</span>
           <div className="relative">
             <input
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              autoFocus
               autoComplete="current-password"
               placeholder="••••••••••••"
               className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 pr-10 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"

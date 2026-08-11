@@ -5,10 +5,14 @@ import {
   ADMIN_SESSION_COOKIE,
   ADMIN_SESSION_TTL_SECONDS,
   createSessionCookieValue,
+  hashPassword,
   isAdminConfigured,
-  isValidAdminPassword,
   isValidAdminToken,
-  isValidSessionCookieValue,
+  parseSession,
+  timingSafeEqualStr,
+  verifyPassword,
+  type AdminRole,
+  type SessionInfo,
 } from '@/lib/adminAuth';
 import {
   CUSTOMER_TEMPLATES,
@@ -24,13 +28,26 @@ import { MAX_GALLERY_PHOTOS, MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
 import { getCustomerAssetUrl, isValidAssetFilename, isValidCustomerSlug } from '@/lib/assets';
 import { isSafeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { MAIN_DOMAIN } from '@/lib/customers';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
+import { clientIp } from '@/lib/clientIp';
+import { PutObjectCommand, CopyObjectCommand } from '@aws-sdk/client-s3';
+import {
+  getSubmission,
+  markSubmissionProcessed,
+  isRateLimited,
+  recordRateLimitHit,
+  countAdmins,
+  getAdminByUsername,
+  createAdmin,
+  updateSubmissionStatus,
+  type StatusPatch,
+} from '@/lib/db';
+import { getSubmissionAssetUrl, isValidSubmissionId } from '@/lib/assets';
 // Reused unchanged from the CLI pipeline (scripts/assets/*) so a photo
 // uploaded here and one uploaded via `npm run assets:upload` go through the
 // exact same validation, resize, and WebP re-encode logic.
-import { processImage, type AssetKind } from '../../../../scripts/assets/imageProcessor';
-import { createR2Client } from '../../../../scripts/assets/r2Client';
-import { R2_BUCKET_NAME, MAX_INPUT_FILE_BYTES, loadR2Credentials } from '../../../../scripts/assets/config';
+import { processImage, type AssetKind } from '../../../scripts/assets/imageProcessor';
+import { createR2Client } from '../../../scripts/assets/r2Client';
+import { R2_BUCKET_NAME, MAX_INPUT_FILE_BYTES, loadR2Credentials } from '../../../scripts/assets/config';
 
 // Matches the fixed port in package.json's "dev" script — the only place
 // this app runs locally, since the whole admin UI is dev-only.
@@ -38,38 +55,106 @@ const LOCAL_DEV_PORT = 8765;
 
 type ActionResult = { ok: true; message?: string } | { ok: false; error: string };
 
-// Re-checked on every action, not just page render — the token/production
-// gate on the page component only protects the initial HTML; these server
-// actions are their own endpoints and must enforce it independently.
-function assertAdminAccess(token: string): void {
-  if (process.env.NODE_ENV === 'production') {
-    throw new Error('Admin UI ini hanya untuk pengembangan lokal, tidak tersedia di production.');
-  }
+// Token + config validity check, independent of environment — shared by
+// both the dev-only file-writing actions below (via assertAdminAccess) and
+// the production-safe login/inbox actions (which need this same identity
+// check but must NOT 404 in production, since the inbox is designed to run
+// there — see src/app/[token]/inbox/).
+function assertAdminIdentity(token: string): void {
   if (!isAdminConfigured()) {
-    throw new Error('Admin belum dikonfigurasi — set ADMIN_TOKEN, ADMIN_PASSWORD, ADMIN_SESSION_SECRET di .env.local.');
+    throw new Error('Admin belum dikonfigurasi — set ADMIN_TOKEN, ADMIN_SESSION_SECRET di .env.local.');
   }
   if (!isValidAdminToken(token)) {
     throw new Error('Unauthorized.');
   }
 }
 
-async function requireSession(): Promise<void> {
-  const cookieStore = await cookies();
-  const session = cookieStore.get(ADMIN_SESSION_COOKIE)?.value;
-  if (!isValidSessionCookieValue(session)) {
-    throw new Error('Sesi habis — silakan login ulang.');
+// Re-checked on every action, not just page render — the token/production
+// gate on the page component only protects the initial HTML; these server
+// actions are their own endpoints and must enforce it independently.
+// Only for actions that write to the local filesystem (customer creation,
+// asset upload, domain updates) — those genuinely cannot run on Vercel's
+// read-only production filesystem. Login/logout/inbox reads use
+// assertAdminIdentity directly instead, since they have no such constraint.
+function assertAdminAccess(token: string): void {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('Admin UI ini hanya untuk pengembangan lokal, tidak tersedia di production.');
   }
+  assertAdminIdentity(token);
 }
 
-export async function loginAction(token: string, password: string): Promise<ActionResult> {
-  assertAdminAccess(token);
+async function requireSession(): Promise<SessionInfo> {
+  const cookieStore = await cookies();
+  const session = parseSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
+  if (!session) {
+    throw new Error('Sesi habis — silakan login ulang.');
+  }
+  return session;
+}
 
-  if (!isValidAdminPassword(password)) {
-    return { ok: false, error: 'Password salah.' };
+/** RBAC check — throws (not a silent redirect) so it fails loudly if ever called incorrectly, same philosophy as the other assert* guards in this file. */
+async function requireRole(role: AdminRole): Promise<SessionInfo> {
+  const session = await requireSession();
+  if (session.role !== role) {
+    throw new Error('Anda tidak punya akses untuk aksi ini.');
+  }
+  return session;
+}
+
+export async function loginAction(token: string, username: string, password: string): Promise<ActionResult> {
+  assertAdminIdentity(token);
+
+  const cleanUsername = username.trim();
+  if (!cleanUsername || !password) {
+    return { ok: false, error: 'Username dan password wajib diisi.' };
+  }
+
+  const ip = await clientIp();
+  // Rate limit check only actually matters once the panel is reachable in
+  // production (see src/lib/db.ts) — running it here too is harmless in
+  // dev, and keeps this one code path correct everywhere instead of two.
+  try {
+    if (await isRateLimited('login', ip, 5, 15)) {
+      return { ok: false, error: 'Terlalu banyak percobaan login. Coba lagi dalam 15 menit.' };
+    }
+  } catch {
+    // DATABASE_URL not configured (e.g. plain local dev without Neon set up
+    // yet) — fail open on rate limiting rather than blocking login entirely.
+  }
+
+  let admin = await getAdminByUsername(cleanUsername).catch(() => null);
+
+  // Bootstrap: the very first login, before any admin account exists yet.
+  // Only takes effect while the `admins` table is genuinely empty — once
+  // any account is created (including this one), this branch is
+  // permanently unreachable, bootstrap env vars or not.
+  if (!admin) {
+    const bootstrapUsername = process.env.SUPER_ADMIN_USERNAME;
+    const bootstrapPassword = process.env.SUPER_ADMIN_PASSWORD;
+    const noAdminsYet = (await countAdmins().catch(() => -1)) === 0;
+
+    if (
+      noAdminsYet &&
+      bootstrapUsername &&
+      bootstrapPassword &&
+      timingSafeEqualStr(cleanUsername, bootstrapUsername) &&
+      timingSafeEqualStr(password, bootstrapPassword)
+    ) {
+      admin = await createAdmin({ username: cleanUsername, passwordHash: hashPassword(password), role: 'super_admin' });
+    }
+  }
+
+  if (!admin || !verifyPassword(password, admin.passwordHash)) {
+    try {
+      await recordRateLimitHit('login', ip);
+    } catch {
+      // Same as above — rate limiting is best-effort, not a hard dependency.
+    }
+    return { ok: false, error: 'Username atau password salah.' };
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_SESSION_COOKIE, createSessionCookieValue(), {
+  cookieStore.set(ADMIN_SESSION_COOKIE, createSessionCookieValue(admin.id, admin.role), {
     httpOnly: true,
     secure: true,
     sameSite: 'strict',
@@ -81,10 +166,61 @@ export async function loginAction(token: string, password: string): Promise<Acti
 }
 
 export async function logoutAction(token: string): Promise<ActionResult> {
-  assertAdminAccess(token);
+  assertAdminIdentity(token);
   const cookieStore = await cookies();
   cookieStore.delete(ADMIN_SESSION_COOKIE);
   return { ok: true };
+}
+
+export interface RegisterAdminInput {
+  username: string;
+  password: string;
+  role: AdminRole;
+}
+
+/** super_admin only — enforced here, not just hidden in the UI (see requireRole). */
+export async function registerAdminAction(token: string, input: RegisterAdminInput): Promise<ActionResult> {
+  assertAdminIdentity(token);
+  const session = await requireRole('super_admin');
+
+  const username = input.username.trim();
+  if (username.length < 3) return { ok: false, error: 'Username minimal 3 karakter.' };
+  if (input.password.length < 12) return { ok: false, error: 'Password minimal 12 karakter.' };
+  if (input.role !== 'admin' && input.role !== 'super_admin') return { ok: false, error: 'Role tidak dikenali.' };
+
+  const existing = await getAdminByUsername(username).catch(() => null);
+  if (existing) return { ok: false, error: `Username "${username}" sudah dipakai.` };
+
+  try {
+    await createAdmin({ username, passwordHash: hashPassword(input.password), role: input.role, createdBy: session.adminId });
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+
+  return { ok: true, message: `Akun "${username}" (${input.role}) berhasil dibuat.` };
+}
+
+export type SetStatusResult =
+  | { ok: true; message: string; queueNumber: number | null }
+  | { ok: false; error: string };
+
+/** Either role can set status — the only role-gated action here is admin management above. */
+export async function setSubmissionStatusAction(token: string, submissionId: string, patch: StatusPatch): Promise<SetStatusResult> {
+  assertAdminIdentity(token);
+  await requireSession();
+
+  if (!isValidSubmissionId(submissionId)) {
+    return { ok: false, error: 'ID submission tidak valid.' };
+  }
+
+  const updated = await updateSubmissionStatus(submissionId, patch);
+  if (!updated) return { ok: false, error: 'Submission tidak ditemukan.' };
+
+  return {
+    queueNumber: updated.queueNumber,
+    ok: true,
+    message: updated.queueNumber ? `Status diperbarui. Nomor antri: #${updated.queueNumber}` : 'Status diperbarui.',
+  };
 }
 
 export interface AssetCheckItem {
@@ -172,6 +308,8 @@ export interface CreateCustomerInput {
   catalog: CatalogItemInput[];
   packageTier: PackageTier;
   customDomain: string;
+  /** Set when this customer is being created from a /pesan submission — see promoteSubmissionAssets. */
+  submissionId?: string;
 }
 
 export type CreateCustomerResult =
@@ -301,6 +439,19 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
     return { ok: false, error: (err as Error).message };
   }
 
+  if (input.submissionId && isValidSubmissionId(input.submissionId)) {
+    // Best-effort: the customer is already created either way (config.ts is
+    // written above regardless of what happens here). If copying fails for
+    // some assets, they just need re-uploading via the button already in
+    // this form — same fallback as any other customer's missing asset.
+    await promoteSubmissionAssets(input.submissionId, slug, [logo, hero, ambiance, ...gallery, ...catalog.map((c) => c.image)]);
+    try {
+      await markSubmissionProcessed(input.submissionId, slug);
+    } catch {
+      // Non-fatal — submission just stays "pending" in the inbox, harmless.
+    }
+  }
+
   const productionUrl = `https://${slug}.${MAIN_DOMAIN}`;
   const localUrl = `http://${slug}.localhost:${LOCAL_DEV_PORT}`;
 
@@ -313,6 +464,101 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
     ...(input.packageTier === 'business'
       ? { promoUrl: `${productionUrl}/promo`, localPromoUrl: `${localUrl}/promo` }
       : {}),
+  };
+}
+
+/**
+ * Copies each asset a customer uploaded via the public order form
+ * (src/app/pesan) from its temporary `_submissions/<id>/...` location to
+ * the real `<slug>/...` path, once that customer has actually been created.
+ * Uses R2's CopyObjectCommand (server-side copy, no re-download/re-upload)
+ * so this stays cheap regardless of file size.
+ */
+async function promoteSubmissionAssets(submissionId: string, slug: string, filenames: string[]): Promise<void> {
+  const uniqueFilenames = [...new Set(filenames.filter((f) => f && isValidAssetFilename(f)))];
+  if (uniqueFilenames.length === 0) return;
+
+  let client;
+  try {
+    client = createR2Client();
+  } catch {
+    return; // R2 not configured — customer still created, assets just need manual upload.
+  }
+
+  await Promise.all(
+    uniqueFilenames.map(async (filename) => {
+      try {
+        await client.send(
+          new CopyObjectCommand({
+            Bucket: R2_BUCKET_NAME,
+            CopySource: `${R2_BUCKET_NAME}/_submissions/${submissionId}/${filename}`,
+            Key: `${slug}/${filename}`,
+          })
+        );
+      } catch {
+        // Best-effort per file — see caller.
+      }
+    })
+  );
+}
+
+export type SubmissionPrefillResult =
+  | {
+      ok: true;
+      businessName: string;
+      template: string;
+      tagline: string;
+      description: string;
+      whatsapp: string;
+      address: string;
+      mapsLink: string;
+      instagram: string;
+      facebook: string;
+      logo: string;
+      hero: string;
+      ambiance: string;
+      gallery: string[];
+      services: ServiceInput[];
+      catalog: CatalogItemInput[];
+    }
+  | { ok: false; error: string };
+
+/** Used by CustomerForm to prefill itself from a /pesan submission picked in the inbox — see ?submission= query param handling. */
+export async function getSubmissionForPrefillAction(token: string, submissionId: string): Promise<SubmissionPrefillResult> {
+  assertAdminAccess(token);
+  await requireSession();
+
+  if (!isValidSubmissionId(submissionId)) {
+    return { ok: false, error: 'ID submission tidak valid.' };
+  }
+
+  let submission;
+  try {
+    submission = await getSubmission(submissionId);
+  } catch {
+    return { ok: false, error: 'Gagal mengambil data submission.' };
+  }
+  if (!submission) {
+    return { ok: false, error: 'Submission tidak ditemukan.' };
+  }
+
+  return {
+    ok: true,
+    businessName: submission.businessName,
+    template: submission.template ?? '',
+    tagline: submission.tagline ?? '',
+    description: submission.description ?? '',
+    whatsapp: submission.whatsapp,
+    address: submission.address ?? '',
+    mapsLink: submission.mapsLink ?? '',
+    instagram: submission.instagram ?? '',
+    facebook: submission.facebook ?? '',
+    logo: submission.logoFilename ?? '',
+    hero: submission.heroFilename ?? '',
+    ambiance: submission.ambianceFilename ?? '',
+    gallery: submission.gallery,
+    services: submission.services,
+    catalog: submission.catalog,
   };
 }
 

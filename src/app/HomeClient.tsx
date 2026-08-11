@@ -19,17 +19,17 @@ const templates = [
 const steps = [
   {
     title: "1. Pilih Template",
-    desc: "Eksplorasi 8 template premium di atas. Pilih satu yang memiliki gaya visual dan fungsionalitas paling sesuai dengan karakter bisnis Anda.",
+    desc: "Lihat 8 template yang tersedia di atas, lalu pilih satu yang paling cocok dengan karakter bisnis kamu.",
     icon: <PaintBrush size={32} weight="duotone" />
   },
   {
-    title: "2. Siapkan Data",
-    desc: "Kumpulkan aset bisnis Anda: Nama Bisnis, Tagline, Deskripsi, Daftar Menu/Layanan beserta Harga, Link Medsos/Kontak, serta Foto/Galeri resolusi tinggi.",
+    title: "2. Kirim Data Bisnis",
+    desc: "Siapkan nama bisnis, deskripsi singkat, daftar menu/layanan beserta harga, kontak, dan foto-foto terbaik kamu. Kirim semuanya lewat WhatsApp.",
     icon: <Code size={32} weight="duotone" />
   },
   {
-    title: "3. Kirim & Launch",
-    desc: "Kirimkan seluruh data tersebut melalui WhatsApp kami. Tim kami akan merakit website Anda dan mempublikasikannya secara live dalam 24 jam!",
+    title: "3. Kami yang Kerjakan",
+    desc: "Tim kami memasukkan data, menyusun tampilan, dan mempublikasikan website kamu — biasanya rampung dalam 24 jam.",
     icon: <Lightning size={32} weight="duotone" />
   }
 ];
@@ -56,7 +56,7 @@ export default function HomeClient() {
           href="#workflow"
           className="flex items-center gap-2 px-5 py-2 bg-white text-black font-bold text-xs uppercase tracking-widest hover:bg-zinc-200 transition-colors rounded"
         >
-          Order Now
+          Pesan Sekarang
         </a>
       </nav>
 
@@ -67,29 +67,29 @@ export default function HomeClient() {
           className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-bold mb-8 text-zinc-300"
         >
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-          Solusi Website Cepat untuk UMKM
+          Website Profesional untuk UMKM
         </m.div>
-        
-        <m.h1 
+
+        <m.h1
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
           className="text-5xl md:text-7xl lg:text-[6rem] font-black tracking-tighter leading-[0.9] text-white mb-8 font-outfit max-w-5xl"
         >
-          Website Bisnis Profesional, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-400">Jadi Dalam 1 Hari.</span>
+          Website Profesional untuk Bisnis Kamu, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-400">Tanpa Mulai dari Nol.</span>
         </m.h1>
-        
-        <m.p 
+
+        <m.p
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
           className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-12 font-medium"
         >
-          Mulai Rp499 ribu. Pilih template, kirim data bisnis, dan biarkan kami mengurus sisanya.
+          Mulai Rp499 ribu, tanpa perlu coding atau belajar WordPress. Pilih template, kirim data bisnis kamu, dan tim kami yang mengerjakan sampai website siap online.
         </m.p>
-        
-        <m.div 
+
+        <m.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
           <a href="#pricing" className="flex items-center justify-center gap-2 px-8 py-4 bg-white text-black font-bold uppercase tracking-wider hover:bg-zinc-200 transition-colors rounded w-full sm:w-auto">
-            Buat Website Saya <ArrowRight weight="bold" />
+            Pilih Website Kamu <ArrowRight weight="bold" />
           </a>
           <a href="#templates" className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-white/20 text-white font-bold uppercase tracking-wider hover:bg-white/5 transition-colors rounded w-full sm:w-auto">
             Lihat Template
@@ -100,8 +100,8 @@ export default function HomeClient() {
       {/* Templates Grid */}
       <section id="templates" className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
         <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Pilih Tampilan Bisnis Anda</h2>
-          <p className="text-zinc-400 max-w-xl font-medium">Bukan sekadar template biasa. Setiap desain diriset khusus secara mendalam agar relevan dengan industri Anda dan meyakinkan pelanggan untuk membeli.</p>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Pilih Tampilan yang Cocok untuk Bisnis Kamu</h2>
+          <p className="text-zinc-400 max-w-xl font-medium">Delapan template siap pakai dengan gaya visual yang berbeda-beda, masing-masing dirancang mengikuti karakter industrinya. Klik untuk lihat contohnya langsung.</p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -134,8 +134,8 @@ export default function HomeClient() {
       {/* Pricing Section */}
       <section id="pricing" className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
         <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Website Bisnis Siap Pakai</h2>
-          <p className="text-zinc-400 max-w-xl font-medium">Pilih paket yang paling sesuai untuk bisnis Anda. Harga transparan tanpa biaya tersembunyi.</p>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Website Profesional, Harga Jelas dari Awal</h2>
+          <p className="text-zinc-400 max-w-xl font-medium">Dua paket, tanpa biaya tersembunyi. Pilih yang paling sesuai dengan kebutuhan bisnis kamu sekarang.</p>
         </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -144,7 +144,7 @@ export default function HomeClient() {
             <div className="border-b border-white/10 pb-6 mb-6 flex flex-col gap-3">
               <div>
                 <h3 className="text-2xl font-black text-white font-outfit mb-1">Paket Basic</h3>
-                <p className="text-zinc-400 text-xs font-medium">Website bisnis siap online dalam 24 jam.</p>
+                <p className="text-zinc-400 text-xs font-medium">Website siap pakai untuk bisnis yang ingin langsung online tanpa ribet.</p>
               </div>
               <div className="flex flex-col items-start mt-1">
                 <span className="text-zinc-500 line-through text-[10px] font-mono mb-1">Rp 1.499.000</span>
@@ -186,7 +186,7 @@ export default function HomeClient() {
 
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
                 <p className="text-[10px] text-red-400 font-medium leading-relaxed">
-                  <strong className="font-bold text-red-300">Desain menggunakan template yang tersedia dan tidak dapat diubah secara custom.</strong>
+                  <strong className="font-bold text-red-300">Kamu memilih dari template yang sudah tersedia — layout dan struktur mengikuti template pilihan, tanpa desain custom.</strong>
                 </p>
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function HomeClient() {
               rel="noreferrer"
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-white/10 text-white font-bold text-xs uppercase tracking-wider hover:bg-white hover:text-black transition-all duration-300 rounded"
             >
-              Pesan Basic
+              Pilih Paket Basic
             </a>
           </div>
 
@@ -209,7 +209,7 @@ export default function HomeClient() {
             <div className="border-b border-white/10 pb-6 mb-6 flex flex-col gap-3 relative z-10">
               <div>
                 <h3 className="text-2xl font-black text-white font-outfit mb-1">Paket Business Kit</h3>
-                <p className="text-zinc-400 text-xs font-medium">Bukan cuma website — lengkap buat mulai jualan & promosi hari ini juga.</p>
+                <p className="text-zinc-400 text-xs font-medium">Website + domain sendiri + materi promosi awal, buat bisnis yang mau tampil lebih siap.</p>
               </div>
               <div className="flex flex-col items-start mt-1">
                 <span className="text-zinc-500 line-through text-[10px] font-mono mb-1">Rp 2.499.000</span>
@@ -238,7 +238,7 @@ export default function HomeClient() {
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-amber-400 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-100 text-xs font-bold">Kit Promosi Instan — banner siap post ke Instagram & status WhatsApp, otomatis dari data bisnis Anda</span>
+                <span className="text-zinc-100 text-xs font-bold">Business Kit — materi promosi awal (siap post ke Instagram & status WhatsApp), dibuat 1× dari data bisnis kamu</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
@@ -251,7 +251,7 @@ export default function HomeClient() {
 
               <div className="mt-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                 <p className="text-[10px] text-blue-300 font-medium leading-relaxed">
-                  <strong className="font-bold text-white">Anda cukup kirim data bisnis. Domain, teknis, sampai materi promosi — kami yang urus.</strong>
+                  <strong className="font-bold text-white">Kamu cukup kirim data bisnis. Domain, teknis, sampai materi promosi awal — kami yang urus.</strong>
                 </p>
               </div>
             </div>
@@ -262,7 +262,7 @@ export default function HomeClient() {
               rel="noreferrer"
               className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold text-xs uppercase tracking-wider hover:bg-blue-500 transition-all duration-300 rounded shadow-[0_0_20px_rgba(37,99,235,0.4)] relative z-10"
             >
-              Pesan Business Kit
+              Pilih Paket Business Kit
             </a>
           </div>
         </div>
@@ -272,10 +272,9 @@ export default function HomeClient() {
           <div>
             <p className="text-zinc-200 text-xs font-bold uppercase tracking-wider mb-1">Ketentuan Foto</p>
             <p className="text-zinc-400 text-xs leading-relaxed">
-              Kirim foto sebebas Anda — sistem kami otomatis kompres & optimasi tiap foto (maks 20MB per file, dikonversi ke
-              format modern di bawah 1.5MB) supaya website Anda tetap ngebut diakses. Galeri foto maksimal 8 foto dan katalog
-              produk/menu maksimal 12 item per website, cukup buat menampilkan yang terbaik tanpa bikin halaman berat atau
-              pengunjung kabur karena loading lama.
+              Kirim foto sebebas kamu — sistem kami otomatis kompres & optimasi tiap foto (maks 20MB per file, dikonversi ke
+              format modern di bawah 1.5MB) supaya website tetap ngebut diakses. Galeri foto maksimal 8 foto dan katalog
+              produk/menu maksimal 12 item per website — cukup buat menampilkan yang terbaik tanpa bikin halaman berat.
             </p>
           </div>
         </div>
@@ -284,8 +283,8 @@ export default function HomeClient() {
       {/* How to Order */}
       <section id="workflow" className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
         <div className="flex flex-col items-center text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Hanya 3 Langkah Mudah</h2>
-          <p className="text-zinc-400 max-w-xl font-medium">Anda tidak perlu pusing memikirkan hal teknis. Siapkan materinya, dan tim ahli kami yang akan merakit semuanya untuk Anda.</p>
+          <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Prosesnya Cuma 3 Langkah</h2>
+          <p className="text-zinc-400 max-w-xl font-medium">Kamu nggak perlu pusing soal hal teknis. Siapkan data dan materi bisnisnya, sisanya biar tim kami yang kerjakan.</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -311,24 +310,32 @@ export default function HomeClient() {
           className="mt-16 bg-gradient-to-r from-zinc-900 to-black border border-white/10 p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left"
         >
           <div>
-            <h3 className="text-2xl md:text-3xl font-black text-white font-outfit mb-2">Mulai Transformasi Digital Anda</h3>
-            <p className="text-zinc-400 font-medium max-w-md">Ambil langkah pertama sekarang. Hubungi kami, dan saksikan bisnis Anda memiliki wajah baru besok pagi.</p>
+            <h3 className="text-2xl md:text-3xl font-black text-white font-outfit mb-2">Siap Punya Website Sendiri?</h3>
+            <p className="text-zinc-400 font-medium max-w-md">Hubungi kami sekarang, atau isi form pemesanan untuk mulai kirim data bisnis kamu.</p>
           </div>
-          <a 
-            href="https://wa.me/6281339684249?text=Halo%20WebbinAja,%20saya%20tertarik%20untuk%20memesan%20website!"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold uppercase tracking-wider hover:bg-blue-500 transition-colors rounded shadow-[0_0_30px_rgba(37,99,235,0.3)] shrink-0"
-          >
-            <WhatsappLogo size={24} weight="fill" /> Hubungi WhatsApp
-          </a>
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <a
+              href="https://wa.me/6281339684249?text=Halo%20WebbinAja,%20saya%20tertarik%20untuk%20memesan%20website!"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-center gap-3 px-8 py-4 bg-blue-600 text-white font-bold uppercase tracking-wider hover:bg-blue-500 transition-colors rounded shadow-[0_0_30px_rgba(37,99,235,0.3)] w-full sm:w-auto"
+            >
+              <WhatsappLogo size={24} weight="fill" /> Hubungi WhatsApp
+            </a>
+            <Link
+              href="/pesan"
+              className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-white/20 text-white font-bold uppercase tracking-wider hover:bg-white/5 transition-colors rounded w-full sm:w-auto"
+            >
+              Isi Form Pemesanan
+            </Link>
+          </div>
         </m.div>
       </section>
 
       {/* Minimal Footer */}
       <footer className="py-8 px-6 md:px-12 text-center border-t border-white/5 relative z-10">
         <p className="text-xs font-mono uppercase tracking-widest text-zinc-600">
-          &copy; {new Date().getFullYear()} Webbin Aja. Engineered with Precision.
+          &copy; {new Date().getFullYear()} Webbin Aja. Website UMKM, Dikerjakan Dengan Rapi.
         </p>
       </footer>
     </div>

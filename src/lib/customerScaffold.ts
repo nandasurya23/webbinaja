@@ -1,5 +1,5 @@
 // Shared customer config generator used by both the CLI scaffolder
-// (scripts/customer/new.ts) and the local admin UI (src/app/admin/[token]).
+// (scripts/customer/new.ts) and the local admin UI (src/app/[token]).
 // Writes exactly one file: src/customers/<slug>/config.ts.
 import fs from 'node:fs';
 import path from 'node:path';

@@ -1,7 +1,7 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   CheckCircle,
   WarningCircle,
@@ -21,7 +21,15 @@ import {
   ArrowClockwise,
   Sparkle,
 } from '@phosphor-icons/react/dist/ssr';
-import { createCustomerAction, checkAssetsAction, logoutAction, updateCustomDomainAction, type AssetCheckItem, type CreateCustomerResult } from './actions';
+import {
+  createCustomerAction,
+  checkAssetsAction,
+  logoutAction,
+  updateCustomDomainAction,
+  getSubmissionForPrefillAction,
+  type AssetCheckItem,
+  type CreateCustomerResult,
+} from './actions';
 import { CUSTOMER_TEMPLATES } from '@/lib/customerTemplates';
 import { MAX_GALLERY_PHOTOS, MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
 import type { PackageTier } from '@/lib/customerScaffold';
@@ -214,6 +222,36 @@ export default function CustomerForm({ token }: { token: string }) {
   const [isPending, startTransition] = useTransition();
   const [isLoggingOut, startLogoutTransition] = useTransition();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Prefill from a /pesan submission picked in the inbox (?submission=<id>)
+  // — a pure convenience so the operator doesn't retype what the customer
+  // already sent. Runs once; doesn't affect the "Buat Customer" write path.
+  const [submissionId, setSubmissionId] = useState<string | null>(null);
+  useEffect(() => {
+    const id = searchParams.get('submission');
+    if (!id) return;
+    getSubmissionForPrefillAction(token, id).then((res) => {
+      if (!res.ok) return;
+      setSubmissionId(id);
+      setBusinessName(res.businessName);
+      setTemplate(res.template);
+      setTagline(res.tagline);
+      setDescription(res.description);
+      setWhatsapp(res.whatsapp);
+      setAddress(res.address);
+      setMapsLink(res.mapsLink);
+      setInstagram(res.instagram);
+      setFacebook(res.facebook);
+      if (res.logo) setLogo(res.logo);
+      if (res.hero) setHero(res.hero);
+      if (res.ambiance) setAmbiance(res.ambiance);
+      if (res.gallery.length) setGallery(res.gallery);
+      if (res.services.length) setServices(res.services.map((s) => ({ name: s.name, price: s.price, desc: s.desc ?? '' })));
+      if (res.catalog.length) setCatalog(res.catalog.map((c) => ({ name: c.name, price: c.price, desc: c.desc ?? '', image: c.image })));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const assetSignature = useMemo(
     () =>
@@ -402,11 +440,18 @@ export default function CustomerForm({ token }: { token: string }) {
                 gallery,
                 services,
                 catalog,
+                submissionId: submissionId ?? undefined,
               });
               setResult(res);
             });
           }}
         >
+          {submissionId && (
+            <p className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-500 -mb-4">
+              <Sparkle size={13} weight="fill" />
+              Diisi otomatis dari submission inbox — cek ulang sebelum membuat customer.
+            </p>
+          )}
           <Section icon={<IdentificationBadge size={16} />} title="Identitas">
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Slug" required placeholder="cafe-siti" value={slug} onChange={setSlug} />

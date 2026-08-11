@@ -2,6 +2,13 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === 'development';
 
+// Same env var src/lib/assets.ts reads (ASSET_CDN_DOMAIN, falling back to
+// R2_CDN_BASE_URL) — the R2 bucket's public hostname, e.g. a "pub-xxxx.r2.dev"
+// R2.dev subdomain or a real custom domain if one is set up. Must match
+// exactly what assets.ts resolves to, or next/image and the CSP will block
+// the very images the app serves.
+const assetCdnDomain = process.env.ASSET_CDN_DOMAIN || process.env.R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') || '';
+
 // No nonce-based CSP: this app is fully statically generated (SSG) so pages
 // have no per-request server pass to inject a nonce into. Nonces would force
 // every page into dynamic rendering, defeating the static/CDN-cached
@@ -14,7 +21,7 @@ const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''};
   style-src 'self' 'unsafe-inline';
-  img-src 'self' data: https://images.unsplash.com https://cdn.webbinaja.com;
+  img-src 'self' data: https://images.unsplash.com${assetCdnDomain ? ` https://${assetCdnDomain}` : ''};
   font-src 'self' data:;
   connect-src 'self';
   object-src 'none';
@@ -42,6 +49,16 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  experimental: {
+    serverActions: {
+      // Default is 1MB, but raw photo uploads (admin AssetUploadButton and
+      // the public /pesan form) go through Server Actions as multipart
+      // FormData up to MAX_INPUT_FILE_BYTES (20MB, scripts/assets/config.ts)
+      // — without this override, any upload over 1MB fails before ever
+      // reaching that check. Small margin above 20MB for multipart overhead.
+      bodySizeLimit: '21mb',
+    },
+  },
   images: {
     // AVIF first — typically 20-30% smaller than WebP for photos; Next
     // falls back to WebP automatically for browsers that don't support it.
@@ -54,10 +71,14 @@ const nextConfig: NextConfig = {
       // Customer asset CDN (Cloudflare R2, public-read only). Kept to this
       // exact hostname — never a wildcard — so customer config can't point
       // next/image at an arbitrary attacker-controlled origin.
-      {
-        protocol: 'https',
-        hostname: 'cdn.webbinaja.com',
-      },
+      ...(assetCdnDomain
+        ? [
+            {
+              protocol: 'https' as const,
+              hostname: assetCdnDomain,
+            },
+          ]
+        : []),
     ],
   },
   async headers() {
@@ -66,12 +87,12 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: securityHeaders,
       },
-      {
-        // Local-only admin UI (src/app/admin/[token]) — 404s outside dev,
-        // this just keeps it out of any crawler/cache that got this far.
-        source: '/admin/:path*',
-        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
-      },
+      // No path-based noindex rule for the admin panel anymore — its URL is
+      // now just a random token (src/app/[token]), not a fixed "/admin"
+      // prefix a header `source` pattern could target. Each panel page sets
+      // `metadata.robots = { index: false, follow: false }` itself instead
+      // (see src/app/[token]/page.tsx and its subpages) — that was already
+      // the primary protection; this header was always secondary.
     ];
   },
 };
