@@ -78,8 +78,6 @@ function rawSql(): RawQuery {
 }
 
 export type SubmissionStatus = 'pending' | 'processed';
-export type WorkStatus = 'not_started' | 'in_progress' | 'done';
-export type PaymentStatus = 'unchecked' | 'confirmed' | 'rejected';
 
 export interface Submission {
   id: string;
@@ -108,8 +106,6 @@ export interface Submission {
   services: ServiceInput[];
   catalog: CatalogItemInput[];
   processedSlug: string | null;
-  workStatus: WorkStatus;
-  paymentStatus: PaymentStatus;
   queueNumber: number | null;
   lookupCode: string;
   createdAt: string;
@@ -178,8 +174,6 @@ interface SubmissionRow {
   services: ServiceInput[];
   catalog: CatalogItemInput[];
   processed_slug: string | null;
-  work_status: string;
-  payment_status: string;
   queue_number: number | null;
   lookup_code: string;
   created_at: string;
@@ -213,8 +207,6 @@ function mapRow(row: SubmissionRow): Submission {
     services: row.services ?? [],
     catalog: row.catalog ?? [],
     processedSlug: row.processed_slug,
-    workStatus: row.work_status === 'in_progress' || row.work_status === 'done' ? row.work_status : 'not_started',
-    paymentStatus: row.payment_status === 'confirmed' || row.payment_status === 'rejected' ? row.payment_status : 'unchecked',
     queueNumber: row.queue_number,
     lookupCode: row.lookup_code,
     createdAt: row.created_at,
@@ -230,6 +222,10 @@ function generateLookupCode(): string {
   return code;
 }
 
+// Queue number is assigned immediately on arrival (not on payment
+// confirmation — that manual toggle was removed, see updateSubmissionStatus
+// history) so "Antrean #N" reflects order of submission for the admin work
+// queue and the customer status page from the moment they submit.
 export async function insertSubmission(input: NewSubmissionInput): Promise<{ id: string; lookupCode: string }> {
   const db = sql();
   const lookupCode = generateLookupCode();
@@ -238,7 +234,7 @@ export async function insertSubmission(input: NewSubmissionInput): Promise<{ id:
       id, business_name, template, tagline, description, whatsapp, address,
       maps_link, instagram, facebook, tiktok, marketplace, opening_hours, logo_filename, hero_filename,
       ambiance_filename, package_tier, theme_palette_id, primary_color,
-      secondary_color, accent_color, gallery, services, catalog, lookup_code
+      secondary_color, accent_color, gallery, services, catalog, lookup_code, queue_number
     ) values (
       ${input.id}, ${input.businessName}, ${input.template}, ${input.tagline}, ${input.description},
       ${input.whatsapp}, ${input.address}, ${input.mapsLink}, ${input.instagram}, ${input.facebook},
@@ -246,7 +242,7 @@ export async function insertSubmission(input: NewSubmissionInput): Promise<{ id:
       ${input.logoFilename ?? null}, ${input.heroFilename ?? null}, ${input.ambianceFilename ?? null},
       ${input.packageTier ?? null},
       ${input.themePaletteId ?? null}, ${input.primaryColor ?? null}, ${input.secondaryColor ?? null}, ${input.accentColor ?? null},
-      ${JSON.stringify(input.gallery)}, ${JSON.stringify(input.services)}, ${JSON.stringify(input.catalog)}, ${lookupCode}
+      ${JSON.stringify(input.gallery)}, ${JSON.stringify(input.services)}, ${JSON.stringify(input.catalog)}, ${lookupCode}, nextval('queue_number_seq')
     )
     returning id, lookup_code
   `) as { id: string; lookup_code: string }[];
@@ -258,8 +254,6 @@ export interface SubmissionListFilters {
   search?: string;
   /** Defaults to 'pending' at the call site (src/app/[token]/inbox/page.tsx) — a submission whose site is already built and live has no reason to keep resurfacing in the default view alongside ones still needing action. */
   status?: SubmissionStatus;
-  workStatus?: WorkStatus;
-  paymentStatus?: PaymentStatus;
   page: number;
   pageSize: number;
 }
@@ -282,17 +276,15 @@ export async function listSubmissionsPage(filters: SubmissionListFilters): Promi
   const pageSize = Math.min(Math.max(1, filters.pageSize), 100);
   const offset = (page - 1) * pageSize;
 
-  const params = [search, filters.status ?? null, filters.workStatus ?? null, filters.paymentStatus ?? null];
+  const params = [search, filters.status ?? null];
   const whereClause = `
     where ($1::text is null or business_name ilike $1 or whatsapp ilike $1)
       and ($2::text is null or status = $2)
-      and ($3::text is null or work_status = $3)
-      and ($4::text is null or payment_status = $4)
   `;
 
   const [rows, countRows] = await Promise.all([
     query(
-      `select * from submissions ${whereClause} order by created_at desc limit $5 offset $6`,
+      `select * from submissions ${whereClause} order by created_at desc limit $3 offset $4`,
       [...params, pageSize, offset]
     ),
     query(`select count(*)::int as count from submissions ${whereClause}`, params),
@@ -318,39 +310,6 @@ export async function markSubmissionProcessed(id: string, slug: string): Promise
 export async function deleteSubmission(id: string): Promise<void> {
   const db = sql();
   await db`delete from submissions where id = ${id}`;
-}
-
-export interface StatusPatch {
-  workStatus?: WorkStatus;
-  paymentStatus?: PaymentStatus;
-}
-
-/**
- * Updates work/payment status. When paymentStatus is being set to
- * 'confirmed' for a submission that doesn't have a queue number yet, one is
- * assigned atomically in the same statement via `nextval()` — two admins
- * confirming payment on different submissions at the same moment can't ever
- * collide on the same number, and confirming an already-confirmed
- * submission again is a no-op (queue_number only ever gets set once, via
- * the `is null` guard below).
- */
-export async function updateSubmissionStatus(id: string, patch: StatusPatch): Promise<Submission | null> {
-  const db = sql();
-  const assignQueueNumber = patch.paymentStatus === 'confirmed';
-
-  const rows = (await db`
-    update submissions set
-      work_status = coalesce(${patch.workStatus ?? null}, work_status),
-      payment_status = coalesce(${patch.paymentStatus ?? null}, payment_status),
-      queue_number = case
-        when ${assignQueueNumber} and queue_number is null then nextval('queue_number_seq')
-        else queue_number
-      end
-    where id = ${id}
-    returning *
-  `) as SubmissionRow[];
-
-  return rows[0] ? mapRow(rows[0]) : null;
 }
 
 /** Public status-check lookup — both whatsapp AND lookupCode must match the same row (see src/app/status). */

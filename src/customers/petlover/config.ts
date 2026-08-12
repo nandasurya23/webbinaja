@@ -28,6 +28,11 @@ export const config: CustomerConfig = {
     { name: "Hotel Kucing / Anjing", price: "Rp 100.000/hari", desc: "Kandang luas ber-AC, makan 3x sehari, dan playtime." },
     { name: "Vaksinasi Tahunan", price: "Rp 250.000", desc: "Pemeriksaan kesehatan menyeluruh + buku vaksin." }
   ],
+  catalog: [
+    { name: "Makanan Kucing Premium 1kg", price: "Rp 85.000", desc: "Dry food untuk kucing dewasa, kaya protein hewani.", image: "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?q=80&w=800&auto=format&fit=crop" },
+    { name: "Mainan Bulu Kucing", price: "Rp 25.000", desc: "Mainan tongkat dengan bulu warna-warni, aman untuk kucing.", image: "https://images.unsplash.com/photo-1526336179256-1347bdb255ee?q=80&w=800&auto=format&fit=crop" },
+    { name: "Shampoo Anjing & Kucing", price: "Rp 55.000", desc: "Shampoo lembut bebas paraben, aroma lavender.", image: "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?q=80&w=800&auto=format&fit=crop" }
+  ],
   images: {
     hero: "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=1600&auto=format&fit=crop",
     gallery: [

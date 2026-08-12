@@ -15,7 +15,10 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
       
       {/* Kinetic Navbar */}
       <nav className="w-full px-6 py-8 flex justify-between items-center absolute top-0 z-50 mix-blend-difference pointer-events-none">
-        <div className="text-3xl font-black italic tracking-tighter text-secondary pointer-events-auto font-outfit">
+        <div className="flex items-center gap-3 text-3xl font-black italic tracking-tighter text-secondary pointer-events-auto font-outfit">
+          {config.images?.logo && (
+            <Image src={config.images.logo} alt={config.businessName} width={36} height={36} className="rounded-full object-cover not-italic shrink-0" />
+          )}
           {config.businessName}
         </div>
         <a 

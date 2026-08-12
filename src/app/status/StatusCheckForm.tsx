@@ -104,19 +104,11 @@ export default function StatusCheckForm() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5 p-3 rounded-xl border border-white/5 bg-zinc-900/50">
-                <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold flex items-center gap-1.5">
-                  <Clock size={14} /> Pengerjaan
-                </p>
-                <p className="font-medium text-white">{result.workStatusLabel}</p>
-              </div>
-              <div className="flex flex-col gap-1.5 p-3 rounded-xl border border-white/5 bg-zinc-900/50">
-                <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold flex items-center gap-1.5">
-                  <CheckCircle size={14} /> Pembayaran
-                </p>
-                <p className="font-medium text-white">{result.paymentStatusLabel}</p>
-              </div>
+            <div className="flex flex-col gap-1.5 p-3 rounded-xl border border-white/5 bg-zinc-900/50">
+              <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold flex items-center gap-1.5">
+                {result.statusLabel === 'Selesai' ? <CheckCircle size={14} /> : <Clock size={14} />} Status Pesanan
+              </p>
+              <p className="font-medium text-white">{result.statusLabel}</p>
             </div>
 
             {result.websiteUrl && (

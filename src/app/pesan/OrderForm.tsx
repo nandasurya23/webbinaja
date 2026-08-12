@@ -473,6 +473,7 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
                 tiktok={tiktok}
                 marketplace={marketplace}
                 openingHours={openingHours}
+                logo={logo}
                 hero={hero}
                 ambiance={ambiance}
                 gallery={gallery}

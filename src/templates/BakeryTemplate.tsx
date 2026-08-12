@@ -13,7 +13,10 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
       
       {/* Playful & Warm Navbar */}
       <nav className="w-full px-6 py-6 md:px-12 md:py-8 flex justify-between items-center relative z-50 max-w-7xl mx-auto">
-        <div className="text-2xl md:text-3xl font-medium tracking-tight text-secondary font-outfit">
+        <div className="flex items-center gap-3 text-2xl md:text-3xl font-medium tracking-tight text-secondary font-outfit">
+          {config.images?.logo && (
+            <Image src={config.images.logo} alt={config.businessName} width={36} height={36} className="rounded-full object-cover shrink-0" />
+          )}
           {config.businessName}
         </div>
         <a 

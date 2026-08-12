@@ -1,6 +1,6 @@
 'use server';
 
-import { getSubmission, updateSubmissionStatus, deleteSubmission, type StatusPatch } from '@/lib/db';
+import { getSubmission, deleteSubmission } from '@/lib/db';
 import { isValidSubmissionId } from '@/lib/assets';
 import { findThemePalette } from '@/lib/themePalettes';
 import type { ServiceInput, CatalogItemInput } from '@/lib/customerScaffold';
@@ -8,10 +8,6 @@ import { assertAdminIdentity, requireSession } from './shared';
 import { DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { createR2Client } from '../../../../scripts/assets/r2Client';
 import { R2_BUCKET_NAME, loadR2Credentials } from '../../../../scripts/assets/config';
-
-export type SetStatusResult =
-  | { ok: true; message: string; queueNumber: number | null }
-  | { ok: false; error: string };
 
 async function deleteSubmissionAndAssets(submissionId: string): Promise<void> {
   const submission = await getSubmission(submissionId);
@@ -46,30 +42,6 @@ async function deleteSubmissionAndAssets(submissionId: string): Promise<void> {
   }
 
   await deleteSubmission(submissionId);
-}
-
-/** Either role can set status — the only role-gated action is admin management (see auth.ts). */
-export async function setSubmissionStatusAction(token: string, submissionId: string, patch: StatusPatch): Promise<SetStatusResult> {
-  assertAdminIdentity(token);
-  await requireSession();
-
-  if (!isValidSubmissionId(submissionId)) {
-    return { ok: false, error: 'ID submission tidak valid.' };
-  }
-
-  if (patch.paymentStatus === 'rejected') {
-    await deleteSubmissionAndAssets(submissionId);
-    return { ok: true, message: 'Pesanan ditolak dan semua data beserta gambarnya telah dihapus.', queueNumber: null };
-  }
-
-  const updated = await updateSubmissionStatus(submissionId, patch);
-  if (!updated) return { ok: false, error: 'Submission tidak ditemukan.' };
-
-  return {
-    queueNumber: updated.queueNumber,
-    ok: true,
-    message: updated.queueNumber ? `Status diperbarui. Nomor antri: #${updated.queueNumber}` : 'Status diperbarui.',
-  };
 }
 
 export type DeleteSubmissionResult = { ok: true; message: string } | { ok: false; error: string };

@@ -26,8 +26,12 @@ export const RentalTemplate = ({ config }: { config: CustomerConfig }) => {
       {/* Utilitarian Navbar */}
       <nav className="w-full px-6 py-4 bg-primary/80 backdrop-blur-md border-b border-secondary/10 flex justify-between items-center sticky top-0 z-50">
         <div className="text-xl font-bold tracking-tight text-secondary font-sans flex items-center gap-3">
-          <div className="w-8 h-8 bg-accent text-white rounded-md flex items-center justify-center shadow-sm">
-            <Car weight="fill" size={16} />
+          <div className="w-8 h-8 bg-accent text-white rounded-md flex items-center justify-center shadow-sm overflow-hidden">
+            {config.images?.logo ? (
+              <Image src={config.images.logo} alt={config.businessName} width={32} height={32} className="w-full h-full object-cover" />
+            ) : (
+              <Car weight="fill" size={16} />
+            )}
           </div>
           {config.businessName}
         </div>

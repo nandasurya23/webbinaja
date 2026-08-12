@@ -98,9 +98,8 @@ export default async function SubmissionDetailPage({
         <StatusControls
           token={token}
           submissionId={submission.id}
-          initialWorkStatus={submission.workStatus}
-          initialPaymentStatus={submission.paymentStatus}
-          initialQueueNumber={submission.queueNumber}
+          status={submission.status}
+          queueNumber={submission.queueNumber}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

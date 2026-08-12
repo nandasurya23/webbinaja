@@ -29,6 +29,11 @@ export const config: CustomerConfig = {
     { name: "Premium Croissant Box", price: "Rp 120.000", desc: "Isi 6 croissant aneka rasa (Butter, Almond, Chocolate)." },
     { name: "Signature Brownies", price: "Rp 85.000", desc: "Brownies panggang fudgy dengan topping almond dan chocochip." }
   ],
+  catalog: [
+    { name: "Red Velvet Cake", price: "Rp 180.000", desc: "Cake lembut dengan cream cheese frosting, ukuran 18cm.", image: "https://images.unsplash.com/photo-1586985289906-406988974504?q=80&w=800&auto=format&fit=crop" },
+    { name: "Roti Sourdough", price: "Rp 45.000", desc: "Roti fermentasi alami, crusty di luar dan lembut di dalam.", image: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop" },
+    { name: "Cookies Box (12pcs)", price: "Rp 65.000", desc: "Aneka cookies chocochip, oatmeal, dan matcha.", image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?q=80&w=800&auto=format&fit=crop" }
+  ],
   images: {
     hero: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=1600&auto=format&fit=crop",
     gallery: [

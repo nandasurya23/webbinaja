@@ -22,6 +22,11 @@ export const config: CustomerConfig = {
     { name: "Membership 1 Tahun", price: "Rp 2.500.000", desc: "Akses alat gym sepuasnya + 12x gratis kelas studio." },
     { name: "Personal Trainer Package", price: "Rp 1.500.000", desc: "10 sesi latihan intensif 1-on-1 dengan trainer bersertifikat." }
   ],
+  catalog: [
+    { name: "Whey Protein 1kg", price: "Rp 450.000", desc: "Suplemen protein whey rasa cokelat, tersedia di resepsionis.", image: "https://images.unsplash.com/photo-1579722820903-2e0134e6b8f0?q=80&w=800&auto=format&fit=crop" },
+    { name: "Botol Minum Gym", price: "Rp 75.000", desc: "Botol shaker 700ml dengan logo FitnesPro.", image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=800&auto=format&fit=crop" },
+    { name: "Sarung Tangan Latihan", price: "Rp 95.000", desc: "Sarung tangan gym anti-slip, melindungi telapak tangan.", image: "https://images.unsplash.com/photo-1517344884509-a0c97ec11bcd?q=80&w=800&auto=format&fit=crop" }
+  ],
   images: {
     hero: "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1600&auto=format&fit=crop",
     gallery: [

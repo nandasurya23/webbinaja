@@ -13,8 +13,12 @@ export const ProfessionalTemplate = ({ config }: { config: CustomerConfig }) => 
       {/* Clean & Professional Navbar */}
       <nav className="w-full px-6 py-6 md:px-12 md:py-8 flex justify-between items-center bg-primary border-b border-secondary/10 sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">{config.businessName.charAt(0)}</span>
+          <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center overflow-hidden">
+            {config.images?.logo ? (
+              <Image src={config.images.logo} alt={config.businessName} width={40} height={40} className="w-full h-full object-cover" />
+            ) : (
+              <span className="text-white font-bold text-lg">{config.businessName.charAt(0)}</span>
+            )}
           </div>
           <span className="text-xl md:text-2xl font-semibold tracking-tight text-secondary font-sans">
             {config.businessName}

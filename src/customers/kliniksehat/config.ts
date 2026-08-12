@@ -47,6 +47,11 @@ export const config = {
     { name: "Budi Santoso", text: "Dokternya ramah dan penjelasannya sangat mudah dipahami. Fasilitas klinik juga sangat bersih." },
     { name: "Siti Aminah", text: "Proses pendaftaran cepat, tidak perlu antre panjang. Harga perawatan gigi juga sangat terjangkau." }
   ],
+  catalog: [
+    { name: "Paket Vitamin Imun", price: "Rp 120.000", desc: "Suplemen vitamin C, D, dan zinc untuk daya tahan tubuh.", image: "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?q=80&w=800&auto=format&fit=crop" },
+    { name: "Masker Medis Box", price: "Rp 35.000", desc: "Masker bedah 3-ply isi 50pcs, tersedia di apotek klinik.", image: "https://images.unsplash.com/photo-1584634731339-252c581abfc5?q=80&w=800&auto=format&fit=crop" },
+    { name: "Alat Cek Tekanan Darah", price: "Rp 250.000", desc: "Tensimeter digital untuk pemantauan tekanan darah di rumah.", image: "https://images.unsplash.com/photo-1584362917165-526a968579e8?q=80&w=800&auto=format&fit=crop" }
+  ],
   images: {
     hero: "https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&q=80&w=1600"
   }

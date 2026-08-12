@@ -22,6 +22,11 @@ export const config: CustomerConfig = {
     { name: "Sewa City Car", price: "Rp 350.000/hari", desc: "Honda Brio / Toyota Agya. Irit bahan bakar, cocok untuk dalam kota." },
     { name: "Sewa Motor NMAX", price: "Rp 150.000/hari", desc: "Yamaha NMAX 155cc. Termasuk 2 helm dan jas hujan." }
   ],
+  catalog: [
+    { name: "GPS Tracker Tambahan", price: "Rp 50.000/hari", desc: "Pelacak lokasi real-time untuk keamanan ekstra selama sewa.", image: "https://images.unsplash.com/photo-1591768575198-88dac53fbd0a?q=80&w=800&auto=format&fit=crop" },
+    { name: "Sopir Pribadi", price: "Rp 200.000/hari", desc: "Sopir berpengalaman dan berlisensi, siap antar ke seluruh kota.", image: "https://images.unsplash.com/photo-1600661653561-629509216228?q=80&w=800&auto=format&fit=crop" },
+    { name: "Child Seat", price: "Rp 35.000/hari", desc: "Kursi khusus anak, memenuhi standar keamanan berkendara.", image: "https://images.unsplash.com/photo-1591370874773-6702e8f12fd8?q=80&w=800&auto=format&fit=crop" }
+  ],
   images: {
     hero: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=1600&auto=format&fit=crop",
     gallery: [

@@ -16,7 +16,10 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
       
       {/* Editorial Navbar */}
       <nav className="fixed top-0 left-0 w-full px-8 py-6 md:px-16 flex justify-between items-center z-50 bg-primary/80 backdrop-blur-md border-b border-accent/20 transition-all">
-        <div className="text-xl md:text-2xl font-light tracking-[0.2em] uppercase font-outfit text-secondary">
+        <div className="flex items-center gap-3 text-xl md:text-2xl font-light tracking-[0.2em] uppercase font-outfit text-secondary">
+          {config.images?.logo && (
+            <Image src={config.images.logo} alt={config.businessName} width={32} height={32} className="rounded-full object-cover shrink-0" />
+          )}
           {config.businessName}
         </div>
         
