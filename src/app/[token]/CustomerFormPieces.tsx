@@ -14,6 +14,7 @@ export function Field({
   placeholder,
   value,
   onChange,
+  disabled,
 }: {
   label: string;
   required?: boolean;
@@ -21,6 +22,7 @@ export function Field({
   placeholder?: string;
   value: string;
   onChange: (v: string) => void;
+  disabled?: boolean;
 }) {
   return (
     <label className="flex flex-col gap-2 text-sm">
@@ -34,6 +36,7 @@ export function Field({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
       />
     </label>
   );

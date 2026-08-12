@@ -18,6 +18,7 @@ import {
   markSubmissionProcessed,
   customerSlugExistsInDb,
   insertCustomerToDb,
+  updateCustomerInDb,
   updateCustomerCustomDomainInDb,
   setCustomerSuspendedInDb,
 } from '@/lib/db';
@@ -45,6 +46,9 @@ export interface CreateCustomerInput {
   catalog: CatalogItemInput[];
   packageTier: PackageTier;
   customDomain: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
   /** Set when this customer is being created from a /pesan submission — see promoteSubmissionAssets. */
   submissionId?: string;
 }
@@ -165,7 +169,11 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
     template: template as CustomerConfig['template'],
     ...(customDomain && { customDomain }),
     assets: { logo: logo || undefined, hero: hero || undefined, gallery, ambiance: ambiance || undefined },
-    theme: { primaryColor: '#000000', secondaryColor: '#ffffff', accentColor: '#f59e0b' },
+    theme: { 
+      primaryColor: input.primaryColor || '#000000', 
+      secondaryColor: input.secondaryColor || '#ffffff', 
+      accentColor: input.accentColor || '#f59e0b' 
+    },
     contact: {
       whatsapp,
       address,
@@ -331,5 +339,104 @@ export async function toggleCustomerSuspendedAction(token: string, slug: string,
   return {
     ok: true,
     message: suspended ? `"${cleanSlug}" disuspend — situsnya sekarang 404 untuk publik.` : `"${cleanSlug}" diaktifkan kembali.`,
+  };
+}
+
+export async function updateCustomerAction(token: string, slug: string, input: CreateCustomerInput): Promise<CreateCustomerResult> {
+  assertAdminIdentity(token);
+  await requireSession();
+
+  const businessName = input.businessName.trim();
+  const template = input.template.trim();
+  const tagline = input.tagline.trim();
+  const description = input.description.trim();
+  const whatsapp = sanitizeWhatsapp(input.whatsapp);
+  const address = input.address.trim();
+  const mapsLink = input.mapsLink.trim();
+  const instagram = input.instagram.trim();
+  const facebook = input.facebook.trim();
+  const logo = input.logo.trim();
+  const hero = input.hero.trim();
+  const ambiance = input.ambiance.trim();
+  const gallery = input.gallery.map((g) => g.trim()).filter(Boolean);
+  const customDomain = input.customDomain.trim().toLowerCase();
+
+  // For updates, the slug is fixed and shouldn't be changed, so we skip slug validation & checking.
+  
+  if (!businessName) return { ok: false, error: 'Nama bisnis wajib diisi.' };
+  if (!isKnownTemplate(template)) return { ok: false, error: `Template tidak dikenali.` };
+  if (!whatsapp) return { ok: false, error: 'Nomor WhatsApp wajib diisi.' };
+  if (input.packageTier !== 'basic' && input.packageTier !== 'business') return { ok: false, error: 'Paket tidak dikenali.' };
+  if (customDomain && !isValidCustomDomain(customDomain)) return { ok: false, error: `Custom domain tidak valid.` };
+  if (mapsLink && !isSafeUrl(mapsLink)) return { ok: false, error: 'Google Maps link harus berupa URL http/https yang valid.' };
+  if (instagram && !isSafeUrl(instagram)) return { ok: false, error: 'Instagram URL harus berupa URL http/https yang valid.' };
+  if (facebook && !isSafeUrl(facebook)) return { ok: false, error: 'Facebook URL harus berupa URL http/https yang valid.' };
+  if (logo && !isValidAssetFilename(logo)) return { ok: false, error: `Nama file logo tidak valid: ${logo}` };
+  if (hero && !isValidAssetFilename(hero)) return { ok: false, error: `Nama file hero tidak valid: ${hero}` };
+  if (ambiance && !isValidAssetFilename(ambiance)) return { ok: false, error: `Nama file ambiance tidak valid: ${ambiance}` };
+  for (const filename of gallery) {
+    if (!isValidAssetFilename(filename)) return { ok: false, error: `Nama file galeri tidak valid: ${filename}` };
+  }
+  if (gallery.length > MAX_GALLERY_PHOTOS) return { ok: false, error: `Foto galeri maksimal ${MAX_GALLERY_PHOTOS}.` };
+
+  const services = input.services
+    .map((s) => ({ name: s.name.trim(), price: s.price.trim(), desc: s.desc?.trim() }))
+    .filter((s) => s.name && s.price);
+
+  const catalog: CatalogItemInput[] = [];
+  for (const raw of input.catalog) {
+    const item = { name: raw.name.trim(), price: raw.price.trim(), desc: raw.desc?.trim(), image: raw.image.trim() };
+    if (!item.name && !item.price) continue;
+    if (!item.name || !item.price || !item.image) return { ok: false, error: 'Setiap item katalog butuh nama, harga, dan gambar.' };
+    if (!isValidAssetFilename(item.image)) return { ok: false, error: `Nama file gambar katalog tidak valid: ${item.image}` };
+    catalog.push(item);
+  }
+  if (catalog.length > MAX_CATALOG_ITEMS) return { ok: false, error: `Item katalog maksimal ${MAX_CATALOG_ITEMS}.` };
+
+  const config: CustomerConfig = {
+    package: input.packageTier,
+    businessName,
+    tagline,
+    description,
+    template: template as CustomerConfig['template'],
+    ...(customDomain && { customDomain }),
+    assets: { logo: logo || undefined, hero: hero || undefined, gallery, ambiance: ambiance || undefined },
+    theme: { 
+      primaryColor: input.primaryColor || '#000000', 
+      secondaryColor: input.secondaryColor || '#ffffff', 
+      accentColor: input.accentColor || '#f59e0b' 
+    },
+    contact: {
+      whatsapp,
+      address,
+      mapsLink,
+      ...(instagram && { instagram }),
+      ...(facebook && { facebook }),
+    },
+    services,
+    ...(catalog.length > 0 && { catalog }),
+  };
+
+  try {
+    const success = await updateCustomerInDb(slug, config);
+    if (!success) return { ok: false, error: `Customer "${slug}" tidak ditemukan.` };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
+  }
+
+  revalidatePath(`/sites/${slug}`);
+
+  const productionUrl = `https://${customDomain || `${slug}.${MAIN_DOMAIN}`}`;
+  const localUrl = `http://${slug}.localhost:${LOCAL_DEV_PORT}`;
+
+  return {
+    ok: true,
+    message: `Perubahan pada customer "${slug}" berhasil disimpan.`,
+    slug,
+    productionUrl,
+    localUrl,
+    ...(input.packageTier === 'business'
+      ? { promoUrl: `${productionUrl}/promo`, localPromoUrl: `${localUrl}/promo` }
+      : {}),
   };
 }

@@ -97,6 +97,20 @@ export async function getCustomerConfig(slug: string): Promise<CustomerConfig | 
 }
 
 /**
+ * Reads customer config from the local file system only.
+ * Used to avoid N+1 DB queries when looping through all file-based customers.
+ */
+async function getLocalCustomerConfig(slug: string): Promise<CustomerConfig | null> {
+  if (!isValidCustomerSlug(slug)) return null;
+  try {
+    const data = await import(`@/customers/${slug}/config`);
+    return withResolvedImages(slug, data.config as CustomerConfig);
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Resolve a given hostname to a customer config
  * Useful for sitemap and robots generation
  */
@@ -129,7 +143,7 @@ export async function resolveCustomerByHost(hostname: string): Promise<{ slug: s
   // practice, but this keeps the feature working for them too if one ever does.
   const slugs = getAllCustomerSlugs();
   for (const slug of slugs) {
-    const config = await getCustomerConfig(slug);
+    const config = await getLocalCustomerConfig(slug);
     if (config && config.customDomain === cleanHost) {
       return { slug, config };
     }
@@ -181,7 +195,7 @@ export async function resolveCustomerHostStatus(hostname: string): Promise<Custo
 
   const slugs = getAllCustomerSlugs();
   for (const slug of slugs) {
-    const config = await getCustomerConfig(slug);
+    const config = await getLocalCustomerConfig(slug);
     if (config && config.customDomain === cleanHost) {
       return { status: 'active', slug, config };
     }

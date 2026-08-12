@@ -1,19 +1,9 @@
-"use client";
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { m } from 'motion/react';
-import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car, Camera, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
-
-export interface ShowcaseSite {
-  businessName: string;
-  template: string;
-  logoUrl?: string;
-  heroUrl?: string;
-  url: string;
-}
-
-const SHOWCASE_INITIAL_COUNT = 4;
+import { ArrowRight, Code, Lightning, PaintBrush, CheckCircle, Storefront, MonitorPlay, ChalkboardTeacher, CookingPot, Cat, Barbell, Car, Camera } from '@phosphor-icons/react/dist/ssr';
+import { ShowcaseGrid, ShowcaseSite } from '@/components/ShowcaseGrid';
+import { AnimatedContainer } from '@/components/ui/AnimatedContainer';
 
 const templates = [
   { id: 'barberagus', name: 'Barber', style: 'Ultra-Premium Brutalist', icon: <Storefront size={24} />, color: 'from-zinc-500 to-zinc-900', image: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?auto=format&fit=crop&q=80&w=800' },
@@ -44,22 +34,7 @@ const steps = [
   }
 ];
 
-const TEMPLATE_LABELS: Record<string, string> = {
-  barber: 'Barbershop',
-  restaurant: 'Restoran',
-  professional: 'Jasa Profesional',
-  bakery: 'Bakery',
-  rental: 'Rental',
-  gamecafe: 'Game Cafe',
-  gym: 'Gym',
-  petshop: 'Petshop',
-};
-
 export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: ShowcaseSite[] }) {
-  const [showAllSites, setShowAllSites] = React.useState(false);
-  const visibleSites = showAllSites ? showcaseSites : showcaseSites.slice(0, SHOWCASE_INITIAL_COUNT);
-  const hasMoreSites = showcaseSites.length > SHOWCASE_INITIAL_COUNT;
-
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans selection:bg-white selection:text-black overflow-x-hidden">
       
@@ -87,29 +62,29 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-20 px-6 md:px-12 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
-        <m.div 
+        <AnimatedContainer as="div"
           initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }}
           className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-bold mb-8 text-zinc-300"
         >
           <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
           Website Profesional untuk UMKM
-        </m.div>
+        </AnimatedContainer>
 
-        <m.h1
+        <AnimatedContainer as="h1"
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.1 }}
           className="text-5xl md:text-7xl lg:text-[6rem] font-black tracking-tighter leading-[0.9] text-white mb-8 font-outfit max-w-5xl"
         >
           Website Profesional untuk Bisnis Kamu, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-400">Tanpa Mulai dari Nol.</span>
-        </m.h1>
+        </AnimatedContainer>
 
-        <m.p
+        <AnimatedContainer as="p"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.3 }}
           className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-12 font-medium"
         >
           Mulai Rp499 ribu, tanpa perlu coding atau belajar WordPress. Pilih template, kirim data bisnis kamu, dan tim kami yang mengerjakan sampai website siap online.
-        </m.p>
+        </AnimatedContainer>
 
-        <m.div
+        <AnimatedContainer as="div"
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.5 }}
           className="flex flex-col sm:flex-row items-center gap-4"
         >
@@ -119,7 +94,7 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
           <a href="#templates" className="flex items-center justify-center gap-2 px-8 py-4 bg-transparent border border-white/20 text-white font-bold uppercase tracking-wider hover:bg-white/5 transition-colors rounded w-full sm:w-auto">
             Lihat Template
           </a>
-        </m.div>
+        </AnimatedContainer>
       </section>
 
       {/* Templates Grid */}
@@ -131,7 +106,7 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {templates.map((tpl, i) => (
-            <m.div 
+            <AnimatedContainer as="div"
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1 }}
               key={tpl.id}
             >
@@ -162,93 +137,13 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
                   </h3>
                 </div>
               </Link>
-            </m.div>
+            </AnimatedContainer>
           ))}
         </div>
       </section>
 
-      {/* Website customer yang sudah live — bukti sosial nyata, bukan mockup.
-          Cuma render kalau ada datanya (showcaseSites dari Neon, diambil di
-          page.tsx dengan ISR 5 menit) — tidak ada network request tambahan
-          di sisi browser, tidak ada layout shift kalau kosong. */}
-      {showcaseSites.length > 0 && (
-        <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
-          <div className="flex flex-col items-center text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-xs font-bold mb-4 text-blue-400">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-              Live Sekarang
-            </div>
-            <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Sudah Dipercaya Bisnis Nyata</h2>
-            <p className="text-zinc-400 max-w-xl font-medium">Bukan mockup — ini website customer kami yang beneran live dan diakses publik hari ini.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {visibleSites.map((site, i) => (
-              <m.a
-                key={site.url}
-                href={site.url}
-                target="_blank"
-                rel="noreferrer"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: (i % SHOWCASE_INITIAL_COUNT) * 0.05 }}
-                className="group flex flex-col bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/30 hover:bg-white/[0.07] transition-all duration-300"
-              >
-                <div className="relative w-full h-36 bg-white/5 overflow-hidden">
-                  {site.heroUrl ? (
-                    <Image
-                      src={site.heroUrl}
-                      alt={`Preview website ${site.businessName}`}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-3xl font-black text-white/20">
-                      {site.businessName.trim().charAt(0).toUpperCase() || '?'}
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-3 p-4">
-                  {site.logoUrl ? (
-                    <Image
-                      src={site.logoUrl}
-                      alt={site.businessName}
-                      width={32}
-                      height={32}
-                      className="rounded-full object-cover shrink-0 h-8 w-8 border border-white/10"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                      {site.businessName.trim().charAt(0).toUpperCase() || '?'}
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-bold text-white truncate">{site.businessName}</p>
-                    <p className="text-[11px] text-zinc-500 truncate">{TEMPLATE_LABELS[site.template] ?? site.template}</p>
-                  </div>
-                  <ArrowSquareOut size={14} className="text-zinc-600 group-hover:text-zinc-300 transition-colors shrink-0" />
-                </div>
-              </m.a>
-            ))}
-          </div>
-
-          {hasMoreSites && (
-            <div className="flex justify-center mt-10">
-              <button
-                type="button"
-                onClick={() => setShowAllSites((v) => !v)}
-                className="px-6 py-3 bg-white/5 border border-white/10 text-white font-bold text-xs uppercase tracking-widest rounded hover:bg-white/10 hover:border-white/30 transition-colors"
-              >
-                {showAllSites ? 'Tampilkan Lebih Sedikit' : `Lihat Lebih Banyak (${showcaseSites.length - SHOWCASE_INITIAL_COUNT})`}
-              </button>
-            </div>
-          )}
-        </section>
-      )}
+      {/* Website customer yang sudah live */}
+      <ShowcaseGrid showcaseSites={showcaseSites} />
 
       {/* Pricing Section */}
       <section id="pricing" className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
@@ -404,7 +299,7 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {steps.map((step, i) => (
-            <m.div 
+            <AnimatedContainer as="div"
               initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.2 }}
               key={i} className="flex flex-col bg-white/5 border border-white/10 rounded-2xl p-8 relative overflow-hidden"
             >
@@ -416,11 +311,11 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               <div className="absolute -bottom-6 -right-6 text-[8rem] font-black text-white/5 leading-none font-outfit pointer-events-none select-none">
                 {i + 1}
               </div>
-            </m.div>
+            </AnimatedContainer>
           ))}
         </div>
         
-        <m.div 
+        <AnimatedContainer as="div"
           initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.6 }}
           className="mt-16 bg-gradient-to-r from-zinc-900 to-black border border-white/10 p-8 md:p-12 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left"
         >
@@ -436,7 +331,7 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               Isi Form Pemesanan <ArrowRight size={20} weight="bold" />
             </Link>
           </div>
-        </m.div>
+        </AnimatedContainer>
       </section>
 
       {/* Minimal Footer */}

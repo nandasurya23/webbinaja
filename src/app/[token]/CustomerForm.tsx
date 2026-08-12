@@ -5,12 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { WarningCircle, SignOut, Plus, IdentificationBadge, NotePencil, Phone, Sparkle, Spinner } from '@phosphor-icons/react/dist/ssr';
 import {
   createCustomerAction,
+  updateCustomerAction,
   checkAssetsAction,
   logoutAction,
   getSubmissionForPrefillAction,
   type AssetCheckItem,
   type CreateCustomerResult,
 } from './actions';
+import type { CustomerConfig } from '@/types/config';
 import { CUSTOMER_TEMPLATES } from '@/lib/customerTemplates';
 import type { PackageTier } from '@/lib/customerScaffold';
 import { Field, Section, DomainManagerCard } from './CustomerFormPieces';
@@ -34,32 +36,49 @@ const TEMPLATE_LABELS: Record<string, string> = {
   petshop: 'Petshop',
 };
 
-export default function CustomerForm({ token }: { token: string }) {
+export default function CustomerForm({ 
+  token,
+  initialData,
+}: { 
+  token: string;
+  initialData?: CustomerConfig & { slug: string; customDomain?: string };
+}) {
+  const isEditing = !!initialData;
+
   // Identitas & profil
-  const [slug, setSlug] = useState('');
-  const [businessName, setBusinessName] = useState('');
-  const [template, setTemplate] = useState('');
-  const [tagline, setTagline] = useState('');
-  const [description, setDescription] = useState('');
-  const [packageTier, setPackageTier] = useState<PackageTier>('basic');
-  const [customDomain, setCustomDomain] = useState('');
+  const [slug, setSlug] = useState(initialData?.slug || '');
+  const [businessName, setBusinessName] = useState(initialData?.businessName || '');
+  const [template, setTemplate] = useState(initialData?.template || '');
+  const [tagline, setTagline] = useState(initialData?.tagline || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [packageTier, setPackageTier] = useState<PackageTier>(initialData?.package || 'basic');
+  const [customDomain, setCustomDomain] = useState(initialData?.customDomain || '');
+
+  // Tema / Warna
+  const [primaryColor, setPrimaryColor] = useState(initialData?.theme?.primaryColor || '#000000');
+  const [secondaryColor, setSecondaryColor] = useState(initialData?.theme?.secondaryColor || '#ffffff');
+  const [accentColor, setAccentColor] = useState(initialData?.theme?.accentColor || '#f59e0b');
 
   // Kontak
-  const [whatsapp, setWhatsapp] = useState('');
-  const [address, setAddress] = useState('');
-  const [mapsLink, setMapsLink] = useState('');
-  const [instagram, setInstagram] = useState('');
-  const [facebook, setFacebook] = useState('');
+  const [whatsapp, setWhatsapp] = useState(initialData?.contact?.whatsapp || '');
+  const [address, setAddress] = useState(initialData?.contact?.address || '');
+  const [mapsLink, setMapsLink] = useState(initialData?.contact?.mapsLink || '');
+  const [instagram, setInstagram] = useState(initialData?.contact?.instagram || '');
+  const [facebook, setFacebook] = useState(initialData?.contact?.facebook || '');
 
   // Assets
-  const [logo, setLogo] = useState('logo.webp');
-  const [hero, setHero] = useState('hero.webp');
-  const [ambiance, setAmbiance] = useState('');
-  const [gallery, setGallery] = useState<string[]>(['gallery-01.webp']);
+  const [logo, setLogo] = useState(initialData?.assets?.logo || 'logo.webp');
+  const [hero, setHero] = useState(initialData?.assets?.hero || 'hero.webp');
+  const [ambiance, setAmbiance] = useState(initialData?.assets?.ambiance || '');
+  const [gallery, setGallery] = useState<string[]>(initialData?.assets?.gallery || ['gallery-01.webp']);
 
   // Layanan & katalog
-  const [services, setServices] = useState<Service[]>([emptyService()]);
-  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
+  const [services, setServices] = useState<Service[]>(
+    initialData?.services?.length ? initialData.services.map(s => ({ name: s.name, price: s.price, desc: s.desc ?? '' })) : [emptyService()]
+  );
+  const [catalog, setCatalog] = useState<CatalogItem[]>(
+    initialData?.catalog?.length ? initialData.catalog.map(c => ({ name: c.name, price: c.price, desc: c.desc ?? '', image: c.image })) : []
+  );
 
   // Cek asset
   const [checkResults, setCheckResults] = useState<AssetCheckItem[] | null>(null);
@@ -191,7 +210,7 @@ export default function CustomerForm({ token }: { token: string }) {
             e.preventDefault();
             setResult(null);
             startTransition(async () => {
-              const res = await createCustomerAction(token, {
+              const input = {
                 slug,
                 businessName,
                 template,
@@ -199,6 +218,9 @@ export default function CustomerForm({ token }: { token: string }) {
                 description,
                 packageTier,
                 customDomain,
+                primaryColor,
+                secondaryColor,
+                accentColor,
                 whatsapp,
                 address,
                 mapsLink,
@@ -211,7 +233,11 @@ export default function CustomerForm({ token }: { token: string }) {
                 services,
                 catalog,
                 submissionId: submissionId ?? undefined,
-              });
+              };
+              
+              const res = isEditing
+                ? await updateCustomerAction(token, initialData.slug, input)
+                : await createCustomerAction(token, input);
               setResult(res);
             });
           }}
@@ -225,7 +251,7 @@ export default function CustomerForm({ token }: { token: string }) {
           
           <Section icon={<IdentificationBadge size={18} weight="bold" className="text-blue-500" />} title="Identitas">
             <div className="grid sm:grid-cols-2 gap-4">
-              <Field label="Slug" required placeholder="cafe-siti" value={slug} onChange={setSlug} />
+              <Field label="Slug" required placeholder="cafe-siti" value={slug} onChange={setSlug} disabled={isEditing} />
               <Field label="Nama bisnis" required placeholder="Cafe Siti" value={businessName} onChange={setBusinessName} />
             </div>
 
@@ -279,7 +305,7 @@ export default function CustomerForm({ token }: { token: string }) {
                   <span className={packageTier === 'business' ? 'text-blue-400' : 'text-zinc-200'}>Business Kit (799K)</span>
                 </button>
               </div>
-              {packageTier === 'business' && (
+              {packageTier === 'business' && !isEditing && (
                 <p className="flex items-center gap-1.5 text-xs text-amber-500 mt-1">
                   <Sparkle size={14} weight="fill" />
                   Membuka link Kit Promosi Instan (gambar promo otomatis) setelah customer dibuat.
@@ -287,7 +313,7 @@ export default function CustomerForm({ token }: { token: string }) {
               )}
             </div>
 
-            {packageTier === 'business' && (
+            {packageTier === 'business' && !isEditing && (
               <div className="mt-4">
                 <Field
                   label="Custom domain (opsional)"
@@ -316,6 +342,38 @@ export default function CustomerForm({ token }: { token: string }) {
                 className="w-full rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500/50 resize-none"
               />
             </label>
+          </Section>
+
+          <Section icon={<Sparkle size={18} weight="bold" className="text-blue-500" />} title="Warna / Tema">
+            <div className="grid grid-cols-3 gap-6">
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-zinc-300">Warna Utama</span>
+                <input
+                  type="color"
+                  value={primaryColor}
+                  onChange={(e) => setPrimaryColor(e.target.value)}
+                  className="w-full h-12 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-zinc-300">Warna Sekunder</span>
+                <input
+                  type="color"
+                  value={secondaryColor}
+                  onChange={(e) => setSecondaryColor(e.target.value)}
+                  className="w-full h-12 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <span className="text-sm font-medium text-zinc-300">Warna Aksen</span>
+                <input
+                  type="color"
+                  value={accentColor}
+                  onChange={(e) => setAccentColor(e.target.value)}
+                  className="w-full h-12 rounded-lg cursor-pointer bg-transparent border-0 p-0"
+                />
+              </div>
+            </div>
           </Section>
 
           <Section icon={<Phone size={18} weight="bold" className="text-blue-500" />} title="Kontak">
@@ -363,7 +421,7 @@ export default function CustomerForm({ token }: { token: string }) {
             ) : (
               <div />
             )}
-            <Button
+              <Button
               type="submit"
               variant="primary"
               size="lg"
@@ -374,14 +432,14 @@ export default function CustomerForm({ token }: { token: string }) {
               {isPending ? (
                 <><Spinner size={18} className="animate-spin mr-2" /> Menyimpan...</>
               ) : (
-                <><Plus size={18} weight="bold" className="mr-2" /> Buat Customer</>
+                <><Plus size={18} weight="bold" className="mr-2" /> {isEditing ? 'Simpan Perubahan' : 'Buat Customer'}</>
               )}
             </Button>
           </div>
         </form>
       </Card>
 
-      <DomainManagerCard token={token} />
+      {!isEditing && <DomainManagerCard token={token} />}
 
       <div className="flex justify-end mt-4">
         <Button

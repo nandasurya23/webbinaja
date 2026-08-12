@@ -9,7 +9,8 @@ import LoginForm from '../LoginForm';
 import ListSearchFilterBar from '../ListSearchFilterBar';
 import Pagination from '../Pagination';
 import SuspendToggle from './SuspendToggle';
-import { Globe, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
+import { Globe, ArrowSquareOut, Pencil } from '@phosphor-icons/react/dist/ssr';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -163,17 +164,26 @@ export default async function WebsitesPage({
               <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-2">
                 <SuspendToggle token={token} slug={w.slug} suspended={w.suspended} />
                 
-                {!w.suspended && (
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-500 hover:text-blue-400 hover:underline transition-colors bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20"
+                <div className="flex items-center gap-2">
+                  <Link
+                    href={`/${token}/websites/${w.slug}/edit`}
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-300 hover:text-white transition-colors bg-zinc-800/50 hover:bg-zinc-700/50 px-3 py-1.5 rounded-lg border border-white/5 hover:border-white/10"
                   >
-                    Buka
-                    <ArrowSquareOut size={14} weight="bold" />
-                  </a>
-                )}
+                    Edit
+                    <Pencil size={14} weight="bold" />
+                  </Link>
+                  {!w.suspended && (
+                    <a
+                      href={url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-500 hover:text-blue-400 hover:underline transition-colors bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20"
+                    >
+                      Buka
+                      <ArrowSquareOut size={14} weight="bold" />
+                    </a>
+                  )}
+                </div>
               </div>
             </li>
           );
