@@ -1,6 +1,6 @@
 'use client';
 
-import { Storefront, Plus, Trash } from '@phosphor-icons/react/dist/ssr';
+import { Storefront, Plus, Trash, Image as ImageIcon } from '@phosphor-icons/react/dist/ssr';
 import { Section } from './CustomerFormPieces';
 import AssetUploadButton from './AssetUploadButton';
 import { MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
@@ -8,6 +8,35 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
 import { getSubmissionAssetUrl, getCustomerAssetUrl } from '@/lib/assets';
+import { useState } from 'react';
+import Image from 'next/image';
+
+function PreviewImage({ url, className, fallbackText }: { url: string | null | undefined; className: string; fallbackText: string }) {
+  const [error, setError] = useState(false);
+
+  if (!url || error) {
+    return (
+      <div className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-white/10 bg-zinc-900/20 text-zinc-500 ${className}`}>
+        <ImageIcon size={16} className="opacity-50" />
+        <span className="text-[10px] text-center px-2">{fallbackText}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative overflow-hidden rounded-lg border border-white/5 bg-zinc-900/50 ${className}`}>
+      <Image 
+        src={url} 
+        alt="Preview" 
+        fill
+        sizes="80px"
+        className="object-cover transition-opacity duration-300" 
+        onError={() => setError(true)}
+        unoptimized
+      />
+    </div>
+  );
+}
 
 export type CatalogItem = { name: string; price: string; desc: string; image: string };
 export const emptyCatalogItem = (): CatalogItem => ({ name: '', price: '', desc: '', image: '' });
@@ -86,9 +115,11 @@ export default function CatalogEditor({
                       />
                     </div>
                   </div>
-                  {getPreviewUrl(c.image) && (
-                    <img src={getPreviewUrl(c.image)!} alt={`Catalog ${i + 1} Preview`} className="h-16 w-16 object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
-                  )}
+                  <PreviewImage 
+                    url={getPreviewUrl(c.image)} 
+                    className="h-16 w-16 shrink-0" 
+                    fallbackText="-"
+                  />
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">
