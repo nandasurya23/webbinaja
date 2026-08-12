@@ -16,6 +16,13 @@ export default function ServicesEditor({
   services: Service[];
   setServices: React.Dispatch<React.SetStateAction<Service[]>>;
 }) {
+  const formatNumberDisplay = (val: string) => {
+    if (!val) return '';
+    const digits = val.replace(/\D/g, '');
+    if (!digits) return '';
+    return parseInt(digits, 10).toLocaleString('id-ID');
+  };
+
   return (
     <Section icon={<Storefront size={18} weight="bold" className="text-blue-500" />} title="Layanan">
       <div className="flex flex-col gap-4">
@@ -34,9 +41,9 @@ export default function ServicesEditor({
                 onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
               />
               <Input
-                placeholder="mis. Rp 50.000"
-                value={s.price}
-                onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+                placeholder="mis. 50000"
+                value={formatNumberDisplay(s.price)}
+                onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value.replace(/\D/g, '') } : v)))}
               />
               <Input
                 placeholder="Deskripsi (opsional)"
