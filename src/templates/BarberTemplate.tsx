@@ -19,7 +19,11 @@ export const BarberTemplate = ({ config }: { config: CustomerConfig }) => {
       {/* Navigation */}
       <nav className="fixed top-0 left-0 w-full z-50 bg-primary/80 backdrop-blur-md border-b-2 border-secondary/20 px-6 py-4 flex justify-between items-center transition-all">
         <div className="text-secondary text-xl font-black tracking-tighter uppercase flex items-center gap-2">
-          <span className="w-3 h-3 bg-accent"></span>
+          {config.images?.logo ? (
+            <Image src={config.images.logo} alt={config.businessName} width={28} height={28} className="rounded-full object-cover shrink-0" />
+          ) : (
+            <span className="w-3 h-3 bg-accent"></span>
+          )}
           {config.businessName}
         </div>
         

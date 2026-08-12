@@ -13,6 +13,9 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
       {/* Playful Navbar */}
       <nav className="w-full px-6 py-6 max-w-7xl mx-auto flex justify-between items-center z-50">
         <div className="text-2xl md:text-3xl font-bold tracking-tight text-accent font-outfit flex items-center gap-2">
+          {config.images?.logo && (
+            <Image src={config.images.logo} alt={config.businessName} width={32} height={32} className="rounded-full object-cover shrink-0" />
+          )}
           {config.businessName} <PawPrint weight="fill" className="text-accent" />
         </div>
         <a 

@@ -62,6 +62,7 @@ function withResolvedImages(slug: string, config: CustomerConfig): CustomerConfi
     ...config,
     images: {
       ...config.images,
+      ...(resolved.logo !== undefined && { logo: resolved.logo }),
       ...(resolved.hero !== undefined && { hero: resolved.hero }),
       ...(resolved.gallery !== undefined && { gallery: resolved.gallery }),
       ...(resolved.ambiance !== undefined && { ambiance: resolved.ambiance }),

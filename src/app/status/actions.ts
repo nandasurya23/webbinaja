@@ -9,30 +9,17 @@ export type CheckStatusResult =
   | {
       ok: true;
       businessName: string;
-      workStatusLabel: string;
-      paymentStatusLabel: string;
+      statusLabel: string;
       queueNumber: number | null;
-      /** Only set once the site has actually been built (processedSlug exists) — not gated on workStatus, since an admin can forget to also flip that toggle. */
+      /** Only set once the site has actually been built (processedSlug exists). */
       websiteUrl?: string;
     }
   | { ok: false; error: string };
 
-const WORK_LABELS: Record<string, string> = {
-  not_started: 'Belum Dikerjakan',
-  in_progress: 'Sedang Dikerjakan',
-  done: 'Selesai',
-};
-
-const PAYMENT_LABELS: Record<string, string> = {
-  unchecked: 'Belum Dicek',
-  confirmed: 'Dikonfirmasi',
-  rejected: 'Ditolak',
-};
-
 const GENERIC_NOT_FOUND = 'Data tidak ditemukan — cek kembali nomor WhatsApp dan kode Anda.';
 
 /**
- * Deliberately isolated: returns ONLY the 4 fields above, never photos,
+ * Deliberately isolated: returns ONLY the fields above, never photos,
  * description, address, or any other submission field, and never
  * distinguishes "wrong phone" from "wrong code" in the error — both make it
  * harder to use this as a way to enumerate/guess other people's data.
@@ -63,8 +50,7 @@ export async function checkStatusAction(whatsappRaw: string, lookupCodeRaw: stri
   return {
     ok: true,
     businessName: submission.businessName,
-    workStatusLabel: WORK_LABELS[submission.workStatus] ?? submission.workStatus,
-    paymentStatusLabel: PAYMENT_LABELS[submission.paymentStatus] ?? submission.paymentStatus,
+    statusLabel: submission.status === 'processed' ? 'Selesai' : 'Sedang Dikerjakan',
     queueNumber: submission.queueNumber,
     ...(submission.status === 'processed' && submission.processedSlug && {
       websiteUrl: `https://${submission.processedSlug}.${MAIN_DOMAIN}`,

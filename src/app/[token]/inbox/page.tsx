@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
-import { listSubmissionsPage, type Submission, type SubmissionStatus, type WorkStatus, type PaymentStatus } from '@/lib/db';
+import { listSubmissionsPage, type Submission, type SubmissionStatus } from '@/lib/db';
 import LoginForm from '../LoginForm';
 import ListSearchFilterBar from '../ListSearchFilterBar';
 import Pagination from '../Pagination';
@@ -11,18 +11,6 @@ import { Envelope, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
-};
-
-export const WORK_STATUS_LABELS: Record<WorkStatus, string> = {
-  not_started: 'Belum Dikerjakan',
-  in_progress: 'Dikerjakan',
-  done: 'Selesai',
-};
-
-export const PAYMENT_STATUS_LABELS: Record<PaymentStatus, string> = {
-  unchecked: 'Belum Dicek',
-  confirmed: 'Dikonfirmasi',
-  rejected: 'Ditolak',
 };
 
 const STATUS_LABELS: Record<SubmissionStatus, string> = {
@@ -39,14 +27,6 @@ const PAGE_SIZE = 20;
 
 function isSubmissionStatus(v: string): v is SubmissionStatus {
   return v === 'pending' || v === 'processed';
-}
-
-function isWorkStatus(v: string): v is WorkStatus {
-  return v === 'not_started' || v === 'in_progress' || v === 'done';
-}
-
-function isPaymentStatus(v: string): v is PaymentStatus {
-  return v === 'unchecked' || v === 'confirmed' || v === 'rejected';
 }
 
 // Intentionally NO `if (NODE_ENV === 'production') notFound()` gate here —
@@ -80,15 +60,13 @@ export default async function InboxPage({
   // showing up mixed in with ones still needing action; that's what was
   // making the list look like it had duplicate/stale entries.
   const status = sp.status && isSubmissionStatus(sp.status) ? sp.status : 'pending';
-  const workStatus = sp.workStatus && isWorkStatus(sp.workStatus) ? sp.workStatus : undefined;
-  const paymentStatus = sp.paymentStatus && isPaymentStatus(sp.paymentStatus) ? sp.paymentStatus : undefined;
   const page = Math.max(1, Number(sp.page) || 1);
 
   let submissions: Submission[] = [];
   let total = 0;
   let loadError: string | null = null;
   try {
-    const result = await listSubmissionsPage({ search, status, workStatus, paymentStatus, page, pageSize: PAGE_SIZE });
+    const result = await listSubmissionsPage({ search, status, page, pageSize: PAGE_SIZE });
     submissions = result.items;
     total = result.total;
   } catch {
@@ -115,16 +93,6 @@ export default async function InboxPage({
             defaultValue: 'pending',
             options: Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),
           },
-          {
-            param: 'workStatus',
-            allLabel: 'Semua status pengerjaan',
-            options: Object.entries(WORK_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-          },
-          {
-            param: 'paymentStatus',
-            allLabel: 'Semua status pembayaran',
-            options: Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-          },
         ]}
       />
 
@@ -137,7 +105,7 @@ export default async function InboxPage({
       {submissions.length === 0 && !loadError && (
         <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-white/10 bg-zinc-950/30">
           <p className="text-sm text-zinc-400">
-            {search || workStatus || paymentStatus
+            {search
               ? 'Tidak ada submission yang cocok.'
               : status === 'pending'
               ? 'Tidak ada submission yang belum diproses — cek filter "Semua" di atas untuk lihat yang sudah jadi website.'
@@ -177,32 +145,14 @@ export default async function InboxPage({
                   <span className="text-xs font-mono font-bold text-zinc-500">Antrean #{s.queueNumber}</span>
                 )}
                 <div className="flex items-center gap-2">
-                  {s.status === 'processed' && (
-                    <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                      Website Jadi
-                    </span>
-                  )}
                   <span
                     className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
-                      s.workStatus === 'done'
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                        : s.workStatus === 'in_progress'
+                      s.status === 'processed'
                         ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                         : 'bg-zinc-800/50 text-zinc-300 border-white/5'
                     }`}
                   >
-                    {WORK_STATUS_LABELS[s.workStatus]}
-                  </span>
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
-                      s.paymentStatus === 'confirmed'
-                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                        : s.paymentStatus === 'rejected'
-                        ? 'bg-red-500/10 text-red-400 border-red-500/20'
-                        : 'bg-zinc-800/50 text-zinc-300 border-white/5'
-                    }`}
-                  >
-                    {PAYMENT_STATUS_LABELS[s.paymentStatus]}
+                    {s.status === 'processed' ? 'Selesai' : 'Sedang Dikerjakan'}
                   </span>
                 </div>
               </div>

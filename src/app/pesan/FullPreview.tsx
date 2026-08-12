@@ -39,6 +39,7 @@ export default function FullPreview({
   tiktok,
   marketplace,
   openingHours,
+  logo,
   hero,
   ambiance,
   gallery,
@@ -60,6 +61,7 @@ export default function FullPreview({
   tiktok: string;
   marketplace: string;
   openingHours: string;
+  logo: string;
   hero: string;
   ambiance: string;
   gallery: string[];
@@ -97,6 +99,7 @@ export default function FullPreview({
     services: services.filter((s) => s.name && s.price),
     catalog: catalog.filter((c) => c.name && c.price).map((c) => ({ ...c, image: resolve(c.image) || '' })),
     images: {
+      logo: resolve(logo),
       hero: resolve(hero),
       gallery: gallery.map(resolve).filter((u): u is string => Boolean(u)),
       ambiance: resolve(ambiance),

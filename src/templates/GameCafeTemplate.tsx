@@ -22,7 +22,11 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
       {/* Cyber Navbar */}
       <nav className="fixed top-0 left-0 w-full z-50 bg-primary/80 backdrop-blur-xl border-b border-accent/30 px-6 py-4 flex justify-between items-center transition-all">
         <div className="text-xl md:text-2xl font-black tracking-widest uppercase text-secondary font-mono drop-shadow-[0_0_15px_rgba(0,242,254,0.8)] flex items-center gap-3">
-          <GameController weight="fill" className="text-accent animate-pulse" size={24} />
+          {config.images?.logo ? (
+            <Image src={config.images.logo} alt={config.businessName} width={28} height={28} className="rounded-full object-cover shrink-0" />
+          ) : (
+            <GameController weight="fill" className="text-accent animate-pulse" size={24} />
+          )}
           {config.businessName}
         </div>
         

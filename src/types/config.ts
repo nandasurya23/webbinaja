@@ -73,6 +73,7 @@ export interface CustomerConfig {
   }[];
   testimonials?: Testimonial[];
   images?: {
+    logo?: string;
     hero?: string;
     gallery?: string[];
     ambiance?: string;
