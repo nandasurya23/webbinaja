@@ -1,6 +1,6 @@
 'use client';
 
-import { Images, Plus, Trash } from '@phosphor-icons/react/dist/ssr';
+import { Images, Plus, Trash, Image as ImageIcon } from '@phosphor-icons/react/dist/ssr';
 import { Section, Field } from './CustomerFormPieces';
 import AssetUploadButton from './AssetUploadButton';
 import { MAX_GALLERY_PHOTOS } from '@/lib/customerLimits';
@@ -8,6 +8,35 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
 import { getSubmissionAssetUrl, getCustomerAssetUrl } from '@/lib/assets';
+import { useState } from 'react';
+import Image from 'next/image';
+
+function PreviewImage({ url, className, fallbackText, objectFit = 'object-cover' }: { url: string | null | undefined; className: string; fallbackText: string; objectFit?: string }) {
+  const [error, setError] = useState(false);
+
+  if (!url || error) {
+    return (
+      <div className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-white/10 bg-zinc-900/20 text-zinc-500 ${className}`}>
+        <ImageIcon size={20} className="opacity-50" />
+        <span className="text-[10px] text-center px-2">{fallbackText}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`relative overflow-hidden rounded-lg border border-white/5 bg-zinc-900/50 ${className}`}>
+      <Image 
+        src={url} 
+        alt="Preview" 
+        fill
+        sizes="(max-width: 768px) 100vw, 300px"
+        className={`${objectFit} transition-opacity duration-300`} 
+        onError={() => setError(true)}
+        unoptimized
+      />
+    </div>
+  );
+}
 
 export default function AssetsSection({
   token,
@@ -60,9 +89,12 @@ export default function AssetsSection({
               <AssetUploadButton token={token} slug={slug} kind="logo" baseNameHint="logo" onUploaded={setLogo} />
             </div>
           </div>
-          {getPreviewUrl(logo) && (
-            <img src={getPreviewUrl(logo)!} alt="Logo Preview" className="h-20 w-auto object-contain rounded-lg border border-white/5 bg-zinc-900/50 p-2" />
-          )}
+          <PreviewImage 
+            url={getPreviewUrl(logo)} 
+            className="h-20 w-32 p-2" 
+            objectFit="object-contain"
+            fallbackText={!slug && !submissionId ? 'Isi slug / pilih dari inbox' : 'Gambar belum diunggah'}
+          />
         </div>
 
         <div className="flex flex-col gap-2">
@@ -74,9 +106,11 @@ export default function AssetsSection({
               <AssetUploadButton token={token} slug={slug} kind="hero" baseNameHint="hero" onUploaded={setHero} />
             </div>
           </div>
-          {getPreviewUrl(hero) && (
-            <img src={getPreviewUrl(hero)!} alt="Hero Preview" className="h-32 w-full object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
-          )}
+          <PreviewImage 
+            url={getPreviewUrl(hero)} 
+            className="h-32 w-full" 
+            fallbackText={!slug && !submissionId ? 'Isi slug / pilih dari inbox' : 'Gambar belum diunggah'}
+          />
         </div>
 
         <div className="flex flex-col gap-2">
@@ -88,9 +122,11 @@ export default function AssetsSection({
               <AssetUploadButton token={token} slug={slug} kind="ambiance" baseNameHint="ambiance" onUploaded={setAmbiance} />
             </div>
           </div>
-          {getPreviewUrl(ambiance) && (
-            <img src={getPreviewUrl(ambiance)!} alt="Ambiance Preview" className="h-32 w-full object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
-          )}
+          <PreviewImage 
+            url={getPreviewUrl(ambiance)} 
+            className="h-32 w-full" 
+            fallbackText={!slug && !submissionId ? 'Isi slug / pilih dari inbox' : 'Gambar belum diunggah'}
+          />
         </div>
       </div>
 
@@ -138,9 +174,11 @@ export default function AssetsSection({
                     <Trash size={16} />
                   </Button>
                 </div>
-                {getPreviewUrl(g) && (
-                  <img src={getPreviewUrl(g)!} alt={`Gallery ${i + 1} Preview`} className="h-24 w-auto object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
-                )}
+                <PreviewImage 
+                  url={getPreviewUrl(g)} 
+                  className="h-24 w-32 sm:w-40" 
+                  fallbackText={!slug && !submissionId ? 'Isi slug / pilih dari inbox' : 'Gambar belum diunggah'}
+                />
               </motion.div>
             ))}
           </AnimatePresence>
