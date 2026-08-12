@@ -64,6 +64,7 @@ export const JsonLd = ({ config, customerSlug }: { config: CustomerConfig; custo
   const socialLinks = [];
   if (config.contact.instagram) socialLinks.push(config.contact.instagram);
   if (config.contact.facebook) socialLinks.push(config.contact.facebook);
+  if (config.contact.tiktok) socialLinks.push(config.contact.tiktok);
   if (config.business.socialLinks) socialLinks.push(...config.business.socialLinks);
 
   if (socialLinks.length > 0) {

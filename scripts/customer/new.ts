@@ -77,6 +77,8 @@ async function main(): Promise<void> {
   const mapsLink = await ask(lines, 'Google Maps link', { defaultValue: '' });
   const instagram = await ask(lines, 'Instagram URL (kosongkan jika tidak ada)', { defaultValue: '' });
   const facebook = await ask(lines, 'Facebook URL (kosongkan jika tidak ada)', { defaultValue: '' });
+  const tiktok = await ask(lines, 'TikTok URL (kosongkan jika tidak ada)', { defaultValue: '' });
+  const marketplace = await ask(lines, 'Link marketplace (kosongkan jika tidak ada)', { defaultValue: '' });
 
   let packageTier: PackageTier = 'basic';
   for (;;) {
@@ -90,7 +92,7 @@ async function main(): Promise<void> {
 
   rl.close();
 
-  writeNewCustomerConfig({ slug, businessName, template, tagline, description, whatsapp, address, mapsLink, instagram, facebook, packageTier });
+  writeNewCustomerConfig({ slug, businessName, template, tagline, description, whatsapp, address, mapsLink, instagram, facebook, tiktok, marketplace, packageTier });
 
   console.log(`\n✓ Dibuat: src/customers/${slug}/config.ts\n`);
   console.log('Langkah selanjutnya:');

@@ -7,9 +7,15 @@ export const config: CustomerConfig = {
   description: "Layanan grooming, hotel hewan, dan klinik hewan terpercaya dengan dokter spesialis hewan kecil. Kami memperlakukan mereka seperti keluarga.",
   template: "petshop",
   theme: {
+    // secondaryColor (#fed7aa, light peach) was almost as light as
+    // primaryColor (#fdf8f6, near-white) — PetshopTemplate uses
+    // text-secondary for headings/body text on the primary background, so
+    // text was nearly invisible (contrast ~1.26:1). Kept the warm cream
+    // background but switched secondary to a dark warm brown for readable
+    // text, and deepened the accent orange for the same reason.
     primaryColor: "#fdf8f6",
-    secondaryColor: "#fed7aa",
-    accentColor: "#f97316",
+    secondaryColor: "#4a3728",
+    accentColor: "#c2410c",
   },
   contact: {
     whatsapp: "628111222338",

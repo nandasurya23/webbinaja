@@ -61,6 +61,8 @@ export interface CustomerConfig {
     mapsLink: string;
     instagram?: string;
     facebook?: string;
+    tiktok?: string;
+    marketplace?: string;
   };
   services: Service[];
   catalog?: {

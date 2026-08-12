@@ -7,6 +7,7 @@ import { isSafeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { clientIp } from '@/lib/clientIp';
 import { MAX_GALLERY_PHOTOS, MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
 import type { ServiceInput, CatalogItemInput } from '@/lib/customerScaffold';
+import { findThemePalette } from '@/lib/themePalettes';
 
 /**
  * Both public endpoints below (upload + submit) have no session/auth —
@@ -146,6 +147,7 @@ export interface SubmitOrderInput {
   businessName: string;
   template: string;
   packageTier: string;
+  themePaletteId: string;
   tagline: string;
   description: string;
   whatsapp: string;
@@ -153,6 +155,9 @@ export interface SubmitOrderInput {
   mapsLink: string;
   instagram: string;
   facebook: string;
+  tiktok: string;
+  marketplace: string;
+  openingHours: string;
   logo: string;
   hero: string;
   ambiance: string;
@@ -197,6 +202,15 @@ export async function submitOrderAction(input: SubmitOrderInput): Promise<Submit
     return { ok: false, error: 'Pilih paket terlebih dahulu.' };
   }
 
+  // Colors are never trusted from the client directly — only a palette id
+  // is accepted, resolved here against the curated list, so a tampered
+  // request can't smuggle an arbitrary (possibly unreadable) hex value past
+  // the picker. See src/lib/themePalettes.ts.
+  const palette = findThemePalette(input.themePaletteId);
+  if (!palette) {
+    return { ok: false, error: 'Pilih skema warna terlebih dahulu.' };
+  }
+
   // Checked before any other validation — an unauthenticated endpoint that
   // writes DB rows needs its volume capped regardless of whether individual
   // attempts are well-formed (a script retrying invalid input is still abuse).
@@ -210,18 +224,24 @@ export async function submitOrderAction(input: SubmitOrderInput): Promise<Submit
   const mapsLink = input.mapsLink.trim();
   const instagram = input.instagram.trim();
   const facebook = input.facebook.trim();
+  const tiktok = input.tiktok.trim();
+  const marketplace = input.marketplace.trim();
+  const openingHours = input.openingHours.trim();
 
   if (!businessName) return { ok: false, error: 'Nama bisnis wajib diisi.' };
   if (!whatsapp) return { ok: false, error: 'Nomor WhatsApp wajib diisi.' };
   if (mapsLink && !isSafeUrl(mapsLink)) return { ok: false, error: 'Google Maps link harus berupa URL http/https yang valid.' };
   if (instagram && !isSafeUrl(instagram)) return { ok: false, error: 'Instagram URL harus berupa URL http/https yang valid.' };
   if (facebook && !isSafeUrl(facebook)) return { ok: false, error: 'Facebook URL harus berupa URL http/https yang valid.' };
+  if (tiktok && !isSafeUrl(tiktok)) return { ok: false, error: 'TikTok URL harus berupa URL http/https yang valid.' };
+  if (marketplace && !isSafeUrl(marketplace)) return { ok: false, error: 'Link marketplace harus berupa URL http/https yang valid.' };
 
   for (const [label, value, max] of [
     ['Nama bisnis', businessName, MAX_SHORT_FIELD_LENGTH],
     ['Tagline', input.tagline, MAX_SHORT_FIELD_LENGTH],
     ['Deskripsi', input.description, MAX_DESCRIPTION_LENGTH],
     ['Alamat', input.address, MAX_SHORT_FIELD_LENGTH],
+    ['Jam operasional', openingHours, MAX_SHORT_FIELD_LENGTH],
   ] as const) {
     if (value.length > max) return { ok: false, error: `${label} maksimal ${max} karakter.` };
   }
@@ -273,10 +293,17 @@ export async function submitOrderAction(input: SubmitOrderInput): Promise<Submit
     mapsLink,
     instagram,
     facebook,
+    tiktok,
+    marketplace,
+    openingHours,
     logoFilename: input.logo.trim() || undefined,
     heroFilename: input.hero.trim() || undefined,
     ambianceFilename: input.ambiance.trim() || undefined,
     packageTier,
+    themePaletteId: palette.id,
+    primaryColor: palette.primaryColor,
+    secondaryColor: palette.secondaryColor,
+    accentColor: palette.accentColor,
     gallery,
     services,
     catalog,

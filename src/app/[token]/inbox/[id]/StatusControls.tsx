@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { CheckCircle, WarningCircle, Spinner } from '@phosphor-icons/react/dist/ssr';
-import { setSubmissionStatusAction } from '../../actions';
+import { CheckCircle, WarningCircle, Spinner, Trash } from '@phosphor-icons/react/dist/ssr';
+import { setSubmissionStatusAction, deleteSubmissionAction } from '../../actions';
 import type { WorkStatus, PaymentStatus } from '@/lib/db';
 
 const WORK_OPTIONS: { value: WorkStatus; label: string }[] = [
@@ -39,6 +39,9 @@ export default function StatusControls({
   const router = useRouter();
 
   function apply(patch: { workStatus?: WorkStatus; paymentStatus?: PaymentStatus }) {
+    if (patch.paymentStatus === 'rejected') {
+      if (!window.confirm('Tolak pesanan ini? Semua data dan gambarnya akan langsung dihapus, tindakan ini tidak bisa dibatalkan.')) return;
+    }
     setMessage(null);
     startTransition(async () => {
       const res = await setSubmissionStatusAction(token, submissionId, patch);
@@ -55,6 +58,19 @@ export default function StatusControls({
       } else {
         setMessage({ ok: false, text: res.error });
       }
+    });
+  }
+
+  function handleDelete() {
+    if (!window.confirm('Hapus pesanan ini beserta semua gambarnya? Tindakan ini tidak bisa dibatalkan.')) return;
+    setMessage(null);
+    startTransition(async () => {
+      const res = await deleteSubmissionAction(token, submissionId);
+      if (res.ok) {
+        router.push('/' + token + '/inbox');
+        return;
+      }
+      setMessage({ ok: false, text: res.error });
     });
   }
 
@@ -121,6 +137,18 @@ export default function StatusControls({
           {message.text}
         </p>
       )}
+
+      <div className="pt-3 mt-1 border-t border-neutral-200 dark:border-neutral-800">
+        <button
+          type="button"
+          disabled={isPending}
+          onClick={handleDelete}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-red-300 dark:border-red-900 px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition disabled:opacity-50"
+        >
+          <Trash size={14} weight="bold" />
+          Hapus Pesanan
+        </button>
+      </div>
     </section>
   );
 }

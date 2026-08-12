@@ -18,8 +18,8 @@ const templates = [
 
 const steps = [
   {
-    title: "1. Pilih Template",
-    desc: "Lihat 8 template yang tersedia di atas, lalu pilih satu yang paling cocok dengan karakter bisnis kamu.",
+    title: "1. Pilih Template & Warna",
+    desc: "Lihat 8 template yang tersedia di atas, pilih satu yang paling cocok dengan karakter bisnis kamu, lalu pilih skema warna favoritmu dan lihat langsung previewnya sebelum kirim.",
     icon: <PaintBrush size={32} weight="duotone" />
   },
   {
@@ -101,7 +101,7 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
       <section id="templates" className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
         <div className="flex flex-col items-center text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Pilih Tampilan yang Cocok untuk Bisnis Kamu</h2>
-          <p className="text-zinc-400 max-w-xl font-medium">Delapan template siap pakai dengan gaya visual yang berbeda-beda, masing-masing dirancang mengikuti karakter industrinya. Klik untuk lihat contohnya langsung.</p>
+          <p className="text-zinc-400 max-w-xl font-medium">Delapan template siap pakai dengan gaya visual yang berbeda-beda, masing-masing dirancang mengikuti karakter industrinya. Setiap template bisa kamu sesuaikan dengan skema warna pilihanmu sendiri saat pesan. Klik untuk lihat contohnya langsung.</p>
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -175,7 +175,7 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">Pilih 1 dari 8 template premium</span>
+                <span className="text-zinc-300 text-xs font-medium">Pilih 1 dari 8 template premium + skema warna kurasi, lengkap dengan preview</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
@@ -192,10 +192,6 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
                 <span className="text-zinc-300 text-xs font-medium">Tombol WhatsApp & SSL Aman</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">1× revisi teks & warna</span>
               </div>
 
               <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
@@ -251,10 +247,6 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-amber-400 mt-0.5 shrink-0" size={18} />
                 <span className="text-zinc-100 text-xs font-bold">Business Kit — materi promosi awal (siap post ke Instagram & status WhatsApp), dibuat 1× dari data bisnis kamu</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />
-                <span className="text-zinc-300 text-xs font-medium">1× revisi teks & warna</span>
               </div>
               <div className="flex items-start gap-2">
                 <CheckCircle weight="fill" className="text-blue-500 mt-0.5 shrink-0" size={18} />

@@ -4,7 +4,7 @@ import { CustomerConfig } from '@/types/config';
 import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m, useScroll, useTransform } from 'motion/react';
 import Image from 'next/image';
-import { Barbell, Trophy, Flame, Heartbeat, PersonSimpleRun, Lightning, ArrowRight, MapPin, InstagramLogo, FacebookLogo } from '@phosphor-icons/react/dist/ssr';
+import { Barbell, Trophy, Flame, Heartbeat, PersonSimpleRun, Lightning, ArrowRight, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock } from '@phosphor-icons/react/dist/ssr';
 
 export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
   const { scrollY } = useScroll();
@@ -24,12 +24,12 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
           rel="noreferrer"
           className="pointer-events-auto px-8 py-3 bg-accent text-primary font-black italic skew-x-[-15deg] hover:bg-secondary hover:text-accent transition-colors shadow-[8px_8px_0_0_var(--secondary)] hover:shadow-[4px_4px_0_0_var(--accent)] active:shadow-none active:translate-x-1 active:translate-y-1"
         >
-          <span className="block skew-x-[15deg] tracking-widest text-lg">Join Now</span>
+          <span className="block skew-x-15 tracking-widest text-lg">Join Now</span>
         </a>
       </nav>
 
       {/* Hero: Aggressive Typography */}
-      <section className="relative pt-40 pb-20 px-6 max-w-[1600px] mx-auto min-h-[90vh] flex flex-col justify-center border-b-[12px] border-accent">
+      <section className="relative pt-40 pb-20 px-6 max-w-[1600px] mx-auto min-h-[90vh] flex flex-col justify-center border-b-12 border-accent">
         
         {/* Abstract Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -38,7 +38,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
                 <Image src={config.images.hero} alt="Gym Hero" fill sizes="100vw" className="object-cover" priority />
              </m.div>
            )}
-           <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/80 to-transparent" />
+           <div className="absolute inset-0 bg-linear-to-r from-primary via-primary/80 to-transparent" />
            
            {/* Kinetic Stripes */}
            <div className="absolute right-[-10%] top-0 h-[200%] w-32 bg-accent/10 rotate-45 transform origin-top blur-xl" />
@@ -69,7 +69,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
 
       {/* Gallery Reel */}
       {config.images?.gallery && config.images.gallery.length > 0 && (
-        <section className="w-full bg-accent py-12 overflow-hidden border-b-[12px] border-secondary/10">
+        <section className="w-full bg-accent py-12 overflow-hidden border-b-12 border-secondary/10">
           <div className="flex gap-4 px-6 overflow-x-auto hide-scrollbar snap-x snap-mandatory">
             {config.images.gallery.map((img, i) => (
               <m.div 
@@ -77,7 +77,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
                 key={i} 
                 className="flex-none w-[80vw] md:w-[40vw] lg:w-[30vw] aspect-video relative skew-x-[-10deg] overflow-hidden snap-center bg-primary border-4 border-secondary/10 group"
               >
-                <Image src={img} alt="Gallery" fill sizes="(max-width: 768px) 80vw, (max-width: 1024px) 40vw, 30vw" className="object-cover skew-x-[10deg] scale-125 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
+                <Image src={img} alt="Gallery" fill sizes="(max-width: 768px) 80vw, (max-width: 1024px) 40vw, 30vw" className="object-cover skew-x-10 scale-125 grayscale group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700" />
               </m.div>
             ))}
           </div>
@@ -121,10 +121,10 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
                   {Icon}
                 </div>
                 
-                <h3 className="text-3xl md:text-4xl font-black italic tracking-tight mb-4 font-outfit">{svc.name}</h3>
-                <div className="text-5xl font-black italic mb-8 font-outfit tracking-tighter">{svc.price}</div>
-                
-                {svc.desc && <p className="text-secondary/60 font-bold tracking-wide group-hover:text-secondary relative z-10 flex-grow text-lg">{svc.desc}</p>}
+                <h3 className="text-3xl md:text-4xl font-black italic tracking-tight mb-4 font-outfit group-hover:text-primary transition-colors">{svc.name}</h3>
+                <div className="text-5xl font-black italic mb-8 font-outfit tracking-tighter group-hover:text-primary transition-colors">{svc.price}</div>
+
+                {svc.desc && <p className="text-secondary/60 font-bold tracking-wide group-hover:text-primary relative z-10 grow text-lg transition-colors">{svc.desc}</p>}
                 
                 <div className="mt-8 pt-8 border-t border-secondary/20 group-hover:border-accent/80 flex items-center justify-between font-black italic text-accent group-hover:text-primary transition-colors">
                   <span>View Details</span>
@@ -136,8 +136,44 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
         </div>
       </section>
 
+      {/* Catalog / Produk */}
+      {config.catalog && config.catalog.length > 0 && (
+        <section className="py-32 px-6 max-w-[1600px] mx-auto">
+          <m.h2
+            initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
+            className="text-6xl md:text-8xl font-black italic mb-20 text-secondary font-outfit tracking-tighter"
+          >
+            Shop
+          </m.h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12">
+            {config.catalog.map((item, i) => (
+              <m.div
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                key={i}
+                className="bg-secondary/10 border-t-8 border-accent hover:bg-accent transition-colors duration-300 group cursor-default relative overflow-hidden flex flex-col"
+              >
+                {item.image && (
+                  <div className="w-full aspect-square relative overflow-hidden">
+                    <Image src={item.image} alt={item.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
+                  </div>
+                )}
+                <div className="p-8 md:p-12 flex flex-col grow">
+                  <h3 className="text-3xl md:text-4xl font-black italic tracking-tight mb-4 font-outfit group-hover:text-primary transition-colors">{item.name}</h3>
+                  <div className="text-5xl font-black italic mb-8 font-outfit tracking-tighter group-hover:text-primary transition-colors">{item.price}</div>
+                  {item.desc && <p className="text-secondary/60 font-bold tracking-wide group-hover:text-primary relative z-10 grow text-lg transition-colors">{item.desc}</p>}
+                </div>
+              </m.div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Aggressive Footer */}
-      <footer className="bg-accent py-24 px-6 text-center border-t-[16px] border-secondary relative overflow-hidden">
+      <footer className="bg-accent py-24 px-6 text-center border-t-16 border-secondary relative overflow-hidden">
         
         {/* Background text texture */}
         <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none overflow-hidden">
@@ -151,7 +187,7 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
           
           <div className="flex flex-col md:flex-row items-center gap-12 mb-16">
             <p className="text-primary font-black italic text-xl md:text-2xl bg-secondary px-6 py-2 skew-x-[-10deg]">
-              <span className="block skew-x-[10deg]">{config.contact.address}</span>
+              <span className="block skew-x-10">{config.contact.address}</span>
             </p>
           </div>
           
@@ -172,8 +208,23 @@ export const GymTemplate = ({ config }: { config: CustomerConfig }) => {
                 <FacebookLogo weight="fill" /> FB
               </a>
             )}
+            {config.contact.tiktok && (
+              <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:text-secondary transition-colors">
+                <TiktokLogo weight="fill" /> TikTok
+              </a>
+            )}
+            {config.contact.marketplace && (
+              <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-primary hover:text-secondary transition-colors">
+                <Storefront weight="fill" /> Shop
+              </a>
+            )}
+            {config.business?.openingHours?.[0] && (
+              <span className="flex items-center gap-2 text-primary">
+                <Clock weight="fill" /> {config.business.openingHours[0]}
+              </span>
+            )}
           </div>
-          
+
           <div className="mt-24 text-primary font-bold italic tracking-widest text-sm">
             &copy; {new Date().getFullYear()} {config.businessName}. BUILT TO WIN.
           </div>

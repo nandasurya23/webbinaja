@@ -5,9 +5,14 @@ export const config = {
   description: "Menyajikan masakan nusantara autentik sejak 2010. Menggunakan bahan-bahan segar berkualitas tinggi dengan resep rahasia keluarga yang diwariskan turun-temurun.",
   template: "restaurant",
   theme: {
-    primaryColor: "#b91c1c", // Red-700
-    secondaryColor: "#fef3c7", // Amber-50
-    accentColor: "#d97706", // Amber-600
+    // Previously #b91c1c (saturated red) — RestaurantTemplate uses
+    // primaryColor as the full-bleed page background (nav/hero/sections),
+    // so a loud red painted the entire site instead of reading as an
+    // accent. Swapped to a dark wine tone that works as a background,
+    // keeping the warm rose accent for a fine-dining feel.
+    primaryColor: "#1f0a0e", // Wine, near-black
+    secondaryColor: "#fdf2f4", // Warm off-white
+    accentColor: "#f43f5e", // Rose-500
   },
   contact: {
     whatsapp: "6289876543210",

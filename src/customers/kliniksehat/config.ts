@@ -20,9 +20,15 @@ export const config = {
     openingHours: ["Mo-Sa 08:00-20:00"]
   },
   theme: {
+    // accentColor (#0ea5e9, sky blue) was too close to primaryColor
+    // (#1d4ed8, blue) — ProfessionalTemplate uses text-accent for icons
+    // and prices on primary-toned cards, so they nearly vanished into the
+    // background (contrast ~2.42:1). Switched accent to a light cyan that
+    // still reads as "clinical/trustworthy" but is clearly visible against
+    // the blue.
     primaryColor: "#1d4ed8", // Blue-700
     secondaryColor: "#eff6ff", // Blue-50
-    accentColor: "#0ea5e9", // Sky-500
+    accentColor: "#67e8f9", // Cyan-300
   },
   contact: {
     whatsapp: "628111222333",

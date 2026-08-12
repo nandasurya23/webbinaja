@@ -4,7 +4,7 @@ import { CustomerConfig } from '@/types/config';
 import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m, useScroll, useTransform } from 'motion/react';
 import Image from 'next/image';
-import { ArrowRight, MapPin, InstagramLogo, FacebookLogo } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock } from '@phosphor-icons/react/dist/ssr';
 
 export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
   const { scrollY } = useScroll();
@@ -248,6 +248,21 @@ export const RestaurantTemplate = ({ config }: { config: CustomerConfig }) => {
               <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-secondary/60 hover:text-accent transition-colors duration-500 flex items-center gap-2">
                 <FacebookLogo size={16} weight="light" /> Facebook
               </a>
+            )}
+            {config.contact.tiktok && (
+              <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-secondary/60 hover:text-accent transition-colors duration-500 flex items-center gap-2">
+                <TiktokLogo size={16} weight="light" /> TikTok
+              </a>
+            )}
+            {config.contact.marketplace && (
+              <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="text-[10px] uppercase tracking-[0.3em] text-secondary/60 hover:text-accent transition-colors duration-500 flex items-center gap-2">
+                <Storefront size={16} weight="light" /> Marketplace
+              </a>
+            )}
+            {config.business?.openingHours?.[0] && (
+              <span className="text-[10px] uppercase tracking-[0.3em] text-secondary/60 flex items-center gap-2">
+                <Clock size={16} weight="light" /> {config.business.openingHours[0]}
+              </span>
             )}
           </div>
           <div className="text-secondary/40 text-[9px] uppercase tracking-[0.4em] pt-8 border-t border-accent/10">

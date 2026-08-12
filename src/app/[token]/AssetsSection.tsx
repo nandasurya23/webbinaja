@@ -66,8 +66,11 @@ export default function AssetsSection({
 }) {
   function getPreviewUrl(filename: string) {
     if (!filename) return null;
-    if (submissionId) return getSubmissionAssetUrl(submissionId, filename);
+    // Uploads always land under the slug-scoped R2 path (see AssetUploadButton /
+    // uploadAssetAction), so preview must read from there whenever a slug exists —
+    // only fall back to the submission-scoped path before a slug has been set.
     if (slug) return getCustomerAssetUrl(slug, filename);
+    if (submissionId) return getSubmissionAssetUrl(submissionId, filename);
     return null;
   }
 
