@@ -284,6 +284,11 @@ export async function markSubmissionProcessed(id: string, slug: string): Promise
   await db`update submissions set status = 'processed', processed_slug = ${slug} where id = ${id}`;
 }
 
+export async function deleteSubmission(id: string): Promise<void> {
+  const db = sql();
+  await db`delete from submissions where id = ${id}`;
+}
+
 export interface StatusPatch {
   workStatus?: WorkStatus;
   paymentStatus?: PaymentStatus;

@@ -1,9 +1,12 @@
 'use server';
 
-import { getSubmission, updateSubmissionStatus, type StatusPatch } from '@/lib/db';
+import { getSubmission, updateSubmissionStatus, deleteSubmission, type StatusPatch } from '@/lib/db';
 import { isValidSubmissionId } from '@/lib/assets';
 import type { ServiceInput, CatalogItemInput } from '@/lib/customerScaffold';
 import { assertAdminIdentity, requireSession } from './shared';
+import { DeleteObjectCommand } from '@aws-sdk/client-s3';
+import { createR2Client } from '../../../../scripts/assets/r2Client';
+import { R2_BUCKET_NAME, loadR2Credentials } from '../../../../scripts/assets/config';
 
 export type SetStatusResult =
   | { ok: true; message: string; queueNumber: number | null }
@@ -16,6 +19,42 @@ export async function setSubmissionStatusAction(token: string, submissionId: str
 
   if (!isValidSubmissionId(submissionId)) {
     return { ok: false, error: 'ID submission tidak valid.' };
+  }
+
+  if (patch.paymentStatus === 'rejected') {
+    const submission = await getSubmission(submissionId);
+    if (submission) {
+      try {
+        loadR2Credentials();
+        const client = createR2Client();
+        const filesToDelete = [
+          submission.logoFilename,
+          submission.heroFilename,
+          submission.ambianceFilename,
+          ...submission.gallery,
+          ...submission.catalog.map((c) => c.image),
+        ].filter(Boolean) as string[];
+
+        if (filesToDelete.length > 0) {
+          await Promise.allSettled(
+            filesToDelete.map((filename) =>
+              client.send(
+                new DeleteObjectCommand({
+                  Bucket: R2_BUCKET_NAME,
+                  Key: `_submissions/${submissionId}/${filename}`,
+                })
+              )
+            )
+          );
+        }
+      } catch (err) {
+        // If R2 deletion fails, we still proceed to delete the DB record.
+        console.error('Failed to delete assets from R2:', err);
+      }
+
+      await deleteSubmission(submissionId);
+    }
+    return { ok: true, message: 'Pesanan ditolak dan semua data beserta gambarnya telah dihapus.', queueNumber: null };
   }
 
   const updated = await updateSubmissionStatus(submissionId, patch);

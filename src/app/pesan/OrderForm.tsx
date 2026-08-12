@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState, useTransition } from 'react';
+import { useMemo, useRef, useState, useTransition, useCallback } from 'react';
 import {
   Plus,
   Trash,
@@ -80,11 +80,15 @@ function UploadButton({
   kind,
   baseNameHint,
   onUploaded,
+  onUploadStart,
+  onUploadEnd,
 }: {
   submissionId: string;
   kind: 'logo' | 'hero' | 'ambiance' | 'gallery' | 'catalog';
   baseNameHint: string;
   onUploaded: (filename: string) => void;
+  onUploadStart: () => void;
+  onUploadEnd: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [state, setState] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle');
@@ -93,6 +97,7 @@ function UploadButton({
   async function handleFile(file: File) {
     setState('uploading');
     setError(null);
+    onUploadStart();
     const formData = new FormData();
     formData.set('submissionId', submissionId);
     formData.set('kind', kind);
@@ -107,6 +112,7 @@ function UploadButton({
       setState('error');
       setError(res.error ?? 'Upload gagal.');
     }
+    onUploadEnd();
   }
 
   return (
@@ -153,12 +159,16 @@ function PhotoSlot({
   submissionId,
   kind,
   onUploaded,
+  onUploadStart,
+  onUploadEnd,
 }: {
   label: string;
   filename: string;
   submissionId: string;
   kind: 'logo' | 'hero' | 'ambiance';
   onUploaded: (filename: string) => void;
+  onUploadStart: () => void;
+  onUploadEnd: () => void;
 }) {
   return (
     <div className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-zinc-900/30 p-4 transition-colors hover:bg-zinc-900/50">
@@ -178,7 +188,7 @@ function PhotoSlot({
           )}
         </div>
       </div>
-      <UploadButton submissionId={submissionId} kind={kind} baseNameHint={kind} onUploaded={onUploaded} />
+      <UploadButton submissionId={submissionId} kind={kind} baseNameHint={kind} onUploaded={onUploaded} onUploadStart={onUploadStart} onUploadEnd={onUploadEnd} />
     </div>
   );
 }
@@ -238,6 +248,37 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
 
   const [result, setResult] = useState<{ ok: true; whatsappUrl: string; lookupCode: string } | { ok: false; error: string } | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [activeUploads, setActiveUploads] = useState(0);
+
+  const incrementUpload = useCallback(() => setActiveUploads((prev) => prev + 1), []);
+  const decrementUpload = useCallback(() => setActiveUploads((prev) => Math.max(0, prev - 1)), []);
+
+  async function submit() {
+    setResult(null);
+    startTransition(async () => {
+      const res = await submitOrderAction({
+        id: submissionId,
+        businessName,
+        packageTier,
+        template,
+        tagline,
+        description,
+        whatsapp,
+        address,
+        mapsLink,
+        instagram,
+        facebook,
+        logo,
+        hero,
+        ambiance,
+        gallery,
+        services,
+        catalog,
+        website,
+      });
+      setResult(res);
+    });
+  }
 
   if (result?.ok) {
     return (
@@ -284,44 +325,7 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
   }
 
   return (
-    <motion.form
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="flex flex-col gap-10 max-w-[800px] mx-auto w-full pb-24"
-      onKeyDown={(e) => {
-        // Prevent accidental form submission when pressing Enter inside text inputs
-        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
-          e.preventDefault();
-        }
-      }}
-      onSubmit={(e) => {
-        e.preventDefault();
-        setResult(null);
-        startTransition(async () => {
-          const res = await submitOrderAction({
-            id: submissionId,
-            businessName,
-            packageTier,
-            template,
-            tagline,
-            description,
-            whatsapp,
-            address,
-            mapsLink,
-            instagram,
-            facebook,
-            logo,
-            hero,
-            ambiance,
-            gallery,
-            services,
-            catalog,
-            website,
-          });
-          setResult(res);
-        });
-      }}
-    >
+    <div className="flex flex-col gap-10 max-w-[800px] mx-auto w-full pb-24">
       {/* Honeypot */}
       <div className="absolute -left-[9999px]" aria-hidden="true">
         <label>
@@ -431,9 +435,9 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
           <p className="text-sm text-zinc-400 mt-1">Foto berkualitas tinggi membuat bisnis Anda lebih menonjol.</p>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <PhotoSlot label="Logo Brand" filename={logo} submissionId={submissionId} kind="logo" onUploaded={setLogo} />
-          <PhotoSlot label="Banner Utama (Hero)" filename={hero} submissionId={submissionId} kind="hero" onUploaded={setHero} />
-          <PhotoSlot label="Suasana Toko (Opsional)" filename={ambiance} submissionId={submissionId} kind="ambiance" onUploaded={setAmbiance} />
+          <PhotoSlot label="Logo Brand" filename={logo} submissionId={submissionId} kind="logo" onUploaded={setLogo} onUploadStart={incrementUpload} onUploadEnd={decrementUpload} />
+          <PhotoSlot label="Banner Utama (Hero)" filename={hero} submissionId={submissionId} kind="hero" onUploaded={setHero} onUploadStart={incrementUpload} onUploadEnd={decrementUpload} />
+          <PhotoSlot label="Suasana Toko (Opsional)" filename={ambiance} submissionId={submissionId} kind="ambiance" onUploaded={setAmbiance} onUploadStart={incrementUpload} onUploadEnd={decrementUpload} />
         </div>
 
         <div className="rounded-xl border border-white/10 bg-zinc-900/20 p-5 mt-4">
@@ -477,6 +481,8 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
                       kind="gallery"
                       baseNameHint={`gallery-${String(i + 1).padStart(2, '0')}`}
                       onUploaded={(filename) => setGallery((prev) => prev.map((v, idx) => (idx === i ? filename : v)))}
+                      onUploadStart={incrementUpload}
+                      onUploadEnd={decrementUpload}
                     />
                   </div>
                   <Button
@@ -625,6 +631,8 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
                     kind="catalog"
                     baseNameHint={c.name || `produk-${i + 1}`}
                     onUploaded={(filename) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: filename } : v)))}
+                    onUploadStart={incrementUpload}
+                    onUploadEnd={decrementUpload}
                   />
                 </div>
               </motion.div>
@@ -633,21 +641,20 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
         </div>
       </div>
 
-      <div className="border-t border-white/10 pt-8 pb-4 sticky bottom-0 bg-zinc-950/80 backdrop-blur-xl z-20 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {result && !result.ok ? (
-          <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-red-400">
-            <WarningCircle size={16} weight="fill" />
-            {result.error}
-          </p>
-        ) : (
-          <p className="text-sm text-zinc-400">Periksa kembali detail Anda sebelum mengirim.</p>
+      <div className="border-t border-white/10 pt-8 pb-4 sticky bottom-0 bg-zinc-950/80 backdrop-blur-xl z-20">
+        {activeUploads > 0 && (
+          <div className="mb-4 p-3 rounded-lg border border-amber-500/20 bg-amber-500/10 text-amber-400 text-sm flex items-center justify-center gap-2">
+            <Spinner className="animate-spin shrink-0" size={16} />
+            Harap tunggu, masih ada {activeUploads} gambar yang sedang diunggah...
+          </div>
         )}
         <Button
-          type="submit"
+          type="button"
           variant="primary"
           size="lg"
-          disabled={isPending}
-          className="w-full md:w-[200px]"
+          disabled={isPending || activeUploads > 0}
+          onClick={submit}
+          className="w-full"
         >
           {isPending ? (
             <><Spinner size={18} className="animate-spin mr-2" /> Memproses...</>
@@ -655,7 +662,13 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
             'Kirim Pesanan'
           )}
         </Button>
+        {result && !result.ok && (
+          <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-red-400 mt-4">
+            <WarningCircle size={16} weight="fill" />
+            {result.error}
+          </p>
+        )}
       </div>
-    </motion.form>
+    </div>
   );
 }

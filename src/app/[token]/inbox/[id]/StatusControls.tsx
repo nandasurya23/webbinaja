@@ -43,6 +43,10 @@ export default function StatusControls({
     startTransition(async () => {
       const res = await setSubmissionStatusAction(token, submissionId, patch);
       if (res.ok) {
+        if (patch.paymentStatus === 'rejected') {
+          router.push('/' + token + '/inbox');
+          return;
+        }
         if (patch.workStatus) setWorkStatus(patch.workStatus);
         if (patch.paymentStatus) setPaymentStatus(patch.paymentStatus);
         setQueueNumber(res.queueNumber);
