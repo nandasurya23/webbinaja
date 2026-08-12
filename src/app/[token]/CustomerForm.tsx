@@ -402,11 +402,12 @@ export default function CustomerForm({
             setAmbiance={setAmbiance}
             gallery={gallery}
             setGallery={setGallery}
+            submissionId={submissionId}
           />
 
           <ServicesEditor services={services} setServices={setServices} />
 
-          <CatalogEditor token={token} slug={slug} catalog={catalog} setCatalog={setCatalog} />
+          <CatalogEditor token={token} slug={slug} catalog={catalog} setCatalog={setCatalog} submissionId={submissionId} />
 
           <AssetCheckSection
             slug={slug}

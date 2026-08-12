@@ -7,6 +7,7 @@ import { MAX_GALLERY_PHOTOS } from '@/lib/customerLimits';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
+import { getSubmissionAssetUrl, getCustomerAssetUrl } from '@/lib/assets';
 
 export default function AssetsSection({
   token,
@@ -19,6 +20,7 @@ export default function AssetsSection({
   setAmbiance,
   gallery,
   setGallery,
+  submissionId,
 }: {
   token: string;
   slug: string;
@@ -30,7 +32,15 @@ export default function AssetsSection({
   setAmbiance: (v: string) => void;
   gallery: string[];
   setGallery: React.Dispatch<React.SetStateAction<string[]>>;
+  submissionId?: string | null;
 }) {
+  function getPreviewUrl(filename: string) {
+    if (!filename) return null;
+    if (submissionId) return getSubmissionAssetUrl(submissionId, filename);
+    if (slug) return getCustomerAssetUrl(slug, filename);
+    return null;
+  }
+
   return (
     <Section icon={<Images size={18} weight="bold" className="text-blue-500" />} title="Galeri & Asset" hint={`cdn.webbinaja.com/${slug || '<slug>'}/...`}>
       <p className="text-sm text-zinc-400">
@@ -41,29 +51,46 @@ export default function AssetsSection({
       </p>
 
       <div className="flex flex-col gap-4 mt-2">
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <Field label="Logo (nama file)" placeholder="logo.webp" value={logo} onChange={setLogo} />
+        <div className="flex flex-col gap-2">
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Field label="Logo (nama file)" placeholder="logo.webp" value={logo} onChange={setLogo} />
+            </div>
+            <div className="shrink-0 mb-1">
+              <AssetUploadButton token={token} slug={slug} kind="logo" baseNameHint="logo" onUploaded={setLogo} />
+            </div>
           </div>
-          <div className="shrink-0 mb-1">
-            <AssetUploadButton token={token} slug={slug} kind="logo" baseNameHint="logo" onUploaded={setLogo} />
-          </div>
+          {getPreviewUrl(logo) && (
+            <img src={getPreviewUrl(logo)!} alt="Logo Preview" className="h-20 w-auto object-contain rounded-lg border border-white/5 bg-zinc-900/50 p-2" />
+          )}
         </div>
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <Field label="Hero (nama file)" placeholder="hero.webp" value={hero} onChange={setHero} />
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Field label="Hero (nama file)" placeholder="hero.webp" value={hero} onChange={setHero} />
+            </div>
+            <div className="shrink-0 mb-1">
+              <AssetUploadButton token={token} slug={slug} kind="hero" baseNameHint="hero" onUploaded={setHero} />
+            </div>
           </div>
-          <div className="shrink-0 mb-1">
-            <AssetUploadButton token={token} slug={slug} kind="hero" baseNameHint="hero" onUploaded={setHero} />
-          </div>
+          {getPreviewUrl(hero) && (
+            <img src={getPreviewUrl(hero)!} alt="Hero Preview" className="h-32 w-full object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
+          )}
         </div>
-        <div className="flex items-end gap-3">
-          <div className="flex-1">
-            <Field label="Ambiance (opsional)" placeholder="ambiance.webp" value={ambiance} onChange={setAmbiance} />
+
+        <div className="flex flex-col gap-2">
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Field label="Ambiance (opsional)" placeholder="ambiance.webp" value={ambiance} onChange={setAmbiance} />
+            </div>
+            <div className="shrink-0 mb-1">
+              <AssetUploadButton token={token} slug={slug} kind="ambiance" baseNameHint="ambiance" onUploaded={setAmbiance} />
+            </div>
           </div>
-          <div className="shrink-0 mb-1">
-            <AssetUploadButton token={token} slug={slug} kind="ambiance" baseNameHint="ambiance" onUploaded={setAmbiance} />
-          </div>
+          {getPreviewUrl(ambiance) && (
+            <img src={getPreviewUrl(ambiance)!} alt="Ambiance Preview" className="h-32 w-full object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
+          )}
         </div>
       </div>
 
@@ -81,34 +108,39 @@ export default function AssetsSection({
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="flex items-center gap-3 overflow-hidden"
+                className="flex flex-col gap-2 overflow-hidden"
               >
-                <div className="flex-1">
-                  <Input
-                    value={g}
-                    placeholder={`gallery-0${i + 1}.webp`}
-                    onChange={(e) => setGallery((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))}
-                  />
+                <div className="flex items-center gap-3">
+                  <div className="flex-1">
+                    <Input
+                      value={g}
+                      placeholder={`gallery-0${i + 1}.webp`}
+                      onChange={(e) => setGallery((prev) => prev.map((v, idx) => (idx === i ? e.target.value : v)))}
+                    />
+                  </div>
+                  <div className="shrink-0">
+                    <AssetUploadButton
+                      token={token}
+                      slug={slug}
+                      kind="gallery"
+                      baseNameHint={g.replace(/\.[^.]+$/, '') || `gallery-${String(i + 1).padStart(2, '0')}`}
+                      onUploaded={(filename) => setGallery((prev) => prev.map((v, idx) => (idx === i ? filename : v)))}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setGallery((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 shrink-0"
+                    aria-label="Hapus foto galeri"
+                  >
+                    <Trash size={16} />
+                  </Button>
                 </div>
-                <div className="shrink-0">
-                  <AssetUploadButton
-                    token={token}
-                    slug={slug}
-                    kind="gallery"
-                    baseNameHint={g.replace(/\.[^.]+$/, '') || `gallery-${String(i + 1).padStart(2, '0')}`}
-                    onUploaded={(filename) => setGallery((prev) => prev.map((v, idx) => (idx === i ? filename : v)))}
-                  />
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setGallery((prev) => prev.filter((_, idx) => idx !== i))}
-                  className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 shrink-0"
-                  aria-label="Hapus foto galeri"
-                >
-                  <Trash size={16} />
-                </Button>
+                {getPreviewUrl(g) && (
+                  <img src={getPreviewUrl(g)!} alt={`Gallery ${i + 1} Preview`} className="h-24 w-auto object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
+                )}
               </motion.div>
             ))}
           </AnimatePresence>

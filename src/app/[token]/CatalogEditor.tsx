@@ -7,6 +7,7 @@ import { MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { motion, AnimatePresence } from 'motion/react';
+import { getSubmissionAssetUrl, getCustomerAssetUrl } from '@/lib/assets';
 
 export type CatalogItem = { name: string; price: string; desc: string; image: string };
 export const emptyCatalogItem = (): CatalogItem => ({ name: '', price: '', desc: '', image: '' });
@@ -16,12 +17,28 @@ export default function CatalogEditor({
   slug,
   catalog,
   setCatalog,
+  submissionId,
 }: {
   token: string;
   slug: string;
   catalog: CatalogItem[];
   setCatalog: React.Dispatch<React.SetStateAction<CatalogItem[]>>;
+  submissionId?: string | null;
 }) {
+  function getPreviewUrl(filename: string) {
+    if (!filename) return null;
+    if (submissionId) return getSubmissionAssetUrl(submissionId, filename);
+    if (slug) return getCustomerAssetUrl(slug, filename);
+    return null;
+  }
+
+  const formatNumberDisplay = (val: string) => {
+    if (!val) return '';
+    const digits = val.replace(/\D/g, '');
+    if (!digits) return '';
+    return parseInt(digits, 10).toLocaleString('id-ID');
+  };
+
   return (
     <Section icon={<Storefront size={18} weight="bold" className="text-blue-500" />} title="Katalog" hint={`opsional · ${catalog.length}/${MAX_CATALOG_ITEMS}`}>
       <div className="flex flex-col gap-4">
@@ -45,28 +62,33 @@ export default function CatalogEditor({
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs font-medium text-zinc-400">Harga</span>
                 <Input
-                  placeholder="mis. Rp 150.000"
-                  value={c.price}
-                  onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+                  placeholder="mis. 150000"
+                  value={formatNumberDisplay(c.price)}
+                  onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value.replace(/\D/g, '') } : v)))}
                 />
               </div>
               <div className="flex flex-col gap-1.5">
                 <span className="text-xs font-medium text-zinc-400">Gambar Produk</span>
-                <div className="flex items-center gap-2">
-                  <Input
-                    placeholder="Nama file (produk-01.webp)"
-                    value={c.image}
-                    onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: e.target.value } : v)))}
-                  />
-                  <div className="shrink-0">
-                    <AssetUploadButton
-                      token={token}
-                      slug={slug}
-                      kind="catalog"
-                      baseNameHint={c.image.replace(/\.[^.]+$/, '') || c.name || `produk-${i + 1}`}
-                      onUploaded={(filename) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: filename } : v)))}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      placeholder="Nama file (produk-01.webp)"
+                      value={c.image}
+                      onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: e.target.value } : v)))}
                     />
+                    <div className="shrink-0">
+                      <AssetUploadButton
+                        token={token}
+                        slug={slug}
+                        kind="catalog"
+                        baseNameHint={c.image.replace(/\.[^.]+$/, '') || c.name || `produk-${i + 1}`}
+                        onUploaded={(filename) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: filename } : v)))}
+                      />
+                    </div>
                   </div>
+                  {getPreviewUrl(c.image) && (
+                    <img src={getPreviewUrl(c.image)!} alt={`Catalog ${i + 1} Preview`} className="h-16 w-16 object-cover rounded-lg border border-white/5 bg-zinc-900/50" />
+                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-1.5">

@@ -229,6 +229,13 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
   const [services, setServices] = useState<Service[]>([emptyService()]);
   const [catalog, setCatalog] = useState<CatalogItem[]>([]);
 
+  const formatNumberDisplay = (val: string) => {
+    if (!val) return '';
+    const digits = val.replace(/\D/g, '');
+    if (!digits) return '';
+    return parseInt(digits, 10).toLocaleString('id-ID');
+  };
+
   const [result, setResult] = useState<{ ok: true; whatsappUrl: string; lookupCode: string } | { ok: false; error: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -281,6 +288,12 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="flex flex-col gap-10 max-w-[800px] mx-auto w-full pb-24"
+      onKeyDown={(e) => {
+        // Prevent accidental form submission when pressing Enter inside text inputs
+        if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+          e.preventDefault();
+        }
+      }}
       onSubmit={(e) => {
         e.preventDefault();
         setResult(null);
@@ -516,9 +529,9 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
                   onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
                 />
                 <Input
-                  placeholder="Harga (Rp 50.000)"
-                  value={s.price}
-                  onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+                  placeholder="Harga (mis. 50000)"
+                  value={formatNumberDisplay(s.price)}
+                  onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value.replace(/\D/g, '') } : v)))}
                 />
                 <Input
                   placeholder="Deskripsi singkat (opsional)"
@@ -593,9 +606,9 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
                     onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
                   />
                   <Input
-                    placeholder="Harga"
-                    value={c.price}
-                    onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+                    placeholder="Harga (mis. 150000)"
+                    value={formatNumberDisplay(c.price)}
+                    onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value.replace(/\D/g, '') } : v)))}
                   />
                 </div>
                 <Input
