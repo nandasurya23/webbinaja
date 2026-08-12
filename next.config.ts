@@ -58,6 +58,7 @@ const nextConfig: NextConfig = {
       // reaching that check. Small margin above 20MB for multipart overhead.
       bodySizeLimit: '21mb',
     },
+    optimizePackageImports: ['@phosphor-icons/react'],
   },
   images: {
     // AVIF first — typically 20-30% smaller than WebP for photos; Next

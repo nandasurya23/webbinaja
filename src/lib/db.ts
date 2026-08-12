@@ -602,6 +602,17 @@ export async function insertCustomerToDb(slug: string, config: CustomerConfig): 
   `;
 }
 
+export async function updateCustomerInDb(slug: string, config: CustomerConfig): Promise<boolean> {
+  const db = sql();
+  const rows = await db`
+    update customers
+    set config = ${JSON.stringify(config)}
+    where slug = ${slug}
+    returning slug
+  `;
+  return rows.length > 0;
+}
+
 export async function updateCustomerCustomDomainInDb(slug: string, customDomain: string | null): Promise<CustomerConfig | null> {
   const db = sql();
   const rows = (await db`
