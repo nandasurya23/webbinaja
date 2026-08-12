@@ -12,9 +12,10 @@ import { useState } from 'react';
 import Image from 'next/image';
 
 function PreviewImage({ url, className, fallbackText, objectFit = 'object-cover' }: { url: string | null | undefined; className: string; fallbackText: string; objectFit?: string }) {
-  const [error, setError] = useState(false);
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
+  const isError = errorUrl === url && url !== null && url !== undefined;
 
-  if (!url || error) {
+  if (!url || isError) {
     return (
       <div className={`flex flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-white/10 bg-zinc-900/20 text-zinc-500 ${className}`}>
         <ImageIcon size={20} className="opacity-50" />
@@ -31,7 +32,7 @@ function PreviewImage({ url, className, fallbackText, objectFit = 'object-cover'
         fill
         sizes="(max-width: 768px) 100vw, 300px"
         className={`${objectFit} transition-opacity duration-300`} 
-        onError={() => setError(true)}
+        onError={() => url && setErrorUrl(url)}
         unoptimized
       />
     </div>
