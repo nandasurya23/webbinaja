@@ -96,9 +96,11 @@ export default function CustomerForm({
   const [submissionId, setSubmissionId] = useState<string | null>(null);
 
   useEffect(() => {
+    let ignore = false;
     const id = searchParams.get('submission');
     if (!id) return;
     getSubmissionForPrefillAction(token, id).then((res) => {
+      if (ignore) return;
       if (!res.ok) return;
       setSubmissionId(id);
       setBusinessName(res.businessName);
@@ -117,6 +119,9 @@ export default function CustomerForm({
       if (res.services.length) setServices(res.services.map((s) => ({ name: s.name, price: s.price, desc: s.desc ?? '' })));
       if (res.catalog.length) setCatalog(res.catalog.map((c) => ({ name: c.name, price: c.price, desc: c.desc ?? '', image: c.image })));
     });
+    return () => {
+      ignore = true;
+    };
   }, [searchParams, token]);
 
   const assetSignature = useMemo(
