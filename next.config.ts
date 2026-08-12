@@ -7,7 +7,12 @@ const isDev = process.env.NODE_ENV === 'development';
 // R2.dev subdomain or a real custom domain if one is set up. Must match
 // exactly what assets.ts resolves to, or next/image and the CSP will block
 // the very images the app serves.
-const assetCdnDomain = process.env.ASSET_CDN_DOMAIN || process.env.R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') || '';
+const assetCdnDomain = 
+  process.env.NEXT_PUBLIC_R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') ||
+  process.env.NEXT_PUBLIC_ASSET_CDN_DOMAIN || 
+  process.env.ASSET_CDN_DOMAIN || 
+  process.env.R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') || 
+  '';
 
 // No nonce-based CSP: this app is fully statically generated (SSG) so pages
 // have no per-request server pass to inject a nonce into. Nonces would force
