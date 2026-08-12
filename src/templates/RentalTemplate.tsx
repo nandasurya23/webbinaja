@@ -5,7 +5,7 @@ import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m } from 'motion/react';
 import Image from 'next/image';
 import { Slider } from '@/components/Slider';
-import { Car, Key, SteeringWheel, GasPump, RoadHorizon, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { Car, Key, SteeringWheel, GasPump, RoadHorizon, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 export const RentalTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -172,6 +172,46 @@ export const RentalTemplate = ({ config }: { config: CustomerConfig }) => {
         </div>
       </section>
 
+      {/* Catalog / Produk Tambahan */}
+      {config.catalog && config.catalog.length > 0 && (
+        <section className="py-24 px-6 max-w-[1600px] mx-auto relative z-10">
+          <div className="mb-12 flex items-end justify-between border-b border-secondary/10 pb-6">
+            <div>
+              <h2 className="text-3xl font-bold tracking-tight font-sans text-secondary mb-2">Produk Tambahan</h2>
+              <p className="text-secondary/60 font-medium">Lengkapi perjalananmu.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {config.catalog.map((item, i) => (
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.1 }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                key={i}
+                className="bg-primary border border-secondary/10 rounded-lg overflow-hidden hover:border-accent hover:shadow-lg transition-all group flex flex-col"
+              >
+                {item.image && (
+                  <div className="w-full aspect-square relative overflow-hidden">
+                    <Image src={item.image} alt={item.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
+                  </div>
+                )}
+                <div className="p-8 flex flex-col flex-grow">
+                  <h3 className="text-2xl font-bold tracking-tight mb-3 text-secondary font-sans group-hover:text-accent transition-colors">{item.name}</h3>
+                  {item.desc && <p className="text-secondary/60 text-sm mb-8 flex-grow leading-relaxed">{item.desc}</p>}
+                  <div className="w-full h-px bg-secondary/5 mb-6 group-hover:bg-accent/20 transition-colors" />
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-mono text-secondary/40 uppercase tracking-widest">Harga</span>
+                    <div className="text-xl font-bold font-mono text-secondary group-hover:text-accent transition-colors">{item.price}</div>
+                  </div>
+                </div>
+              </m.div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Structured Footer */}
       <footer className="bg-secondary text-primary/60 py-16 px-6 relative z-10 border-t-4 border-accent">
         <div className="max-w-[1600px] mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -194,7 +234,7 @@ export const RentalTemplate = ({ config }: { config: CustomerConfig }) => {
               <MapPin weight="fill" size={20} className="text-accent shrink-0 mt-0.5" />
               <p className="text-primary/80 text-sm font-medium leading-relaxed">{config.contact.address}</p>
             </div>
-            <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="text-accent hover:text-primary transition-colors text-sm font-medium w-max">
+            <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="text-primary/80 hover:text-primary transition-colors text-sm font-medium w-max">
               Open in Maps &rarr;
             </a>
           </div>
@@ -214,6 +254,21 @@ export const RentalTemplate = ({ config }: { config: CustomerConfig }) => {
                  <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="text-primary/80 hover:text-primary transition-colors flex items-center gap-2 w-max">
                    <FacebookLogo weight="fill" size={18} /> Facebook
                  </a>
+               )}
+               {config.contact.tiktok && (
+                 <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="text-primary/80 hover:text-primary transition-colors flex items-center gap-2 w-max">
+                   <TiktokLogo weight="fill" size={18} /> TikTok
+                 </a>
+               )}
+               {config.contact.marketplace && (
+                 <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="text-primary/80 hover:text-primary transition-colors flex items-center gap-2 w-max">
+                   <Storefront weight="fill" size={18} /> Marketplace
+                 </a>
+               )}
+               {config.business?.openingHours?.[0] && (
+                 <span className="text-primary/80 flex items-center gap-2 w-max">
+                   <Clock weight="fill" size={18} /> {config.business.openingHours[0]}
+                 </span>
                )}
              </div>
           </div>

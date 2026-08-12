@@ -5,7 +5,7 @@ import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m } from 'motion/react';
 import Image from 'next/image';
 import { Slider } from '@/components/Slider';
-import { Cake, Coffee, Cookie, IceCream, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { Cake, Coffee, Cookie, IceCream, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -97,6 +97,40 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
         </div>
       </section>
 
+      {/* Catalog / Produk Pilihan */}
+      {config.catalog && config.catalog.length > 0 && (
+        <section className="py-24 md:py-32 px-6 max-w-7xl mx-auto">
+          <div className="text-center mb-16 md:mb-24">
+            <h2 className="text-4xl md:text-5xl font-medium mb-4 text-secondary font-outfit">Produk Pilihan</h2>
+            <p className="text-secondary/50 text-lg">Favorit pelanggan kami.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {config.catalog.map((item, i) => (
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: i * 0.1 }}
+                key={i}
+                className="bg-primary rounded-[2rem] border border-secondary/10 overflow-hidden flex flex-col group hover:-translate-y-2 transition-transform duration-500"
+              >
+                {item.image && (
+                  <div className="w-full aspect-square relative overflow-hidden">
+                    <Image src={item.image} alt={item.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                  </div>
+                )}
+                <div className="p-8 md:p-10 flex flex-col flex-grow">
+                  <h3 className="text-2xl md:text-3xl font-medium mb-4 text-secondary font-outfit">{item.name}</h3>
+                  {item.desc && <p className="text-secondary/50 text-lg leading-relaxed mb-8 flex-grow">{item.desc}</p>}
+                  <div className="text-xl md:text-2xl font-medium text-accent font-outfit mt-auto">{item.price}</div>
+                </div>
+              </m.div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Footer */}
       <footer className="py-16 md:py-24 px-6 mt-12 bg-secondary text-primary rounded-t-[3rem] md:rounded-t-[5rem] max-w-[1600px] mx-auto flex flex-col items-center text-center">
         <h3 className="text-3xl md:text-4xl font-medium mb-6 font-outfit">{config.businessName}</h3>
@@ -119,8 +153,23 @@ export const BakeryTemplate = ({ config }: { config: CustomerConfig }) => {
               <FacebookLogo size={20} /> Facebook
             </a>
           )}
+          {config.contact.tiktok && (
+            <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/60 transition-colors">
+              <TiktokLogo size={20} /> TikTok
+            </a>
+          )}
+          {config.contact.marketplace && (
+            <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/60 transition-colors">
+              <Storefront size={20} /> Marketplace
+            </a>
+          )}
+          {config.business?.openingHours?.[0] && (
+            <span className="flex items-center gap-2">
+              <Clock size={20} /> {config.business.openingHours[0]}
+            </span>
+          )}
         </div>
-        
+
         <div className="mt-16 text-primary/50 text-sm">
           &copy; {new Date().getFullYear()} {config.businessName}
         </div>

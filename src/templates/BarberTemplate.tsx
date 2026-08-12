@@ -4,7 +4,7 @@ import { CustomerConfig } from '@/types/config';
 import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m, useScroll, useTransform } from 'motion/react';
 import Image from 'next/image';
-import { ArrowRight, ArrowDownRight, MapPin, InstagramLogo, FacebookLogo } from '@phosphor-icons/react/dist/ssr';
+import { ArrowRight, ArrowDownRight, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock } from '@phosphor-icons/react/dist/ssr';
 
 export const BarberTemplate = ({ config }: { config: CustomerConfig }) => {
   const { scrollY } = useScroll();
@@ -223,10 +223,25 @@ export const BarberTemplate = ({ config }: { config: CustomerConfig }) => {
                 <FacebookLogo size={20} className="group-hover:text-accent transition-colors" /> Facebook
               </a>
             )}
+            {config.contact.tiktok && (
+              <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="flex items-center gap-4 text-sm font-black font-mono uppercase tracking-[0.2em] text-secondary/60 hover:text-accent transition-colors group w-fit">
+                <TiktokLogo size={20} className="group-hover:text-accent transition-colors" /> TikTok
+              </a>
+            )}
+            {config.contact.marketplace && (
+              <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="flex items-center gap-4 text-sm font-black font-mono uppercase tracking-[0.2em] text-secondary/60 hover:text-accent transition-colors group w-fit">
+                <Storefront size={20} className="group-hover:text-accent transition-colors" /> Marketplace
+              </a>
+            )}
+            {config.business?.openingHours?.[0] && (
+              <span className="flex items-center gap-4 text-sm font-black font-mono uppercase tracking-[0.2em] text-secondary/60 w-fit">
+                <Clock size={20} /> {config.business.openingHours[0]}
+              </span>
+            )}
           </div>
         </div>
-        
-        <a 
+
+        <a
           href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20jadwal%20cukur`} 
           target="_blank" 
           rel="noreferrer"

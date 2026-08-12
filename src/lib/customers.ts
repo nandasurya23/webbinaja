@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { CustomerConfig } from '@/types/config';
-import { isValidCustomerSlug, resolveCustomerImages } from '@/lib/assets';
+import { isValidCustomerSlug, resolveCustomerImages, getCustomerAssetUrl } from '@/lib/assets';
 import {
   getCustomerFromDb,
   getCustomerByCustomDomainFromDb,
@@ -66,6 +66,17 @@ function withResolvedImages(slug: string, config: CustomerConfig): CustomerConfi
       ...(resolved.gallery !== undefined && { gallery: resolved.gallery }),
       ...(resolved.ambiance !== undefined && { ambiance: resolved.ambiance }),
     },
+    // `catalog[].image` is stored as a bare R2 filename (like assets.hero
+    // etc.), but templates render it directly as a next/image `src` — never
+    // resolved anywhere before this, so every template's catalog section
+    // (including the 3 that already existed) rendered a broken image for
+    // any real customer. Resolve it the same way hero/gallery/ambiance are.
+    ...(config.catalog && {
+      catalog: config.catalog.map((item) => ({
+        ...item,
+        image: (item.image && getCustomerAssetUrl(slug, item.image)) || item.image,
+      })),
+    }),
   };
 }
 

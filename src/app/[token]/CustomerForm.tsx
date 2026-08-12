@@ -24,6 +24,7 @@ import AssetCheckSection from './AssetCheckSection';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { motion } from 'motion/react';
+import { contrastRatio, CONTRAST_CRITICAL, CONTRAST_WARNING } from '@/lib/colorContrast';
 
 const TEMPLATE_LABELS: Record<string, string> = {
   barber: 'Barbershop',
@@ -59,12 +60,24 @@ export default function CustomerForm({
   const [secondaryColor, setSecondaryColor] = useState(initialData?.theme?.secondaryColor || '#ffffff');
   const [accentColor, setAccentColor] = useState(initialData?.theme?.accentColor || '#f59e0b');
 
+  // Every template renders secondary/accent text directly on top of the
+  // primary-colored page background (bg-primary), so a light primaryColor
+  // (or low-contrast secondary/accent) makes the whole site unreadable.
+  const primarySecondaryContrast = useMemo(() => contrastRatio(primaryColor, secondaryColor), [primaryColor, secondaryColor]);
+  const primaryAccentContrast = useMemo(() => contrastRatio(primaryColor, accentColor), [primaryColor, accentColor]);
+  const worstContrast = Math.min(primarySecondaryContrast ?? Infinity, primaryAccentContrast ?? Infinity);
+  const contrastIsCritical = worstContrast < CONTRAST_CRITICAL;
+  const contrastIsWarning = !contrastIsCritical && worstContrast < CONTRAST_WARNING;
+
   // Kontak
   const [whatsapp, setWhatsapp] = useState(initialData?.contact?.whatsapp || '');
   const [address, setAddress] = useState(initialData?.contact?.address || '');
   const [mapsLink, setMapsLink] = useState(initialData?.contact?.mapsLink || '');
   const [instagram, setInstagram] = useState(initialData?.contact?.instagram || '');
   const [facebook, setFacebook] = useState(initialData?.contact?.facebook || '');
+  const [tiktok, setTiktok] = useState(initialData?.contact?.tiktok || '');
+  const [marketplace, setMarketplace] = useState(initialData?.contact?.marketplace || '');
+  const [openingHours, setOpeningHours] = useState(initialData?.business?.openingHours?.[0] || '');
 
   // Assets
   const [logo, setLogo] = useState(initialData?.assets?.logo || 'logo.webp');
@@ -112,12 +125,22 @@ export default function CustomerForm({
       setMapsLink(res.mapsLink);
       setInstagram(res.instagram);
       setFacebook(res.facebook);
+      setTiktok(res.tiktok);
+      setMarketplace(res.marketplace);
+      setOpeningHours(res.openingHours);
       if (res.logo) setLogo(res.logo);
       if (res.hero) setHero(res.hero);
       if (res.ambiance) setAmbiance(res.ambiance);
       if (res.gallery.length) setGallery(res.gallery);
       if (res.services.length) setServices(res.services.map((s) => ({ name: s.name, price: s.price, desc: s.desc ?? '' })));
       if (res.catalog.length) setCatalog(res.catalog.map((c) => ({ name: c.name, price: c.price, desc: c.desc ?? '', image: c.image })));
+      // Carries the palette the customer picked on /pesan straight into the
+      // create form so the admin doesn't need to repick colors manually —
+      // older submissions predate this field, so falls back to the
+      // existing hardcoded defaults when null.
+      if (res.primaryColor) setPrimaryColor(res.primaryColor);
+      if (res.secondaryColor) setSecondaryColor(res.secondaryColor);
+      if (res.accentColor) setAccentColor(res.accentColor);
     });
     return () => {
       ignore = true;
@@ -176,6 +199,9 @@ export default function CustomerForm({
     setMapsLink('');
     setInstagram('');
     setFacebook('');
+    setTiktok('');
+    setMarketplace('');
+    setOpeningHours('');
     setLogo('logo.webp');
     setHero('hero.webp');
     setAmbiance('');
@@ -231,6 +257,9 @@ export default function CustomerForm({
                 mapsLink,
                 instagram,
                 facebook,
+                tiktok,
+                marketplace,
+                openingHours,
                 logo,
                 hero,
                 ambiance,
@@ -350,6 +379,12 @@ export default function CustomerForm({
           </Section>
 
           <Section icon={<Sparkle size={18} weight="bold" className="text-blue-500" />} title="Warna / Tema">
+            <p className="text-sm text-zinc-400">
+              <strong>Warna Utama</strong> dipakai sebagai warna latar belakang di seluruh halaman template (navbar, hero,
+              section) — sebaiknya tetap gelap. <strong>Warna Sekunder</strong> dan <strong>Warna Aksen</strong> dipakai
+              sebagai warna teks di atas Warna Utama, jadi harus cukup kontras supaya terbaca.
+            </p>
+
             <div className="grid grid-cols-3 gap-6">
               <div className="flex flex-col gap-2">
                 <span className="text-sm font-medium text-zinc-300">Warna Utama</span>
@@ -379,6 +414,21 @@ export default function CustomerForm({
                 />
               </div>
             </div>
+
+            {contrastIsCritical && (
+              <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-red-400 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2">
+                <WarningCircle size={16} weight="fill" className="shrink-0" />
+                Kontras Warna Utama dengan Warna Sekunder/Aksen terlalu rendah — teks di website nanti nyaris tidak
+                terbaca. Pilih Warna Utama yang lebih gelap atau Warna Sekunder/Aksen yang lebih terang sebelum
+                menyimpan.
+              </p>
+            )}
+            {contrastIsWarning && (
+              <p className="flex items-center gap-1.5 text-sm font-medium text-amber-400 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2">
+                <WarningCircle size={16} weight="fill" className="shrink-0" />
+                Kontras warna cukup rendah — sebagian teks mungkin agak sulit dibaca di beberapa bagian template.
+              </p>
+            )}
           </Section>
 
           <Section icon={<Phone size={18} weight="bold" className="text-blue-500" />} title="Kontak">
@@ -388,6 +438,9 @@ export default function CustomerForm({
               <Field label="Google Maps link" type="url" placeholder="https://maps.google.com/..." value={mapsLink} onChange={setMapsLink} />
               <Field label="Instagram URL" type="url" placeholder="https://instagram.com/..." value={instagram} onChange={setInstagram} />
               <Field label="Facebook URL" type="url" placeholder="https://facebook.com/..." value={facebook} onChange={setFacebook} />
+              <Field label="TikTok URL" type="url" placeholder="https://tiktok.com/@..." value={tiktok} onChange={setTiktok} />
+              <Field label="Link Marketplace" type="url" placeholder="https://shopee.co.id/... atau tokopedia.com/..." value={marketplace} onChange={setMarketplace} />
+              <Field label="Jam Operasional" placeholder="Senin-Sabtu 08:00-20:00" value={openingHours} onChange={setOpeningHours} />
             </div>
           </Section>
 
@@ -431,8 +484,14 @@ export default function CustomerForm({
               type="submit"
               variant="primary"
               size="lg"
-              disabled={isPending || !assetsAreChecked}
-              title={!assetsAreChecked ? 'Jalankan "Cek Asset Sekarang" dulu' : undefined}
+              disabled={isPending || !assetsAreChecked || contrastIsCritical}
+              title={
+                !assetsAreChecked
+                  ? 'Jalankan "Cek Asset Sekarang" dulu'
+                  : contrastIsCritical
+                    ? 'Perbaiki kontras Warna Utama vs Sekunder/Aksen dulu'
+                    : undefined
+              }
               className="w-full md:w-[250px]"
             >
               {isPending ? (

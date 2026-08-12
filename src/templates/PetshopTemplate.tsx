@@ -4,7 +4,7 @@ import { CustomerConfig } from '@/types/config';
 import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m } from 'motion/react';
 import Image from 'next/image';
-import { PawPrint, Bone, Cat, Dog, FishSimple, Heart, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { PawPrint, Bone, Cat, Dog, FishSimple, Heart, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -157,6 +157,52 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
         </div>
       </section>
 
+      {/* Catalog / Produk */}
+      {config.catalog && config.catalog.length > 0 && (
+        <section className="py-24 px-6 max-w-[1600px] mx-auto">
+          <div className="text-center mb-16 md:mb-24">
+            <h2 className="text-4xl md:text-6xl font-black mb-6 text-secondary font-outfit">Produk Kami</h2>
+            <p className="text-xl text-secondary/80 font-medium max-w-2xl mx-auto">Pilihan terbaik untuk hewan kesayanganmu.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+            {config.catalog.map((item, i) => {
+              const radiusClasses = [
+                "rounded-[2rem] rounded-tr-[4rem]",
+                "rounded-[2rem] rounded-tl-[4rem]",
+                "rounded-[2rem] rounded-br-[4rem]",
+                "rounded-[2rem] rounded-bl-[4rem]",
+              ];
+              const radius = radiusClasses[i % radiusClasses.length];
+
+              return (
+                <m.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.2 }}
+                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                  key={i}
+                  className={`bg-primary shadow-xl shadow-accent/10 border-2 border-accent/20 overflow-hidden flex flex-col items-start group hover:-translate-y-2 hover:border-accent/50 transition-all duration-300 ${radius}`}
+                >
+                  {item.image && (
+                    <div className="w-full aspect-square relative overflow-hidden">
+                      <Image src={item.image} alt={item.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover group-hover:scale-105 transition-transform duration-300" />
+                    </div>
+                  )}
+                  <div className="p-8 md:p-10 flex flex-col items-start flex-grow">
+                    <h3 className="text-2xl md:text-3xl font-bold mb-4 text-secondary font-outfit">{item.name}</h3>
+                    {item.desc && <p className="text-secondary/80 text-lg mb-8 flex-grow font-medium leading-relaxed">{item.desc}</p>}
+                    <div className="text-xl md:text-2xl font-black text-accent mt-auto font-outfit px-4 py-2 bg-accent/10 rounded-full">
+                      {item.price}
+                    </div>
+                  </div>
+                </m.div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* Playful Footer */}
       <footer className="bg-accent pt-24 pb-12 px-6 text-center mt-12 rounded-t-[3rem] md:rounded-t-[5rem] relative overflow-hidden text-primary">
         
@@ -169,24 +215,39 @@ export const PetshopTemplate = ({ config }: { config: CustomerConfig }) => {
           <p className="text-primary/90 font-bold text-lg md:text-xl mb-12 max-w-md mx-auto">{config.contact.address}</p>
           
           <div className="flex flex-wrap justify-center gap-6 md:gap-12 font-bold text-lg">
-            <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-secondary/20 px-6 py-3 rounded-full">
+            <a href={sanitizeUrl(config.contact.mapsLink)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-primary/10 px-6 py-3 rounded-full">
               <MapPin weight="fill" /> Google Maps
             </a>
-            <a href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-secondary/20 px-6 py-3 rounded-full">
+            <a href={`https://wa.me/${sanitizeWhatsapp(config.contact.whatsapp)}?text=Halo%20${encodeURIComponent(config.businessName)},%20saya%20ingin%20booking%20grooming/belanja`} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-primary/10 px-6 py-3 rounded-full">
               WhatsApp
             </a>
             {config.contact.instagram && (
-              <a href={sanitizeUrl(config.contact.instagram)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-secondary/20 px-6 py-3 rounded-full">
+              <a href={sanitizeUrl(config.contact.instagram)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-primary/10 px-6 py-3 rounded-full">
                 <InstagramLogo weight="fill" /> Instagram
               </a>
             )}
             {config.contact.facebook && (
-              <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-secondary/20 px-6 py-3 rounded-full">
+              <a href={sanitizeUrl(config.contact.facebook)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-primary/10 px-6 py-3 rounded-full">
                 <FacebookLogo weight="fill" /> Facebook
               </a>
             )}
+            {config.contact.tiktok && (
+              <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-primary/10 px-6 py-3 rounded-full">
+                <TiktokLogo weight="fill" /> TikTok
+              </a>
+            )}
+            {config.contact.marketplace && (
+              <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-primary/80 transition-colors bg-primary/10 px-6 py-3 rounded-full">
+                <Storefront weight="fill" /> Marketplace
+              </a>
+            )}
+            {config.business?.openingHours?.[0] && (
+              <span className="flex items-center gap-2 bg-primary/10 px-6 py-3 rounded-full">
+                <Clock weight="fill" /> {config.business.openingHours[0]}
+              </span>
+            )}
           </div>
-          
+
           <div className="mt-20 font-bold text-primary/60 text-sm">
             &copy; {new Date().getFullYear()} {config.businessName}. Made with <Heart weight="fill" className="inline text-primary/90" />
           </div>

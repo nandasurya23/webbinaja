@@ -7,8 +7,15 @@ export const config: CustomerConfig = {
   description: "Toko kue artisan yang menyajikan aneka kue ulang tahun, pastry, dan roti segar setiap hari menggunakan bahan premium tanpa pengawet.",
   template: "bakery",
   theme: {
+    // secondaryColor (#f9a8d4, light pink) was too close in lightness to
+    // primaryColor (#fdfbf7, near-white) — BakeryTemplate uses
+    // text-secondary for headings/body text on the primary background
+    // (and inverts to bg-secondary/text-primary in the footer), so text
+    // was nearly invisible in both places (contrast ~1.73:1). Kept the
+    // cream background and pink-adjacent accent, deepened secondary to a
+    // dark wine-pink for readable text.
     primaryColor: "#fdfbf7",
-    secondaryColor: "#f9a8d4",
+    secondaryColor: "#5b2333",
     accentColor: "#be185d",
   },
   contact: {

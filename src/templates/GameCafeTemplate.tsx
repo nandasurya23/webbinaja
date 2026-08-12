@@ -5,7 +5,7 @@ import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m } from 'motion/react';
 import Image from 'next/image';
 import { Slider } from '@/components/Slider';
-import { Desktop, GameController, Headset, Keyboard, Mouse, Cpu, MapPin, InstagramLogo, FacebookLogo, ArrowRight, Crosshair } from '@phosphor-icons/react/dist/ssr';
+import { Desktop, GameController, Headset, Keyboard, Mouse, Cpu, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock, ArrowRight, Crosshair } from '@phosphor-icons/react/dist/ssr';
 
 export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -107,7 +107,7 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
                 {/* Tech UI overlays */}
                 <div className="absolute top-4 right-4 flex gap-2 z-20">
                    <div className="text-[10px] font-mono text-primary bg-accent px-2 py-1 font-bold shadow-[0_0_10px_rgba(0,242,254,0.5)]">FPS: 240+</div>
-                   <div className="text-[10px] font-mono text-secondary bg-secondary/80 px-2 py-1 font-bold shadow-[0_0_10px_rgba(255,8,68,0.5)]">PING: 5ms</div>
+                   <div className="text-[10px] font-mono text-primary bg-secondary/80 px-2 py-1 font-bold shadow-[0_0_10px_rgba(255,8,68,0.5)]">PING: 5ms</div>
                 </div>
                 
                 {/* Crosshairs Overlay */}
@@ -293,8 +293,23 @@ export const GameCafeTemplate = ({ config }: { config: CustomerConfig }) => {
                 <FacebookLogo weight="fill" /> FB
               </a>
             )}
+            {config.contact.tiktok && (
+              <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-secondary/60 hover:text-accent hover:drop-shadow-[0_0_10px_rgba(0,242,254,0.8)] transition-all">
+                <TiktokLogo weight="fill" /> TikTok
+              </a>
+            )}
+            {config.contact.marketplace && (
+              <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-secondary/60 hover:text-accent hover:drop-shadow-[0_0_10px_rgba(0,242,254,0.8)] transition-all">
+                <Storefront weight="fill" /> Shop
+              </a>
+            )}
+            {config.business?.openingHours?.[0] && (
+              <span className="flex items-center gap-2 text-secondary/60">
+                <Clock weight="fill" /> {config.business.openingHours[0]}
+              </span>
+            )}
           </div>
-          
+
         </div>
         
         <div className="max-w-[1600px] mx-auto mt-16 pt-8 border-t border-accent/20 text-center font-mono text-xs text-accent/50 uppercase tracking-[0.4em]">

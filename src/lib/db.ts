@@ -93,10 +93,17 @@ export interface Submission {
   mapsLink: string | null;
   instagram: string | null;
   facebook: string | null;
+  tiktok: string | null;
+  marketplace: string | null;
+  openingHours: string | null;
   logoFilename: string | null;
   heroFilename: string | null;
   ambianceFilename: string | null;
   packageTier: string | null;
+  themePaletteId: string | null;
+  primaryColor: string | null;
+  secondaryColor: string | null;
+  accentColor: string | null;
   gallery: string[];
   services: ServiceInput[];
   catalog: CatalogItemInput[];
@@ -126,10 +133,17 @@ export interface NewSubmissionInput {
   mapsLink: string;
   instagram: string;
   facebook: string;
+  tiktok: string;
+  marketplace: string;
+  openingHours: string;
   logoFilename?: string;
   heroFilename?: string;
   ambianceFilename?: string;
   packageTier?: string;
+  themePaletteId?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
   gallery: string[];
   services: ServiceInput[];
   catalog: CatalogItemInput[];
@@ -149,10 +163,17 @@ interface SubmissionRow {
   maps_link: string | null;
   instagram: string | null;
   facebook: string | null;
+  tiktok: string | null;
+  marketplace: string | null;
+  opening_hours: string | null;
   logo_filename: string | null;
   hero_filename: string | null;
   ambiance_filename: string | null;
   package_tier: string | null;
+  theme_palette_id: string | null;
+  primary_color: string | null;
+  secondary_color: string | null;
+  accent_color: string | null;
   gallery: string[];
   services: ServiceInput[];
   catalog: CatalogItemInput[];
@@ -177,10 +198,17 @@ function mapRow(row: SubmissionRow): Submission {
     mapsLink: row.maps_link,
     instagram: row.instagram,
     facebook: row.facebook,
+    tiktok: row.tiktok,
+    marketplace: row.marketplace,
+    openingHours: row.opening_hours,
     logoFilename: row.logo_filename,
     heroFilename: row.hero_filename,
     ambianceFilename: row.ambiance_filename,
     packageTier: row.package_tier,
+    themePaletteId: row.theme_palette_id,
+    primaryColor: row.primary_color,
+    secondaryColor: row.secondary_color,
+    accentColor: row.accent_color,
     gallery: row.gallery ?? [],
     services: row.services ?? [],
     catalog: row.catalog ?? [],
@@ -208,13 +236,16 @@ export async function insertSubmission(input: NewSubmissionInput): Promise<{ id:
   const rows = (await db`
     insert into submissions (
       id, business_name, template, tagline, description, whatsapp, address,
-      maps_link, instagram, facebook, logo_filename, hero_filename,
-      ambiance_filename, package_tier, gallery, services, catalog, lookup_code
+      maps_link, instagram, facebook, tiktok, marketplace, opening_hours, logo_filename, hero_filename,
+      ambiance_filename, package_tier, theme_palette_id, primary_color,
+      secondary_color, accent_color, gallery, services, catalog, lookup_code
     ) values (
       ${input.id}, ${input.businessName}, ${input.template}, ${input.tagline}, ${input.description},
       ${input.whatsapp}, ${input.address}, ${input.mapsLink}, ${input.instagram}, ${input.facebook},
+      ${input.tiktok}, ${input.marketplace}, ${input.openingHours},
       ${input.logoFilename ?? null}, ${input.heroFilename ?? null}, ${input.ambianceFilename ?? null},
       ${input.packageTier ?? null},
+      ${input.themePaletteId ?? null}, ${input.primaryColor ?? null}, ${input.secondaryColor ?? null}, ${input.accentColor ?? null},
       ${JSON.stringify(input.gallery)}, ${JSON.stringify(input.services)}, ${JSON.stringify(input.catalog)}, ${lookupCode}
     )
     returning id, lookup_code

@@ -19,10 +19,15 @@ import { motion, AnimatePresence } from 'motion/react';
 import { submitOrderAction, uploadSubmissionAssetAction } from './actions';
 import { CUSTOMER_TEMPLATES } from '@/lib/customerTemplates';
 import { MAX_GALLERY_PHOTOS, MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
+import { THEME_PALETTES } from '@/lib/themePalettes';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import Link from 'next/link';
+import MiniPreview from './MiniPreview';
+import dynamic from 'next/dynamic';
+
+const FullPreview = dynamic(() => import('./FullPreview'), { ssr: false });
 
 type Service = { name: string; price: string; desc: string };
 type CatalogItem = { name: string; price: string; desc: string; image: string };
@@ -222,6 +227,8 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
     PACKAGES.some((p) => p.id === initialPackage) ? (initialPackage as string) : ''
   );
   const [template, setTemplate] = useState('');
+  const [themePaletteId, setThemePaletteId] = useState(THEME_PALETTES[0].id);
+  const [showFullPreview, setShowFullPreview] = useState(false);
   const [tagline, setTagline] = useState('');
   const [description, setDescription] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
@@ -229,6 +236,9 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
   const [mapsLink, setMapsLink] = useState('');
   const [instagram, setInstagram] = useState('');
   const [facebook, setFacebook] = useState('');
+  const [tiktok, setTiktok] = useState('');
+  const [marketplace, setMarketplace] = useState('');
+  const [openingHours, setOpeningHours] = useState('');
   const [website, setWebsite] = useState(''); // honeypot
 
   const [logo, setLogo] = useState('');
@@ -261,6 +271,7 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
         businessName,
         packageTier,
         template,
+        themePaletteId,
         tagline,
         description,
         whatsapp,
@@ -268,6 +279,9 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
         mapsLink,
         instagram,
         facebook,
+        tiktok,
+        marketplace,
+        openingHours,
         logo,
         hero,
         ambiance,
@@ -399,6 +413,77 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
             </div>
           </div>
 
+          <div className="flex flex-col gap-3 mt-6">
+            <span className="text-sm font-medium text-zinc-300">
+              Skema Warna <span className="text-blue-500 ml-1">*</span>
+            </span>
+            <p className="text-xs text-zinc-500">
+              Pilih kombinasi warna yang sudah kami siapkan supaya website Anda tetap enak dilihat dan teksnya
+              gampang dibaca.
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {THEME_PALETTES.map((p) => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setThemePaletteId(p.id)}
+                  className={`rounded-lg border px-3 py-2.5 text-xs font-medium transition-all text-left flex items-center gap-2 ${
+                    themePaletteId === p.id
+                      ? 'border-blue-500 bg-blue-500/10 text-blue-400 shadow-sm shadow-blue-500/20'
+                      : 'border-white/10 bg-zinc-900/50 hover:border-white/20 text-zinc-300 hover:bg-zinc-800'
+                  }`}
+                >
+                  <span className="flex -space-x-1 shrink-0">
+                    <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: p.primaryColor }} />
+                    <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: p.secondaryColor }} />
+                    <span className="w-4 h-4 rounded-full border border-white/20" style={{ backgroundColor: p.accentColor }} />
+                  </span>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <MiniPreview
+              submissionId={submissionId}
+              businessName={businessName}
+              tagline={tagline}
+              logo={logo}
+              hero={hero}
+              palette={THEME_PALETTES.find((p) => p.id === themePaletteId) ?? THEME_PALETTES[0]}
+            />
+            <div className="mt-3 flex justify-end">
+              <Button type="button" variant="outline" size="sm" onClick={() => setShowFullPreview(true)} disabled={!template}>
+                Lihat Preview Template Asli
+              </Button>
+            </div>
+            {showFullPreview && template && (
+              <FullPreview
+                template={template}
+                submissionId={submissionId}
+                businessName={businessName}
+                tagline={tagline}
+                description={description}
+                whatsapp={whatsapp}
+                address={address}
+                mapsLink={mapsLink}
+                instagram={instagram}
+                facebook={facebook}
+                tiktok={tiktok}
+                marketplace={marketplace}
+                openingHours={openingHours}
+                hero={hero}
+                ambiance={ambiance}
+                gallery={gallery}
+                services={services}
+                catalog={catalog}
+                palette={THEME_PALETTES.find((p) => p.id === themePaletteId) ?? THEME_PALETTES[0]}
+                onClose={() => setShowFullPreview(false)}
+              />
+            )}
+          </div>
+
           <div className="mt-6 space-y-6">
             <Field label="Tagline" placeholder="mis. Kopi enak, harga bersahabat" value={tagline} onChange={setTagline} />
             <label className="flex flex-col gap-2">
@@ -425,6 +510,9 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
           <Field label="Tautan Google Maps" type="url" placeholder="https://maps.google.com/..." value={mapsLink} onChange={setMapsLink} />
           <Field label="URL Instagram" type="url" placeholder="https://instagram.com/..." value={instagram} onChange={setInstagram} />
           <Field label="URL Facebook" type="url" placeholder="https://facebook.com/..." value={facebook} onChange={setFacebook} />
+          <Field label="URL TikTok" type="url" placeholder="https://tiktok.com/@..." value={tiktok} onChange={setTiktok} />
+          <Field label="Link Marketplace" type="url" placeholder="https://shopee.co.id/... atau tokopedia.com/..." value={marketplace} onChange={setMarketplace} />
+          <Field label="Jam Operasional" placeholder="Senin-Sabtu 08:00-20:00" value={openingHours} onChange={setOpeningHours} />
         </div>
       </div>
 

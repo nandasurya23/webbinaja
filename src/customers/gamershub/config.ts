@@ -7,8 +7,13 @@ export const config: CustomerConfig = {
   description: "Internet cafe premium dengan PC spesifikasi rata kanan, kursi ergonomis, dan koneksi internet gigabit untuk sesi gaming tanpa lag.",
   template: "gamecafe",
   theme: {
-    primaryColor: "#050505",
-    secondaryColor: "#111827",
+    // secondaryColor (#111827) was nearly as dark as primaryColor
+    // (#050505) — GameCafeTemplate uses text-secondary for almost all
+    // headings/body copy on the primary background, so text was ~invisible
+    // (contrast ~1.15:1). Lightened secondary to a readable off-white,
+    // kept the cyan accent that already had good contrast.
+    primaryColor: "#0f172a",
+    secondaryColor: "#f1f5f9",
     accentColor: "#22d3ee",
   },
   contact: {

@@ -42,6 +42,8 @@ export interface NewCustomerFields {
   mapsLink: string;
   instagram: string;
   facebook: string;
+  tiktok: string;
+  marketplace: string;
   assets?: CustomerAssetsInput;
   services?: ServiceInput[];
   catalog?: CatalogItemInput[];
@@ -56,7 +58,7 @@ function tsString(value: string): string {
 }
 
 export function buildConfigTs(fields: NewCustomerFields): string {
-  const { slug, businessName, template, tagline, description, whatsapp, address, mapsLink, instagram, facebook } = fields;
+  const { slug, businessName, template, tagline, description, whatsapp, address, mapsLink, instagram, facebook, tiktok, marketplace } = fields;
   const packageTier = fields.packageTier ?? 'basic';
 
   const logo = fields.assets?.logo || 'logo.webp';
@@ -110,7 +112,7 @@ export const config: CustomerConfig = {
   contact: {
     whatsapp: ${tsString(whatsapp)},
     address: ${tsString(address)},
-    mapsLink: ${tsString(mapsLink)},${instagram ? `\n    instagram: ${tsString(instagram)},` : ''}${facebook ? `\n    facebook: ${tsString(facebook)},` : ''}
+    mapsLink: ${tsString(mapsLink)},${instagram ? `\n    instagram: ${tsString(instagram)},` : ''}${facebook ? `\n    facebook: ${tsString(facebook)},` : ''}${tiktok ? `\n    tiktok: ${tsString(tiktok)},` : ''}${marketplace ? `\n    marketplace: ${tsString(marketplace)},` : ''}
   },
   services: [
 ${servicesTs}

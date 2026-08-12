@@ -38,6 +38,9 @@ export interface CreateCustomerInput {
   mapsLink: string;
   instagram: string;
   facebook: string;
+  tiktok: string;
+  marketplace: string;
+  openingHours: string;
   logo: string;
   hero: string;
   ambiance: string;
@@ -79,6 +82,9 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
   const mapsLink = input.mapsLink.trim();
   const instagram = input.instagram.trim();
   const facebook = input.facebook.trim();
+  const tiktok = input.tiktok.trim();
+  const marketplace = input.marketplace.trim();
+  const openingHours = input.openingHours.trim();
   const logo = input.logo.trim();
   const hero = input.hero.trim();
   const ambiance = input.ambiance.trim();
@@ -117,6 +123,12 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
   }
   if (facebook && !isSafeUrl(facebook)) {
     return { ok: false, error: 'Facebook URL harus berupa URL http/https yang valid.' };
+  }
+  if (tiktok && !isSafeUrl(tiktok)) {
+    return { ok: false, error: 'TikTok URL harus berupa URL http/https yang valid.' };
+  }
+  if (marketplace && !isSafeUrl(marketplace)) {
+    return { ok: false, error: 'Link marketplace harus berupa URL http/https yang valid.' };
   }
   if (logo && !isValidAssetFilename(logo)) {
     return { ok: false, error: `Nama file logo tidak valid: ${logo}` };
@@ -180,7 +192,10 @@ export async function createCustomerAction(token: string, input: CreateCustomerI
       mapsLink,
       ...(instagram && { instagram }),
       ...(facebook && { facebook }),
+      ...(tiktok && { tiktok }),
+      ...(marketplace && { marketplace }),
     },
+    ...(openingHours && { business: { openingHours: [openingHours] } }),
     services,
     ...(catalog.length > 0 && { catalog }),
   };
@@ -355,6 +370,9 @@ export async function updateCustomerAction(token: string, slug: string, input: C
   const mapsLink = input.mapsLink.trim();
   const instagram = input.instagram.trim();
   const facebook = input.facebook.trim();
+  const tiktok = input.tiktok.trim();
+  const marketplace = input.marketplace.trim();
+  const openingHours = input.openingHours.trim();
   const logo = input.logo.trim();
   const hero = input.hero.trim();
   const ambiance = input.ambiance.trim();
@@ -371,6 +389,8 @@ export async function updateCustomerAction(token: string, slug: string, input: C
   if (mapsLink && !isSafeUrl(mapsLink)) return { ok: false, error: 'Google Maps link harus berupa URL http/https yang valid.' };
   if (instagram && !isSafeUrl(instagram)) return { ok: false, error: 'Instagram URL harus berupa URL http/https yang valid.' };
   if (facebook && !isSafeUrl(facebook)) return { ok: false, error: 'Facebook URL harus berupa URL http/https yang valid.' };
+  if (tiktok && !isSafeUrl(tiktok)) return { ok: false, error: 'TikTok URL harus berupa URL http/https yang valid.' };
+  if (marketplace && !isSafeUrl(marketplace)) return { ok: false, error: 'Link marketplace harus berupa URL http/https yang valid.' };
   if (logo && !isValidAssetFilename(logo)) return { ok: false, error: `Nama file logo tidak valid: ${logo}` };
   if (hero && !isValidAssetFilename(hero)) return { ok: false, error: `Nama file hero tidak valid: ${hero}` };
   if (ambiance && !isValidAssetFilename(ambiance)) return { ok: false, error: `Nama file ambiance tidak valid: ${ambiance}` };
@@ -412,7 +432,10 @@ export async function updateCustomerAction(token: string, slug: string, input: C
       mapsLink,
       ...(instagram && { instagram }),
       ...(facebook && { facebook }),
+      ...(tiktok && { tiktok }),
+      ...(marketplace && { marketplace }),
     },
+    ...(openingHours && { business: { openingHours: [openingHours] } }),
     services,
     ...(catalog.length > 0 && { catalog }),
   };

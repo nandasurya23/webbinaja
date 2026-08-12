@@ -8,7 +8,7 @@ import { getSubmission } from '@/lib/db';
 import { getSubmissionAssetUrl, isValidSubmissionId } from '@/lib/assets';
 import LoginForm from '../../LoginForm';
 import StatusControls from './StatusControls';
-import { ArrowLeft, WhatsappLogo, MapPin, InstagramLogo, FacebookLogo, NotePencil, Key } from '@phosphor-icons/react/dist/ssr';
+import { ArrowLeft, WhatsappLogo, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, NotePencil, Key } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -25,7 +25,7 @@ function Photo({ submissionId, filename, label }: { submissionId: string; filena
   return (
     <div className="flex flex-col gap-2">
       <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-900 border border-white/5 group">
-        <Image src={url} alt={label} fill sizes="(max-width: 640px) 33vw, 160px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        <Image src={url} alt={label} fill sizes="(max-width: 640px) 33vw, 160px" className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
       </div>
       <span className="text-xs text-zinc-400 font-medium truncate">{label}</span>
     </div>
@@ -120,29 +120,51 @@ export default async function SubmissionDetailPage({
               )}
             </div>
             
-            {(submission.instagram || submission.facebook) && (
+            {(submission.instagram || submission.facebook || submission.tiktok || submission.marketplace) && (
               <div className="mt-4 pt-4 border-t border-white/5 flex flex-col gap-3">
                 {submission.instagram && (
                   <a href={submission.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm text-zinc-400 hover:text-white transition-colors w-max">
-                    <InstagramLogo size={18} shrink-0 weight="fill" /> {submission.instagram}
+                    <InstagramLogo size={18} className="shrink-0" weight="fill" /> {submission.instagram}
                   </a>
                 )}
                 {submission.facebook && (
                   <a href={submission.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm text-zinc-400 hover:text-white transition-colors w-max">
-                    <FacebookLogo size={18} shrink-0 weight="fill" /> {submission.facebook}
+                    <FacebookLogo size={18} className="shrink-0" weight="fill" /> {submission.facebook}
+                  </a>
+                )}
+                {submission.tiktok && (
+                  <a href={submission.tiktok} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm text-zinc-400 hover:text-white transition-colors w-max">
+                    <TiktokLogo size={18} className="shrink-0" weight="fill" /> {submission.tiktok}
+                  </a>
+                )}
+                {submission.marketplace && (
+                  <a href={submission.marketplace} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm text-zinc-400 hover:text-white transition-colors w-max">
+                    <Storefront size={18} className="shrink-0" weight="fill" /> {submission.marketplace}
                   </a>
                 )}
               </div>
             )}
           </section>
 
-          {submission.description && (
+          {(submission.description || submission.template || submission.primaryColor) && (
             <section className="rounded-2xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 flex flex-col shadow-sm">
               <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">Deskripsi Bisnis</h2>
-              <p className="text-sm text-zinc-300 leading-relaxed flex-1">{submission.description}</p>
-              {submission.template && (
-                <div className="mt-6 pt-4 border-t border-white/5">
-                  <p className="text-xs text-zinc-400">Template pilihan: <span className="text-blue-400 font-medium">{submission.template}</span></p>
+              {submission.description && <p className="text-sm text-zinc-300 leading-relaxed flex-1">{submission.description}</p>}
+              {(submission.template || submission.primaryColor) && (
+                <div className="mt-6 pt-4 border-t border-white/5 flex flex-col gap-2">
+                  {submission.template && (
+                    <p className="text-xs text-zinc-400">Template pilihan: <span className="text-blue-400 font-medium">{submission.template}</span></p>
+                  )}
+                  {submission.primaryColor && submission.secondaryColor && submission.accentColor && (
+                    <p className="text-xs text-zinc-400 flex items-center gap-2">
+                      Skema warna:
+                      <span className="flex items-center gap-1">
+                        <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: submission.primaryColor }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: submission.secondaryColor }} />
+                        <span className="w-3.5 h-3.5 rounded-full border border-white/20" style={{ backgroundColor: submission.accentColor }} />
+                      </span>
+                    </p>
+                  )}
                 </div>
               )}
             </section>

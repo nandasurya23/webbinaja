@@ -4,7 +4,7 @@ import { CustomerConfig, Testimonial } from '@/types/config';
 import { sanitizeUrl, sanitizeWhatsapp } from '@/lib/url';
 import { m } from 'motion/react';
 import Image from 'next/image';
-import { Pill, FirstAid, Heartbeat, Stethoscope, ShieldCheck, MapPin, InstagramLogo, FacebookLogo, ArrowRight } from '@phosphor-icons/react/dist/ssr';
+import { Pill, FirstAid, Heartbeat, Stethoscope, ShieldCheck, MapPin, InstagramLogo, FacebookLogo, TiktokLogo, Storefront, Clock, ArrowRight } from '@phosphor-icons/react/dist/ssr';
 
 export const ProfessionalTemplate = ({ config }: { config: CustomerConfig }) => {
   return (
@@ -141,6 +141,42 @@ export const ProfessionalTemplate = ({ config }: { config: CustomerConfig }) => 
         </div>
       </section>
 
+      {/* Catalog / Produk */}
+      {config.catalog && config.catalog.length > 0 && (
+        <section className="px-6 py-24 max-w-[1600px] mx-auto">
+          <div className="mb-12 md:mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div>
+              <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-secondary font-sans mb-4">Produk Kami</h2>
+              <p className="text-lg text-secondary/60 font-medium">Pilihan produk yang kami sediakan.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {config.catalog.map((item, i) => (
+              <m.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.2 }}
+                transition={{ duration: 0.6, delay: i * 0.1, ease: [0.16, 1, 0.3, 1] }}
+                key={i}
+                className="bg-primary rounded-[2rem] border border-secondary/10 overflow-hidden flex flex-col group hover:border-accent/30 hover:shadow-lg hover:shadow-accent/5 transition-all duration-300"
+              >
+                {item.image && (
+                  <div className="w-full aspect-square relative overflow-hidden">
+                    <Image src={item.image} alt={item.name} fill sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw" className="object-cover" />
+                  </div>
+                )}
+                <div className="p-8 md:p-10 flex flex-col flex-grow">
+                  <h3 className="text-2xl font-bold text-secondary mb-4 font-sans">{item.name}</h3>
+                  {item.desc && <p className="text-secondary/60 text-lg leading-relaxed mb-8 flex-grow">{item.desc}</p>}
+                  <div className="text-xl font-semibold text-accent mt-auto">{item.price}</div>
+                </div>
+              </m.div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Testimonials */}
       {config.testimonials && config.testimonials.length > 0 && (
         <section className="px-6 py-24 bg-primary border-y border-secondary/10">
@@ -212,9 +248,24 @@ export const ProfessionalTemplate = ({ config }: { config: CustomerConfig }) => 
                   <FacebookLogo size={24} /> Facebook
                 </a>
               )}
+              {config.contact.tiktok && (
+                <a href={sanitizeUrl(config.contact.tiktok)} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-accent transition-colors">
+                  <TiktokLogo size={24} /> TikTok
+                </a>
+              )}
+              {config.contact.marketplace && (
+                <a href={sanitizeUrl(config.contact.marketplace)} target="_blank" rel="noreferrer" className="flex items-center gap-3 hover:text-accent transition-colors">
+                  <Storefront size={24} /> Marketplace
+                </a>
+              )}
+              {config.business?.openingHours?.[0] && (
+                <span className="flex items-center gap-3">
+                  <Clock size={24} /> {config.business.openingHours[0]}
+                </span>
+              )}
             </div>
           </div>
-          
+
         </div>
         <div className="max-w-[1600px] mx-auto mt-24 pt-8 border-t border-secondary/10 text-secondary/60 font-medium">
           &copy; {new Date().getFullYear()} {config.businessName}. All rights reserved.

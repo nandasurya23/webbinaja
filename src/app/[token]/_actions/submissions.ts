@@ -2,6 +2,7 @@
 
 import { getSubmission, updateSubmissionStatus, deleteSubmission, type StatusPatch } from '@/lib/db';
 import { isValidSubmissionId } from '@/lib/assets';
+import { findThemePalette } from '@/lib/themePalettes';
 import type { ServiceInput, CatalogItemInput } from '@/lib/customerScaffold';
 import { assertAdminIdentity, requireSession } from './shared';
 import { DeleteObjectCommand } from '@aws-sdk/client-s3';
@@ -11,6 +12,41 @@ import { R2_BUCKET_NAME, loadR2Credentials } from '../../../../scripts/assets/co
 export type SetStatusResult =
   | { ok: true; message: string; queueNumber: number | null }
   | { ok: false; error: string };
+
+async function deleteSubmissionAndAssets(submissionId: string): Promise<void> {
+  const submission = await getSubmission(submissionId);
+  if (!submission) return;
+
+  try {
+    loadR2Credentials();
+    const client = createR2Client();
+    const filesToDelete = [
+      submission.logoFilename,
+      submission.heroFilename,
+      submission.ambianceFilename,
+      ...submission.gallery,
+      ...submission.catalog.map((c) => c.image),
+    ].filter(Boolean) as string[];
+
+    if (filesToDelete.length > 0) {
+      await Promise.allSettled(
+        filesToDelete.map((filename) =>
+          client.send(
+            new DeleteObjectCommand({
+              Bucket: R2_BUCKET_NAME,
+              Key: `_submissions/${submissionId}/${filename}`,
+            })
+          )
+        )
+      );
+    }
+  } catch (err) {
+    // If R2 deletion fails, we still proceed to delete the DB record.
+    console.error('Failed to delete assets from R2:', err);
+  }
+
+  await deleteSubmission(submissionId);
+}
 
 /** Either role can set status — the only role-gated action is admin management (see auth.ts). */
 export async function setSubmissionStatusAction(token: string, submissionId: string, patch: StatusPatch): Promise<SetStatusResult> {
@@ -22,38 +58,7 @@ export async function setSubmissionStatusAction(token: string, submissionId: str
   }
 
   if (patch.paymentStatus === 'rejected') {
-    const submission = await getSubmission(submissionId);
-    if (submission) {
-      try {
-        loadR2Credentials();
-        const client = createR2Client();
-        const filesToDelete = [
-          submission.logoFilename,
-          submission.heroFilename,
-          submission.ambianceFilename,
-          ...submission.gallery,
-          ...submission.catalog.map((c) => c.image),
-        ].filter(Boolean) as string[];
-
-        if (filesToDelete.length > 0) {
-          await Promise.allSettled(
-            filesToDelete.map((filename) =>
-              client.send(
-                new DeleteObjectCommand({
-                  Bucket: R2_BUCKET_NAME,
-                  Key: `_submissions/${submissionId}/${filename}`,
-                })
-              )
-            )
-          );
-        }
-      } catch (err) {
-        // If R2 deletion fails, we still proceed to delete the DB record.
-        console.error('Failed to delete assets from R2:', err);
-      }
-
-      await deleteSubmission(submissionId);
-    }
+    await deleteSubmissionAndAssets(submissionId);
     return { ok: true, message: 'Pesanan ditolak dan semua data beserta gambarnya telah dihapus.', queueNumber: null };
   }
 
@@ -65,6 +70,21 @@ export async function setSubmissionStatusAction(token: string, submissionId: str
     ok: true,
     message: updated.queueNumber ? `Status diperbarui. Nomor antri: #${updated.queueNumber}` : 'Status diperbarui.',
   };
+}
+
+export type DeleteSubmissionResult = { ok: true; message: string } | { ok: false; error: string };
+
+/** Manual delete for cancelled/unwanted submissions — mirrors the reject-payment cleanup path above. */
+export async function deleteSubmissionAction(token: string, submissionId: string): Promise<DeleteSubmissionResult> {
+  assertAdminIdentity(token);
+  await requireSession();
+
+  if (!isValidSubmissionId(submissionId)) {
+    return { ok: false, error: 'ID submission tidak valid.' };
+  }
+
+  await deleteSubmissionAndAssets(submissionId);
+  return { ok: true, message: 'Pesanan telah dihapus.' };
 }
 
 export type SubmissionPrefillResult =
@@ -79,12 +99,19 @@ export type SubmissionPrefillResult =
       mapsLink: string;
       instagram: string;
       facebook: string;
+      tiktok: string;
+      marketplace: string;
+      openingHours: string;
       logo: string;
       hero: string;
       ambiance: string;
       gallery: string[];
       services: ServiceInput[];
       catalog: CatalogItemInput[];
+      primaryColor: string | null;
+      secondaryColor: string | null;
+      accentColor: string | null;
+      themePaletteLabel: string | null;
     }
   | { ok: false; error: string };
 
@@ -118,11 +145,18 @@ export async function getSubmissionForPrefillAction(token: string, submissionId:
     mapsLink: submission.mapsLink ?? '',
     instagram: submission.instagram ?? '',
     facebook: submission.facebook ?? '',
+    tiktok: submission.tiktok ?? '',
+    marketplace: submission.marketplace ?? '',
+    openingHours: submission.openingHours ?? '',
     logo: submission.logoFilename ?? '',
     hero: submission.heroFilename ?? '',
     ambiance: submission.ambianceFilename ?? '',
     gallery: submission.gallery,
     services: submission.services,
     catalog: submission.catalog,
+    primaryColor: submission.primaryColor,
+    secondaryColor: submission.secondaryColor,
+    accentColor: submission.accentColor,
+    themePaletteLabel: findThemePalette(submission.themePaletteId ?? '')?.label ?? null,
   };
 }
