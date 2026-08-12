@@ -10,7 +10,12 @@ import { CustomerAssets } from '@/types/config';
 // one is ever set up again. No default: an unset value would silently point
 // every asset URL at a domain nobody owns, which is worse than failing loudly
 // at build/asset-check time.
-export const ASSET_CDN_DOMAIN = process.env.ASSET_CDN_DOMAIN || process.env.R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') || '';
+export const ASSET_CDN_DOMAIN = 
+  process.env.NEXT_PUBLIC_R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') ||
+  process.env.NEXT_PUBLIC_ASSET_CDN_DOMAIN || 
+  process.env.ASSET_CDN_DOMAIN || 
+  process.env.R2_CDN_BASE_URL?.replace(/^https?:\/\//, '') || 
+  '';
 export const ASSET_CDN_BASE_URL = ASSET_CDN_DOMAIN ? `https://${ASSET_CDN_DOMAIN}` : '';
 
 // Same slug shape used for subdomains: lowercase letters, digits, single
