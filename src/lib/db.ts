@@ -36,13 +36,18 @@ function localSql(url: string): SqlTag {
   };
 }
 
+let neonClient: SqlTag | undefined;
+
 function sql(): SqlTag {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is not set.');
   if (url.includes('localhost') || url.includes('127.0.0.1')) {
     return localSql(url);
   }
-  return neon(url) as unknown as SqlTag;
+  if (!neonClient) {
+    neonClient = neon(url) as unknown as SqlTag;
+  }
+  return neonClient;
 }
 
 type RawQuery = (text: string, params: unknown[]) => Promise<unknown[]>;
@@ -55,6 +60,8 @@ type RawQuery = (text: string, params: unknown[]) => Promise<unknown[]>;
  * `$1, $2, ...`-style SQL + a params array instead (same shape `pg.Pool.query`
  * and `neon().query` both already accept), still fully parameterized.
  */
+let neonRawClient: unknown;
+
 function rawSql(): RawQuery {
   const url = process.env.DATABASE_URL;
   if (!url) throw new Error('DATABASE_URL is not set.');
@@ -63,7 +70,10 @@ function rawSql(): RawQuery {
     const pool = localPool;
     return async (text, params) => (await pool.query(text, params)).rows;
   }
-  const client = neon(url);
+  if (!neonRawClient) {
+    neonRawClient = neon(url);
+  }
+  const client = neonRawClient as { query: (text: string, params: unknown[]) => Promise<unknown[]> };
   return async (text, params) => (await client.query(text, params)) as unknown[];
 }
 

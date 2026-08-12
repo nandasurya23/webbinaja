@@ -12,17 +12,24 @@ import {
   Key,
   Copy,
   Check,
+  Image as ImageIcon,
+  CheckSquareOffset
 } from '@phosphor-icons/react/dist/ssr';
+import { motion, AnimatePresence } from 'motion/react';
 import { submitOrderAction, uploadSubmissionAssetAction } from './actions';
 import { CUSTOMER_TEMPLATES } from '@/lib/customerTemplates';
 import { MAX_GALLERY_PHOTOS, MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Card } from '@/components/ui/Card';
+import Link from 'next/link';
 
 type Service = { name: string; price: string; desc: string };
 type CatalogItem = { name: string; price: string; desc: string; image: string };
 
-const PACKAGES: { id: string; name: string; price: string }[] = [
-  { id: 'basic', name: 'Paket Basic', price: 'Rp 499.000' },
-  { id: 'business_kit', name: 'Paket Business Kit', price: 'Rp 799.000' },
+const PACKAGES: { id: string; name: string; price: string; desc: string }[] = [
+  { id: 'basic', name: 'Paket Basic', price: 'Rp 499.000', desc: 'Website + domain' },
+  { id: 'business_kit', name: 'Paket Business Kit', price: 'Rp 799.000', desc: '+ Materi promosi awal' },
 ];
 
 const TEMPLATE_LABELS: Record<string, string> = {
@@ -37,35 +44,32 @@ const TEMPLATE_LABELS: Record<string, string> = {
   custom: 'Custom',
 };
 
-const inputClass =
-  'w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm outline-none transition focus:border-white/30 focus:ring-2 focus:ring-white/10 placeholder:text-zinc-500 text-white';
-const smallInputClass =
-  'w-full rounded-md border border-white/10 bg-white/5 px-2.5 py-1.5 text-sm outline-none transition focus:border-white/30 focus:ring-2 focus:ring-white/10 placeholder:text-zinc-500 text-white';
-
 function Field({
   label,
   required,
   placeholder,
   value,
   onChange,
+  type = 'text',
 }: {
   label: string;
   required?: boolean;
   placeholder?: string;
   value: string;
   onChange: (v: string) => void;
+  type?: string;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-zinc-300">
+    <label className="flex flex-col gap-2">
+      <span className="text-sm font-medium text-zinc-300">
         {label}
-        {required && <span className="text-amber-500"> *</span>}
+        {required && <span className="text-blue-500 ml-1">*</span>}
       </span>
-      <input
+      <Input
+        type={type}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={inputClass}
       />
     </label>
   );
@@ -106,7 +110,7 @@ function UploadButton({
   }
 
   return (
-    <div className="flex items-center gap-1.5 shrink-0">
+    <div className="flex flex-col items-end gap-1.5 shrink-0">
       <input
         ref={inputRef}
         type="file"
@@ -118,38 +122,31 @@ function UploadButton({
           if (file) handleFile(file);
         }}
       />
-      <button
+      <Button
         type="button"
+        variant={state === 'done' ? 'secondary' : 'outline'}
+        size="sm"
         disabled={state === 'uploading'}
         onClick={() => inputRef.current?.click()}
-        className="inline-flex items-center gap-1 rounded-md border border-white/10 px-2 py-1.5 text-xs font-medium hover:bg-white/5 transition disabled:opacity-40 disabled:cursor-not-allowed shrink-0 text-zinc-200"
+        className="w-[110px]"
       >
         {state === 'uploading' ? (
-          <Spinner size={13} className="animate-spin" />
+          <><Spinner size={14} className="animate-spin mr-1.5" /> Mengunggah...</>
         ) : state === 'done' ? (
-          <CheckCircle size={13} weight="fill" className="text-emerald-400" />
+          <><CheckCircle size={14} weight="fill" className="text-blue-500 mr-1.5" /> Terunggah</>
         ) : (
-          <UploadSimple size={13} />
+          <><UploadSimple size={14} className="mr-1.5" /> Unggah</>
         )}
-        {state === 'uploading' ? 'Mengunggah...' : state === 'done' ? 'Terunggah' : 'Upload'}
-      </button>
+      </Button>
       {error && (
-        <span className="flex items-center gap-1 text-xs text-red-400">
-          <WarningCircle size={13} weight="fill" />
-          {error}
+        <span className="flex items-center gap-1 text-[10px] text-red-400">
+          <WarningCircle size={12} weight="fill" /> {error}
         </span>
       )}
     </div>
   );
 }
 
-/**
- * Logo/hero/ambiance row for the public order form — upload-only, no
- * editable filename text field. The customer never needs to see or type a
- * filename (that used to sit in a text input next to the upload button,
- * confusing since there was nothing meaningful to type there); this just
- * shows the label, an uploaded/not-uploaded status, and the upload button.
- */
 function PhotoSlot({
   label,
   filename,
@@ -164,17 +161,22 @@ function PhotoSlot({
   onUploaded: (filename: string) => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-3 rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5">
-      <div className="flex items-center gap-2 text-sm min-w-0">
-        <span className="font-medium text-zinc-300 shrink-0">{label}</span>
-        {filename ? (
-          <span className="flex items-center gap-1 text-xs text-emerald-400 truncate">
-            <CheckCircle size={13} weight="fill" />
-            Sudah diunggah
-          </span>
-        ) : (
-          <span className="text-xs text-zinc-500">Belum diunggah</span>
-        )}
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-white/5 bg-zinc-900/30 p-4 transition-colors hover:bg-zinc-900/50">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-zinc-400">
+          <ImageIcon size={20} />
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="text-sm font-medium text-zinc-200">{label}</span>
+          {filename ? (
+            <span className="flex items-center gap-1 text-xs font-medium text-blue-400 truncate mt-0.5">
+              <CheckCircle size={12} weight="fill" />
+              Terunggah
+            </span>
+          ) : (
+            <span className="text-xs text-zinc-500 mt-0.5">PNG, JPG maks 5MB</span>
+          )}
+        </div>
       </div>
       <UploadButton submissionId={submissionId} kind={kind} baseNameHint={kind} onUploaded={onUploaded} />
     </div>
@@ -192,10 +194,9 @@ function CopyButton({ text }: { text: string }) {
           setTimeout(() => setCopied(false), 1500);
         });
       }}
-      className="inline-flex items-center gap-1 text-xs font-medium text-emerald-400 hover:underline shrink-0"
+      className="inline-flex items-center justify-center h-8 w-8 rounded-md bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white transition"
     >
-      {copied ? <Check size={13} weight="bold" /> : <Copy size={13} />}
-      {copied ? 'Disalin' : 'Salin'}
+      {copied ? <Check size={14} weight="bold" className="text-blue-400" /> : <Copy size={14} />}
     </button>
   );
 }
@@ -233,46 +234,53 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
 
   if (result?.ok) {
     return (
-      <div className="rounded-2xl border border-emerald-900/50 bg-emerald-950/30 p-6 sm:p-8">
-        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-emerald-500/15 text-emerald-400 mb-5">
-          <CheckCircle size={24} weight="fill" />
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl border border-blue-500/20 bg-blue-950/20 p-8 shadow-xl backdrop-blur-xl"
+      >
+        <div className="flex items-center justify-center h-16 w-16 rounded-2xl bg-blue-500/20 text-blue-400 mb-6 border border-blue-500/20 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+          <CheckSquareOffset size={32} weight="fill" />
         </div>
-        <h2 className="text-lg font-semibold text-emerald-200 mb-1">Data berhasil dikirim</h2>
-        <p className="text-sm text-emerald-300/80 mb-6">
-          Lanjutkan ke WhatsApp untuk konfirmasi pembayaran — kami akan mulai proses setelah pembayaran diterima.
+        <h2 className="text-2xl font-bold text-white mb-2">Pesanan Terkirim!</h2>
+        <p className="text-zinc-400 mb-8 leading-relaxed max-w-[400px]">
+          Kami telah menerima detail Anda. Lanjutkan ke WhatsApp untuk konfirmasi pembayaran dan kami akan memproses pesanan Anda.
         </p>
 
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-emerald-400/80 mb-1.5 flex items-center gap-1.5">
-            <Key size={13} />
-            Kode Cek Status Pesanan
+        <div className="mb-8 p-4 rounded-xl border border-white/5 bg-black/40 backdrop-blur-md">
+          <p className="text-xs font-semibold uppercase tracking-widest text-zinc-500 mb-3 flex items-center gap-1.5">
+            <Key size={14} />
+            Kode Pelacakan Pesanan
           </p>
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-800 bg-black/20 px-3 py-2">
-            <span className="text-sm font-mono font-bold tracking-widest flex-1">{result.lookupCode}</span>
+          <div className="flex items-center gap-3">
+            <div className="flex-1 rounded-lg border border-blue-500/30 bg-blue-950/30 px-4 py-2.5 font-mono text-lg font-bold tracking-[0.2em] text-blue-400">
+              {result.lookupCode}
+            </div>
             <CopyButton text={result.lookupCode} />
           </div>
-          <p className="text-xs text-emerald-300/60 mt-1.5">
-            Simpan kode ini — dipakai bersama nomor WhatsApp Anda untuk cek status pesanan di halaman{' '}
-            <a href="/status" className="underline">/status</a>.
+          <p className="text-xs text-zinc-500 mt-3">
+            Simpan kode ini untuk mengecek status pesanan Anda nanti di halaman <Link href="/status" className="text-blue-400 hover:underline">/status</Link>.
           </p>
         </div>
 
-        <a
-          href={result.whatsappUrl}
-          target="_blank"
+        <a 
+          href={result.whatsappUrl} 
+          target="_blank" 
           rel="noreferrer"
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-500 text-black px-5 py-3 text-sm font-bold hover:bg-emerald-400 transition"
+          className="inline-flex items-center justify-center rounded-lg bg-blue-500 text-white hover:bg-blue-400 shadow-sm shadow-blue-900/20 h-12 px-6 text-base font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 w-full sm:w-auto mt-4"
         >
-          <WhatsappLogo size={18} weight="fill" />
-          Lanjut ke WhatsApp untuk Pembayaran
+          <WhatsappLogo size={20} weight="fill" className="mr-2" />
+          Lanjut ke WhatsApp
         </a>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <form
-      className="flex flex-col gap-8"
+    <motion.form
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="flex flex-col gap-10 max-w-[800px] mx-auto w-full pb-24"
       onSubmit={(e) => {
         e.preventDefault();
         setResult(null);
@@ -301,7 +309,7 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
         });
       }}
     >
-      {/* Honeypot — hidden from real users via CSS, bots that fill every field will trip it. */}
+      {/* Honeypot */}
       <div className="absolute -left-[9999px]" aria-hidden="true">
         <label>
           Website
@@ -309,236 +317,332 @@ export default function OrderForm({ initialPackage }: { initialPackage?: string 
         </label>
       </div>
 
-      <div className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-zinc-300">
-          Paket <span className="text-amber-500">*</span>
-        </span>
-        <div className="grid sm:grid-cols-2 gap-2">
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">Pilih Paket</h2>
+          <p className="text-sm text-zinc-400 mt-1">Pilih paket yang sesuai dengan kebutuhan Anda.</p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-4">
           {PACKAGES.map((p) => (
             <button
               key={p.id}
               type="button"
               onClick={() => setPackageTier(p.id)}
-              className={`rounded-lg border px-3.5 py-2.5 text-sm font-medium transition text-left ${
-                packageTier === p.id ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-white/10 hover:border-white/30 text-zinc-300'
+              className={`flex flex-col items-start rounded-xl border p-5 text-left transition-all duration-200 ${
+                packageTier === p.id 
+                ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_20px_rgba(16,185,129,0.1)]' 
+                : 'border-white/10 bg-zinc-900/30 hover:border-white/30 hover:bg-zinc-900/50'
               }`}
             >
-              {p.name}
-              <span className="block text-xs font-normal text-zinc-500 mt-0.5">{p.price}</span>
+              <span className={`text-base font-bold ${packageTier === p.id ? 'text-blue-400' : 'text-zinc-200'}`}>
+                {p.name}
+              </span>
+              <span className={`text-xl font-medium mt-2 ${packageTier === p.id ? 'text-white' : 'text-zinc-400'}`}>
+                {p.price}
+              </span>
+              <span className={`text-xs mt-1 ${packageTier === p.id ? 'text-blue-500/80' : 'text-zinc-500'}`}>
+                {p.desc}
+              </span>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Nama bisnis" required placeholder="Cafe Siti" value={businessName} onChange={setBusinessName} />
-        <Field label="Nomor WhatsApp" required placeholder="62812xxxxxxx" value={whatsapp} onChange={setWhatsapp} />
-      </div>
-
-      <div className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-zinc-300">
-          Template <span className="text-amber-500">*</span>
-        </span>
-        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-          {CUSTOMER_TEMPLATES.map((t) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setTemplate(t)}
-              className={`rounded-lg border px-3 py-2 text-xs font-medium transition text-left ${
-                template === t ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-white/10 hover:border-white/30 text-zinc-300'
-              }`}
-            >
-              {TEMPLATE_LABELS[t] ?? t}
-            </button>
-          ))}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">Profil Bisnis</h2>
+          <p className="text-sm text-zinc-400 mt-1">Informasi dasar untuk pembuatan website Anda.</p>
         </div>
-      </div>
+        
+        <Card className="border-none bg-transparent shadow-none">
+          <div className="grid sm:grid-cols-2 gap-6">
+            <Field label="Nama Bisnis" required placeholder="mis. Cafe Siti" value={businessName} onChange={setBusinessName} />
+            <Field label="Nomor WhatsApp" required placeholder="62812xxxxxxx" value={whatsapp} onChange={setWhatsapp} />
+          </div>
 
-      <Field label="Tagline" placeholder="Kopi enak, harga bersahabat" value={tagline} onChange={setTagline} />
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="font-medium text-zinc-300">Deskripsi singkat</span>
-        <textarea
-          rows={3}
-          placeholder="Ceritakan singkat tentang bisnis ini..."
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className={inputClass}
-        />
-      </label>
-
-      <div className="grid sm:grid-cols-2 gap-4">
-        <Field label="Alamat" placeholder="Jl. Contoh No. 1" value={address} onChange={setAddress} />
-        <Field label="Google Maps link" placeholder="https://maps.google.com/..." value={mapsLink} onChange={setMapsLink} />
-        <Field label="Instagram URL" placeholder="https://instagram.com/..." value={instagram} onChange={setInstagram} />
-        <Field label="Facebook URL" placeholder="https://facebook.com/..." value={facebook} onChange={setFacebook} />
-      </div>
-
-      {/* Foto */}
-      <div className="flex flex-col gap-4">
-        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Foto</span>
-        <div className="flex flex-col gap-3">
-          <PhotoSlot label="Logo" filename={logo} submissionId={submissionId} kind="logo" onUploaded={setLogo} />
-          <PhotoSlot label="Foto utama (hero)" filename={hero} submissionId={submissionId} kind="hero" onUploaded={setHero} />
-          <PhotoSlot
-            label="Foto suasana (opsional)"
-            filename={ambiance}
-            submissionId={submissionId}
-            kind="ambiance"
-            onUploaded={setAmbiance}
-          />
-        </div>
-
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium text-zinc-300">
-            Foto galeri
-            <span className="ml-1.5 font-normal text-zinc-500">
-              ({gallery.length}/{MAX_GALLERY_PHOTOS})
+          <div className="flex flex-col gap-3 mt-6">
+            <span className="text-sm font-medium text-zinc-300">
+              Template <span className="text-blue-500 ml-1">*</span>
             </span>
-          </span>
-          {gallery.map((g, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <div className={smallInputClass}>{g || `Foto ${i + 1} belum diunggah`}</div>
-              <UploadButton
-                submissionId={submissionId}
-                kind="gallery"
-                baseNameHint={`gallery-${String(i + 1).padStart(2, '0')}`}
-                onUploaded={(filename) => setGallery((prev) => prev.map((v, idx) => (idx === i ? filename : v)))}
-              />
-              <button
-                type="button"
-                onClick={() => setGallery((prev) => prev.filter((_, idx) => idx !== i))}
-                className="text-zinc-500 hover:text-red-400 p-1.5 shrink-0"
-                aria-label="Hapus foto galeri"
-              >
-                <Trash size={15} />
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {CUSTOMER_TEMPLATES.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTemplate(t)}
+                  className={`rounded-lg border px-4 py-3 text-sm font-medium transition-all text-center ${
+                    template === t 
+                    ? 'border-blue-500 bg-blue-500/10 text-blue-400 shadow-sm shadow-blue-500/20' 
+                    : 'border-white/10 bg-zinc-900/50 hover:border-white/20 text-zinc-300 hover:bg-zinc-800'
+                  }`}
+                >
+                  {TEMPLATE_LABELS[t] ?? t}
+                </button>
+              ))}
             </div>
-          ))}
-          <button
-            type="button"
-            disabled={gallery.length >= MAX_GALLERY_PHOTOS}
-            onClick={() => setGallery((prev) => [...prev, ''])}
-            className="self-start inline-flex items-center gap-1 text-xs font-medium text-amber-500 hover:underline disabled:no-underline disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <Plus size={13} weight="bold" />
-            {gallery.length >= MAX_GALLERY_PHOTOS ? `Maksimal ${MAX_GALLERY_PHOTOS} foto` : 'Tambah foto galeri'}
-          </button>
+          </div>
+
+          <div className="mt-6 space-y-6">
+            <Field label="Tagline" placeholder="mis. Kopi enak, harga bersahabat" value={tagline} onChange={setTagline} />
+            <label className="flex flex-col gap-2">
+              <span className="text-sm font-medium text-zinc-300">Deskripsi Singkat</span>
+              <textarea
+                rows={4}
+                placeholder="Ceritakan singkat tentang bisnis ini..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500/50 resize-none"
+              />
+            </label>
+          </div>
+        </Card>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">Sosial Media & Lokasi</h2>
+          <p className="text-sm text-zinc-400 mt-1">Bantu pelanggan menemukan Anda secara online maupun offline.</p>
+        </div>
+        <div className="grid sm:grid-cols-2 gap-6">
+          <Field label="Alamat" placeholder="Jl. Contoh No. 1" value={address} onChange={setAddress} />
+          <Field label="Tautan Google Maps" type="url" placeholder="https://maps.google.com/..." value={mapsLink} onChange={setMapsLink} />
+          <Field label="URL Instagram" type="url" placeholder="https://instagram.com/..." value={instagram} onChange={setInstagram} />
+          <Field label="URL Facebook" type="url" placeholder="https://facebook.com/..." value={facebook} onChange={setFacebook} />
         </div>
       </div>
 
-      {/* Layanan */}
-      <div className="flex flex-col gap-3">
-        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">Layanan / Produk</span>
-        {services.map((s, i) => (
-          <div key={i} className="grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-start">
-            <input
-              placeholder="Nama layanan"
-              value={s.name}
-              onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <input
-              placeholder="Harga (Rp 50.000)"
-              value={s.price}
-              onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <input
-              placeholder="Deskripsi (opsional)"
-              value={s.desc}
-              onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <button
-              type="button"
-              onClick={() => setServices((prev) => prev.filter((_, idx) => idx !== i))}
-              className="text-zinc-500 hover:text-red-400 p-1.5 shrink-0"
-              aria-label="Hapus layanan"
-            >
-              <Trash size={15} />
-            </button>
-          </div>
-        ))}
-        <button
-          type="button"
-          onClick={() => setServices((prev) => [...prev, emptyService()])}
-          className="self-start inline-flex items-center gap-1 text-xs font-medium text-amber-500 hover:underline"
-        >
-          <Plus size={13} weight="bold" />
-          Tambah layanan
-        </button>
-      </div>
+      {/* Photography */}
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">Fotografi</h2>
+          <p className="text-sm text-zinc-400 mt-1">Foto berkualitas tinggi membuat bisnis Anda lebih menonjol.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          <PhotoSlot label="Logo Brand" filename={logo} submissionId={submissionId} kind="logo" onUploaded={setLogo} />
+          <PhotoSlot label="Banner Utama (Hero)" filename={hero} submissionId={submissionId} kind="hero" onUploaded={setHero} />
+          <PhotoSlot label="Suasana Toko (Opsional)" filename={ambiance} submissionId={submissionId} kind="ambiance" onUploaded={setAmbiance} />
+        </div>
 
-      {/* Katalog */}
-      <div className="flex flex-col gap-3">
-        <span className="text-xs font-semibold uppercase tracking-widest text-zinc-500">
-          Katalog (opsional) · {catalog.length}/{MAX_CATALOG_ITEMS}
-        </span>
-        {catalog.map((c, i) => (
-          <div key={i} className="grid sm:grid-cols-2 gap-2 rounded-lg border border-white/10 p-3">
-            <input
-              placeholder="Nama produk"
-              value={c.name}
-              onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <input
-              placeholder="Harga"
-              value={c.price}
-              onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <div className="flex items-center gap-2">
-              <div className={smallInputClass}>{c.image || 'Foto belum diunggah'}</div>
-              <UploadButton
-                submissionId={submissionId}
-                kind="catalog"
-                baseNameHint={c.name || `produk-${i + 1}`}
-                onUploaded={(filename) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: filename } : v)))}
-              />
+        <div className="rounded-xl border border-white/10 bg-zinc-900/20 p-5 mt-4">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-medium text-white">Foto Galeri</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">Tampilkan karya terbaik Anda ({gallery.length}/{MAX_GALLERY_PHOTOS})</p>
             </div>
-            <input
-              placeholder="Deskripsi (opsional)"
-              value={c.desc}
-              onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <button
+            <Button
               type="button"
-              onClick={() => setCatalog((prev) => prev.filter((_, idx) => idx !== i))}
-              className="col-span-2 self-start inline-flex items-center gap-1 text-xs font-medium text-red-400 hover:underline"
+              variant="outline"
+              size="sm"
+              disabled={gallery.length >= MAX_GALLERY_PHOTOS}
+              onClick={() => setGallery((prev) => [...prev, ''])}
             >
-              <Trash size={13} />
-              Hapus item
-            </button>
+              <Plus size={14} className="mr-1.5" />
+              Tambah Foto
+            </Button>
           </div>
-        ))}
-        <button
-          type="button"
-          disabled={catalog.length >= MAX_CATALOG_ITEMS}
-          onClick={() => setCatalog((prev) => [...prev, emptyCatalogItem()])}
-          className="self-start inline-flex items-center gap-1 text-xs font-medium text-amber-500 hover:underline disabled:no-underline disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <Plus size={13} weight="bold" />
-          {catalog.length >= MAX_CATALOG_ITEMS ? `Maksimal ${MAX_CATALOG_ITEMS} item` : 'Tambah item katalog'}
-        </button>
+          <div className="space-y-3">
+            <AnimatePresence>
+              {gallery.map((g, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginTop: 12 }}
+                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  className="flex items-center gap-3 overflow-hidden"
+                >
+                  <div className="flex-1 flex items-center justify-between gap-3 rounded-lg border border-white/5 bg-zinc-900/50 p-2.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-zinc-800 text-zinc-500">
+                        <ImageIcon size={14} />
+                      </div>
+                      <span className="text-sm text-zinc-300 truncate">
+                        {g || `Slot ${i + 1} - Menunggu unggahan`}
+                      </span>
+                    </div>
+                    <UploadButton
+                      submissionId={submissionId}
+                      kind="gallery"
+                      baseNameHint={`gallery-${String(i + 1).padStart(2, '0')}`}
+                      onUploaded={(filename) => setGallery((prev) => prev.map((v, idx) => (idx === i ? filename : v)))}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setGallery((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 shrink-0"
+                  >
+                    <Trash size={16} />
+                  </Button>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {gallery.length === 0 && (
+              <div className="text-center p-6 border border-dashed border-white/10 rounded-lg text-sm text-zinc-500">
+                Belum ada foto galeri. Klik &quot;Tambah Foto&quot; untuk memulai.
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={isPending}
-        className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white text-black px-4 py-3 text-sm font-bold transition hover:bg-zinc-200 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isPending ? 'Mengirim...' : 'Kirim Data'}
-      </button>
+      {/* Services */}
+      <div className="space-y-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-white tracking-tight">Layanan & Harga</h2>
+            <p className="text-sm text-zinc-400 mt-1">Cantumkan layanan Anda beserta harganya.</p>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setServices((prev) => [...prev, emptyService()])}>
+            <Plus size={14} className="mr-1.5" />
+            Tambah Layanan
+          </Button>
+        </div>
+        
+        <div className="space-y-4">
+          <AnimatePresence>
+            {services.map((s, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="grid sm:grid-cols-[1.5fr_1fr_2fr_auto] gap-3 items-start p-4 rounded-xl border border-white/5 bg-zinc-900/30"
+              >
+                <Input
+                  placeholder="Nama layanan (mis. Potong Rambut)"
+                  value={s.name}
+                  onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
+                />
+                <Input
+                  placeholder="Harga (Rp 50.000)"
+                  value={s.price}
+                  onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+                />
+                <Input
+                  placeholder="Deskripsi singkat (opsional)"
+                  value={s.desc}
+                  onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setServices((prev) => prev.filter((_, idx) => idx !== i))}
+                  className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10"
+                >
+                  <Trash size={16} />
+                </Button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {services.length === 0 && (
+            <div className="text-center p-8 border border-dashed border-white/10 rounded-xl text-sm text-zinc-500">
+              Belum ada layanan. Klik &quot;Tambah Layanan&quot; untuk menambahkan penawaran Anda.
+            </div>
+          )}
+        </div>
+      </div>
 
-      {result && !result.ok && (
-        <p role="alert" className="flex items-center gap-1.5 text-sm text-red-400 -mt-4">
-          <WarningCircle size={16} weight="fill" />
-          {result.error}
-        </p>
-      )}
-    </form>
+      {/* Catalog */}
+      <div className="space-y-6">
+        <div className="flex items-end justify-between">
+          <div>
+            <h2 className="text-xl font-bold text-white tracking-tight">Katalog Produk</h2>
+            <p className="text-sm text-zinc-400 mt-1">Produk fisik yang Anda jual ({catalog.length}/{MAX_CATALOG_ITEMS})</p>
+          </div>
+          <Button 
+            type="button" 
+            variant="outline" 
+            size="sm" 
+            disabled={catalog.length >= MAX_CATALOG_ITEMS}
+            onClick={() => setCatalog((prev) => [...prev, emptyCatalogItem()])}
+          >
+            <Plus size={14} className="mr-1.5" />
+            Tambah Produk
+          </Button>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-4">
+          <AnimatePresence>
+            {catalog.map((c, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex flex-col gap-3 p-5 rounded-xl border border-white/10 bg-zinc-900/40"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-sm font-semibold text-white">Item {i + 1}</span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setCatalog((prev) => prev.filter((_, idx) => idx !== i))}
+                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 px-2 text-xs"
+                  >
+                    <Trash size={14} className="mr-1" /> Hapus
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <Input
+                    placeholder="Nama produk"
+                    value={c.name}
+                    onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
+                  />
+                  <Input
+                    placeholder="Harga"
+                    value={c.price}
+                    onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+                  />
+                </div>
+                <Input
+                  placeholder="Deskripsi (opsional)"
+                  value={c.desc}
+                  onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
+                />
+                <div className="flex items-center justify-between rounded-lg border border-white/5 bg-zinc-950/50 p-2 mt-1">
+                  <span className="text-xs text-zinc-400 pl-2 truncate max-w-[120px]">
+                    {c.image || 'Belum ada gambar'}
+                  </span>
+                  <UploadButton
+                    submissionId={submissionId}
+                    kind="catalog"
+                    baseNameHint={c.name || `produk-${i + 1}`}
+                    onUploaded={(filename) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: filename } : v)))}
+                  />
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      <div className="border-t border-white/10 pt-8 pb-4 sticky bottom-0 bg-zinc-950/80 backdrop-blur-xl z-20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {result && !result.ok ? (
+          <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-red-400">
+            <WarningCircle size={16} weight="fill" />
+            {result.error}
+          </p>
+        ) : (
+          <p className="text-sm text-zinc-400">Periksa kembali detail Anda sebelum mengirim.</p>
+        )}
+        <Button
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={isPending}
+          className="w-full md:w-[200px]"
+        >
+          {isPending ? (
+            <><Spinner size={18} className="animate-spin mr-2" /> Memproses...</>
+          ) : (
+            'Kirim Pesanan'
+          )}
+        </Button>
+      </div>
+    </motion.form>
   );
 }

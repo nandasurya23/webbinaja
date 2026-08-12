@@ -7,7 +7,7 @@ import { listSubmissionsPage, type Submission, type SubmissionStatus, type WorkS
 import LoginForm from '../LoginForm';
 import ListSearchFilterBar from '../ListSearchFilterBar';
 import Pagination from '../Pagination';
-import { ArrowLeft, Envelope, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
+import { Envelope, WhatsappLogo } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -70,15 +70,7 @@ export default async function InboxPage({
   const session = parseSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
   if (!session) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-        <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
-          <h1 className="text-3xl font-semibold tracking-tight mb-1">Inbox Submission</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">Masuk untuk melanjutkan.</p>
-          <LoginForm token={token} />
-        </main>
-      </div>
-    );
+    return <LoginForm token={token} />;
   }
 
   const sp = await searchParams;
@@ -104,121 +96,122 @@ export default async function InboxPage({
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-      <main className="max-w-3xl mx-auto px-4 py-16 sm:py-20">
-        <Link href={`/${token}`} className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 mb-6">
-          <ArrowLeft size={14} />
-          Kembali ke Admin
-        </Link>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-2">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Inbox Submission</h1>
+          <p className="text-sm text-zinc-400">
+            Data yang dikirim customer lewat form pemesanan publik.
+          </p>
+        </div>
+      </div>
 
-        <h1 className="text-3xl font-semibold tracking-tight mb-1">Inbox Submission</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
-          Data yang dikirim customer lewat form pemesanan publik.
-        </p>
+      <ListSearchFilterBar
+        searchPlaceholder="Cari nama bisnis atau nomor WhatsApp..."
+        filters={[
+          {
+            param: 'status',
+            allLabel: 'Semua (termasuk yang sudah jadi)',
+            defaultValue: 'pending',
+            options: Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),
+          },
+          {
+            param: 'workStatus',
+            allLabel: 'Semua status pengerjaan',
+            options: Object.entries(WORK_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+          },
+          {
+            param: 'paymentStatus',
+            allLabel: 'Semua status pembayaran',
+            options: Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => ({ value, label })),
+          },
+        ]}
+      />
 
-        <ListSearchFilterBar
-          searchPlaceholder="Cari nama bisnis atau nomor WhatsApp..."
-          filters={[
-            {
-              param: 'status',
-              allLabel: 'Semua (termasuk yang sudah jadi)',
-              defaultValue: 'pending',
-              options: Object.entries(STATUS_LABELS).map(([value, label]) => ({ value, label })),
-            },
-            {
-              param: 'workStatus',
-              allLabel: 'Semua status pengerjaan',
-              options: Object.entries(WORK_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-            },
-            {
-              param: 'paymentStatus',
-              allLabel: 'Semua status pembayaran',
-              options: Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]) => ({ value, label })),
-            },
-          ]}
-        />
+      {loadError && (
+        <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-sm text-red-400 mb-6">
+          {loadError}
+        </div>
+      )}
 
-        {loadError && (
-          <p className="text-sm text-red-600 dark:text-red-400 mb-6">{loadError}</p>
-        )}
-
-        {submissions.length === 0 && !loadError && (
-          <p className="text-sm text-neutral-400">
+      {submissions.length === 0 && !loadError && (
+        <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-white/10 bg-zinc-950/30">
+          <p className="text-sm text-zinc-400">
             {search || workStatus || paymentStatus
               ? 'Tidak ada submission yang cocok.'
               : status === 'pending'
               ? 'Tidak ada submission yang belum diproses — cek filter "Semua" di atas untuk lihat yang sudah jadi website.'
               : 'Belum ada submission masuk.'}
           </p>
-        )}
+        </div>
+      )}
 
-        <ul className="flex flex-col gap-3">
-          {submissions.map((s) => (
-            <li key={s.id}>
-              <Link
-                href={`/${token}/inbox/${s.id}`}
-                className="flex items-center justify-between gap-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-4 sm:p-5 hover:border-amber-400 dark:hover:border-amber-600 transition"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex items-center justify-center h-9 w-9 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 shrink-0">
-                    <Envelope size={16} weight="bold" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium truncate flex items-center gap-1.5">
-                      {s.businessName}
-                      {s.packageTier && (
-                        <span className="text-[10px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 shrink-0">
-                          {PACKAGE_LABELS[s.packageTier] ?? s.packageTier}
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
-                      <WhatsappLogo size={12} />
-                      {s.whatsapp}
-                    </p>
-                  </div>
+      <ul className="flex flex-col gap-3">
+        {submissions.map((s) => (
+          <li key={s.id}>
+            <Link
+              href={`/${token}/inbox/${s.id}`}
+              className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-white/5 bg-zinc-950/60 p-5 hover:border-blue-500/30 hover:bg-zinc-900/80 transition-all shadow-sm"
+            >
+              <div className="flex items-start sm:items-center gap-4 min-w-0">
+                <div className="flex items-center justify-center h-10 w-10 rounded-full bg-blue-500/10 text-blue-500 shrink-0 border border-blue-500/20 group-hover:scale-110 transition-transform">
+                  <Envelope size={18} weight="fill" />
                 </div>
-                <div className="flex flex-col items-end gap-1.5 shrink-0">
-                  {typeof s.queueNumber === 'number' && (
-                    <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-500">#{s.queueNumber}</span>
-                  )}
-                  <div className="flex items-center gap-1.5">
-                    {s.status === 'processed' && (
-                      <span className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-700 dark:text-purple-400">
-                        Website Jadi
+                <div className="min-w-0 flex flex-col gap-1">
+                  <p className="font-semibold text-white truncate flex items-center gap-2 text-base">
+                    {s.businessName}
+                    {s.packageTier && (
+                      <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 shrink-0">
+                        {PACKAGE_LABELS[s.packageTier] ?? s.packageTier}
                       </span>
                     )}
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                        s.workStatus === 'done'
-                          ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                          : s.workStatus === 'in_progress'
-                          ? 'bg-blue-500/10 text-blue-700 dark:text-blue-400'
-                          : 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-300'
-                      }`}
-                    >
-                      {WORK_STATUS_LABELS[s.workStatus]}
-                    </span>
-                    <span
-                      className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                        s.paymentStatus === 'confirmed'
-                          ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                          : s.paymentStatus === 'rejected'
-                          ? 'bg-red-500/10 text-red-700 dark:text-red-400'
-                          : 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-300'
-                      }`}
-                    >
-                      {PAYMENT_STATUS_LABELS[s.paymentStatus]}
-                    </span>
-                  </div>
+                  </p>
+                  <p className="text-xs text-zinc-400 flex items-center gap-1.5 font-medium">
+                    <WhatsappLogo size={14} weight="fill" className="text-blue-500" />
+                    {s.whatsapp}
+                  </p>
                 </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+              </div>
+              <div className="flex flex-wrap sm:flex-col items-center sm:items-end gap-2 shrink-0">
+                {typeof s.queueNumber === 'number' && (
+                  <span className="text-xs font-mono font-bold text-zinc-500">Antrean #{s.queueNumber}</span>
+                )}
+                <div className="flex items-center gap-2">
+                  {s.status === 'processed' && (
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                      Website Jadi
+                    </span>
+                  )}
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                      s.workStatus === 'done'
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        : s.workStatus === 'in_progress'
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        : 'bg-zinc-800/50 text-zinc-300 border-white/5'
+                    }`}
+                  >
+                    {WORK_STATUS_LABELS[s.workStatus]}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                      s.paymentStatus === 'confirmed'
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                        : s.paymentStatus === 'rejected'
+                        ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                        : 'bg-zinc-800/50 text-zinc-300 border-white/5'
+                    }`}
+                  >
+                    {PAYMENT_STATUS_LABELS[s.paymentStatus]}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
 
-        <Pagination page={page} pageSize={PAGE_SIZE} total={total} basePath={`/${token}/inbox`} searchParams={sp} />
-      </main>
+      <Pagination page={page} pageSize={PAGE_SIZE} total={total} basePath={`/${token}/inbox`} searchParams={sp} />
     </div>
   );
 }

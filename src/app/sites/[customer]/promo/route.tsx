@@ -1,16 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { getCustomerConfig } from '@/lib/customers';
 
-// "Kit Promosi Instan" — a ready-to-post square banner (1080x1080, fits
-// both Instagram feed posts and can be cropped for Stories), generated on
-// request from the customer's own config data (business name, tagline,
-// theme colors, WhatsApp number). Only 'business' package customers get
-// this — a 'basic' customer's slug 404s here even though the route itself
-// is public, so the tier distinction is enforced in code, not just sales
-// process. No remote logo fetch: many customers haven't uploaded a real
-// logo yet (default placeholder filenames may not exist on the CDN), so a
-// network fetch here would be a flaky failure mode for an image-generation
-// request — an initial-letter badge is used instead, which always renders.
 const SIZE = 1080;
 
 export async function GET(
@@ -25,7 +15,7 @@ export async function GET(
   }
 
   const initial = config.businessName.trim().charAt(0).toUpperCase() || '?';
-  const { primaryColor, secondaryColor, accentColor } = config.theme;
+  const { primaryColor, secondaryColor } = config.theme;
 
   return new ImageResponse(
     (
@@ -36,82 +26,149 @@ export async function GET(
           position: 'relative',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 80,
-          background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
-          fontFamily: 'sans-serif',
+          backgroundColor: '#09090b',
+          fontFamily: 'Inter, sans-serif',
+          overflow: 'hidden',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 160,
-            height: 160,
-            borderRadius: '50%',
-            background: accentColor,
-            color: '#111111',
-            fontSize: 72,
-            fontWeight: 700,
-            marginBottom: 48,
-          }}
-        >
-          {initial}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            fontSize: 72,
-            fontWeight: 800,
-            color: '#ffffff',
-            textAlign: 'center',
-            lineHeight: 1.15,
-            marginBottom: 24,
-          }}
-        >
-          {config.businessName}
-        </div>
-        {config.tagline && (
-          <div
-            style={{
-              display: 'flex',
-              fontSize: 34,
-              color: 'rgba(255,255,255,0.85)',
-              textAlign: 'center',
-              marginBottom: 64,
-            }}
-          >
-            {config.tagline}
-          </div>
-        )}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px 48px',
-            borderRadius: 999,
-            background: accentColor,
-            color: '#111111',
-            fontSize: 30,
-            fontWeight: 700,
-          }}
-        >
-          Hubungi via WhatsApp: {config.contact.whatsapp}
-        </div>
+        {/* Background Gradients */}
         <div
           style={{
             position: 'absolute',
-            bottom: 32,
-            right: 40,
+            top: '-20%',
+            left: '-10%',
+            width: '80%',
+            height: '80%',
+            background: `radial-gradient(circle, ${primaryColor}40 0%, transparent 70%)`,
+            filter: 'blur(80px)',
+          }}
+        />
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '-20%',
+            right: '-10%',
+            width: '80%',
+            height: '80%',
+            background: `radial-gradient(circle, ${secondaryColor}30 0%, transparent 70%)`,
+            filter: 'blur(80px)',
+          }}
+        />
+        
+        {/* Grid pattern overlay */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)',
+            backgroundSize: '40px 40px',
+            opacity: 0.5,
+          }}
+        />
+
+        {/* Content Container */}
+        <div
+          style={{
             display: 'flex',
-            fontSize: 20,
-            color: 'rgba(255,255,255,0.55)',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            padding: '120px',
+            zIndex: 10,
           }}
         >
-          dibuat oleh WebbinAja
+          {/* Badge/Logo */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 180,
+              height: 180,
+              borderRadius: 40,
+              background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+              color: '#ffffff',
+              fontSize: 80,
+              fontWeight: 800,
+              marginBottom: 64,
+              boxShadow: `0 20px 40px -10px ${primaryColor}60, inset 0 2px 10px rgba(255,255,255,0.4)`,
+              border: '2px solid rgba(255,255,255,0.2)',
+            }}
+          >
+            {initial}
+          </div>
+
+          {/* Title */}
+          <div
+            style={{
+              display: 'flex',
+              fontSize: 84,
+              fontWeight: 800,
+              color: '#ffffff',
+              textAlign: 'center',
+              lineHeight: 1.1,
+              letterSpacing: '-0.02em',
+              marginBottom: 32,
+              textShadow: '0 4px 20px rgba(0,0,0,0.5)',
+            }}
+          >
+            {config.businessName}
+          </div>
+
+          {/* Tagline */}
+          {config.tagline && (
+            <div
+              style={{
+                display: 'flex',
+                fontSize: 36,
+                fontWeight: 500,
+                color: 'rgba(255,255,255,0.7)',
+                textAlign: 'center',
+                marginBottom: 80,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              {config.tagline}
+            </div>
+          )}
+
+          {/* CTA Button (WhatsApp) */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '24px 56px',
+              borderRadius: 100,
+              background: '#ffffff',
+              color: '#000000',
+              fontSize: 32,
+              fontWeight: 700,
+              boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
+              gap: 16,
+            }}
+          >
+            <span style={{ color: '#25D366' }}>WhatsApp</span>
+            <span>{config.contact.whatsapp}</span>
+          </div>
+        </div>
+
+        {/* Footer Brand */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: 40,
+            width: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            fontSize: 24,
+            fontWeight: 500,
+            color: 'rgba(255,255,255,0.4)',
+            letterSpacing: '0.05em',
+          }}
+        >
+          POWERED BY WEBBINAJA
         </div>
       </div>
     ),

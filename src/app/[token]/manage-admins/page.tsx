@@ -1,12 +1,11 @@
 import { notFound, redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
 import { listAdmins } from '@/lib/db';
 import LoginForm from '../LoginForm';
 import RegisterAdminForm from './RegisterAdminForm';
-import { ArrowLeft, UsersThree } from '@phosphor-icons/react/dist/ssr';
+import { UsersThree, ShieldCheck } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -24,15 +23,7 @@ export default async function ManageAdminsPage({ params }: { params: Promise<{ t
   const session = parseSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
   if (!session) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-        <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
-          <h1 className="text-3xl font-semibold tracking-tight mb-1">Kelola Admin</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">Masuk untuk melanjutkan.</p>
-          <LoginForm token={token} />
-        </main>
-      </div>
-    );
+    return <LoginForm token={token} />;
   }
 
   // Session valid but wrong role — redirect quietly rather than showing a
@@ -45,43 +36,57 @@ export default async function ManageAdminsPage({ params }: { params: Promise<{ t
   const admins = await listAdmins().catch(() => []);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-      <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
-        <Link href={`/${token}`} className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 mb-6">
-          <ArrowLeft size={14} />
-          Kembali ke Admin
-        </Link>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-2">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Kelola Admin</h1>
+          <p className="text-sm text-zinc-400">
+            Daftarkan akun admin baru. Hanya super admin yang bisa mengakses halaman ini.
+          </p>
+        </div>
+      </div>
 
-        <h1 className="text-3xl font-semibold tracking-tight mb-1">Kelola Admin</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">
-          Daftarkan akun admin baru. Hanya super admin yang bisa mengakses halaman ini.
-        </p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        <RegisterAdminForm token={token} />
 
-        <div className="flex flex-col gap-8">
-          <RegisterAdminForm token={token} />
-
-          <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4 flex items-center gap-1.5">
-              <UsersThree size={14} />
+        <section className="rounded-2xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 flex flex-col gap-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 flex items-center gap-2">
+              <UsersThree size={16} />
               Akun Terdaftar ({admins.length})
             </h2>
-            <ul className="flex flex-col gap-2">
-              {admins.map((a) => (
-                <li key={a.id} className="flex items-center justify-between gap-4 text-sm py-1.5 border-b border-neutral-100 dark:border-neutral-800 last:border-0">
-                  <span className="font-medium">{a.username}</span>
-                  <span
-                    className={`text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full ${
-                      a.role === 'super_admin' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-500' : 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-300'
-                    }`}
-                  >
-                    {a.role === 'super_admin' ? 'Super Admin' : 'Admin'}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-      </main>
+          </div>
+          
+          <ul className="flex flex-col gap-3">
+            {admins.map((a) => (
+              <li 
+                key={a.id} 
+                className="flex items-center justify-between gap-4 p-4 rounded-xl border border-white/5 bg-zinc-900/50 hover:bg-zinc-900/80 hover:border-blue-500/20 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className={`flex items-center justify-center h-8 w-8 rounded-full border ${
+                    a.role === 'super_admin' 
+                      ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' 
+                      : 'bg-zinc-800 text-zinc-400 border-white/5'
+                  }`}>
+                    <ShieldCheck size={16} weight={a.role === 'super_admin' ? "fill" : "regular"} />
+                  </div>
+                  <span className="font-semibold text-white">{a.username}</span>
+                </div>
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                    a.role === 'super_admin' 
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' 
+                      : 'bg-zinc-800/50 text-zinc-300 border-white/5'
+                  }`}
+                >
+                  {a.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </div>
     </div>
   );
 }

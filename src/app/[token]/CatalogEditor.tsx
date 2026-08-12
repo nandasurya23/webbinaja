@@ -1,9 +1,12 @@
 'use client';
 
 import { Storefront, Plus, Trash } from '@phosphor-icons/react/dist/ssr';
-import { Section, smallInputClass } from './CustomerFormPieces';
+import { Section } from './CustomerFormPieces';
 import AssetUploadButton from './AssetUploadButton';
 import { MAX_CATALOG_ITEMS } from '@/lib/customerLimits';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { motion, AnimatePresence } from 'motion/react';
 
 export type CatalogItem = { name: string; price: string; desc: string; image: string };
 export const emptyCatalogItem = (): CatalogItem => ({ name: '', price: '', desc: '', image: '' });
@@ -20,62 +23,93 @@ export default function CatalogEditor({
   setCatalog: React.Dispatch<React.SetStateAction<CatalogItem[]>>;
 }) {
   return (
-    <Section icon={<Storefront size={16} />} title="Katalog" hint={`opsional · ${catalog.length}/${MAX_CATALOG_ITEMS}`}>
-      <div className="flex flex-col gap-3">
-        {catalog.map((c, i) => (
-          <div key={i} className="grid sm:grid-cols-2 gap-2 rounded-lg border border-neutral-200 dark:border-neutral-800 p-3">
-            <input
-              placeholder="Nama produk"
-              value={c.name}
-              onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <input
-              placeholder="Harga"
-              value={c.price}
-              onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <div className="flex items-center gap-2">
-              <input
-                placeholder="Nama file gambar (produk-01.webp)"
-                value={c.image}
-                onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: e.target.value } : v)))}
-                className={smallInputClass}
-              />
-              <AssetUploadButton
-                token={token}
-                slug={slug}
-                kind="catalog"
-                baseNameHint={c.image.replace(/\.[^.]+$/, '') || c.name || `produk-${i + 1}`}
-                onUploaded={(filename) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: filename } : v)))}
-              />
-            </div>
-            <input
-              placeholder="Deskripsi (opsional)"
-              value={c.desc}
-              onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <button
-              type="button"
-              onClick={() => setCatalog((prev) => prev.filter((_, idx) => idx !== i))}
-              className="col-span-2 self-start inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:underline"
+    <Section icon={<Storefront size={18} weight="bold" className="text-blue-500" />} title="Katalog" hint={`opsional · ${catalog.length}/${MAX_CATALOG_ITEMS}`}>
+      <div className="flex flex-col gap-4">
+        <AnimatePresence>
+          {catalog.map((c, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="grid sm:grid-cols-2 gap-4 rounded-xl border border-white/5 bg-zinc-900/30 p-4"
             >
-              <Trash size={13} />
-              Hapus item
-            </button>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-zinc-400">Nama Produk</span>
+                <Input
+                  placeholder="mis. Baju Muslim"
+                  value={c.name}
+                  onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-zinc-400">Harga</span>
+                <Input
+                  placeholder="mis. Rp 150.000"
+                  value={c.price}
+                  onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-zinc-400">Gambar Produk</span>
+                <div className="flex items-center gap-2">
+                  <Input
+                    placeholder="Nama file (produk-01.webp)"
+                    value={c.image}
+                    onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: e.target.value } : v)))}
+                  />
+                  <div className="shrink-0">
+                    <AssetUploadButton
+                      token={token}
+                      slug={slug}
+                      kind="catalog"
+                      baseNameHint={c.image.replace(/\.[^.]+$/, '') || c.name || `produk-${i + 1}`}
+                      onUploaded={(filename) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, image: filename } : v)))}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-zinc-400">Deskripsi (opsional)</span>
+                <Input
+                  placeholder="Penjelasan singkat"
+                  value={c.desc}
+                  onChange={(e) => setCatalog((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
+                />
+              </div>
+              <div className="col-span-1 sm:col-span-2 flex justify-end mt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCatalog((prev) => prev.filter((_, idx) => idx !== i))}
+                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+                >
+                  <Trash size={14} className="mr-1.5" />
+                  Hapus Item
+                </Button>
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+
+        {catalog.length === 0 && (
+          <div className="text-center p-6 border border-dashed border-white/10 rounded-xl text-sm text-zinc-500">
+            Katalog kosong. Klik &quot;Tambah item katalog&quot; untuk menambahkan produk.
           </div>
-        ))}
-        <button
+        )}
+
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           disabled={catalog.length >= MAX_CATALOG_ITEMS}
           onClick={() => setCatalog((prev) => [...prev, emptyCatalogItem()])}
-          className="self-start inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline disabled:no-underline disabled:opacity-40 disabled:cursor-not-allowed"
+          className="self-start"
         >
-          <Plus size={13} weight="bold" />
+          <Plus size={14} className="mr-1.5" />
           {catalog.length >= MAX_CATALOG_ITEMS ? `Maksimal ${MAX_CATALOG_ITEMS} item` : 'Tambah item katalog'}
-        </button>
+        </Button>
       </div>
     </Section>
   );

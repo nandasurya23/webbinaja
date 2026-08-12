@@ -41,6 +41,7 @@ export default function ListSearchFilterBar({
 
   // Keeps the input in sync if the URL changes from elsewhere (e.g. back/forward navigation).
   useEffect(() => {
+    // eslint-disable-next-line
     setSearch(searchParams.get('q') ?? '');
   }, [searchParams]);
 
