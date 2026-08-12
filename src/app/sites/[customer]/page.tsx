@@ -1,13 +1,15 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { BarberTemplate } from '@/templates/BarberTemplate';
-import { RestaurantTemplate } from '@/templates/RestaurantTemplate';
-import { ProfessionalTemplate } from '@/templates/ProfessionalTemplate';
-import { BakeryTemplate } from '@/templates/BakeryTemplate';
-import { RentalTemplate } from '@/templates/RentalTemplate';
-import { GameCafeTemplate } from '@/templates/GameCafeTemplate';
-import { GymTemplate } from '@/templates/GymTemplate';
-import { PetshopTemplate } from '@/templates/PetshopTemplate';
+import dynamic from 'next/dynamic';
+
+const BarberTemplate = dynamic(() => import('@/templates/BarberTemplate').then(mod => mod.BarberTemplate));
+const RestaurantTemplate = dynamic(() => import('@/templates/RestaurantTemplate').then(mod => mod.RestaurantTemplate));
+const ProfessionalTemplate = dynamic(() => import('@/templates/ProfessionalTemplate').then(mod => mod.ProfessionalTemplate));
+const BakeryTemplate = dynamic(() => import('@/templates/BakeryTemplate').then(mod => mod.BakeryTemplate));
+const RentalTemplate = dynamic(() => import('@/templates/RentalTemplate').then(mod => mod.RentalTemplate));
+const GameCafeTemplate = dynamic(() => import('@/templates/GameCafeTemplate').then(mod => mod.GameCafeTemplate));
+const GymTemplate = dynamic(() => import('@/templates/GymTemplate').then(mod => mod.GymTemplate));
+const PetshopTemplate = dynamic(() => import('@/templates/PetshopTemplate').then(mod => mod.PetshopTemplate));
 import { MAIN_DOMAIN, getRecentCustomerSlugs, getCustomerConfig } from '@/lib/customers';
 import { JsonLd } from '@/components/JsonLd';
 
@@ -115,9 +117,15 @@ export default async function CustomerSite({ params }: { params: Promise<{ custo
   };
 
   return (
-    <>
+    <div
+      style={{
+        '--primary': config.theme?.primaryColor || '#0a0a0a',
+        '--secondary': config.theme?.secondaryColor || '#ffffff',
+        '--accent': config.theme?.accentColor || '#f59e0b',
+      } as React.CSSProperties}
+    >
       <JsonLd config={config} customerSlug={customer} />
       {renderTemplate()}
-    </>
+    </div>
   );
 }
