@@ -23,11 +23,11 @@ function Photo({ submissionId, filename, label }: { submissionId: string; filena
   const url = getSubmissionAssetUrl(submissionId, filename);
   if (!url) return null;
   return (
-    <div className="flex flex-col gap-1.5">
-      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-800">
-        <Image src={url} alt={label} fill sizes="(max-width: 640px) 33vw, 160px" className="object-cover" />
+    <div className="flex flex-col gap-2">
+      <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-zinc-900 border border-white/5 group">
+        <Image src={url} alt={label} fill sizes="(max-width: 640px) 33vw, 160px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
       </div>
-      <span className="text-[11px] text-neutral-500 truncate">{label}</span>
+      <span className="text-xs text-zinc-400 font-medium truncate">{label}</span>
     </div>
   );
 }
@@ -49,157 +49,165 @@ export default async function SubmissionDetailPage({
   const session = parseSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
   if (!session) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-        <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
-          <h1 className="text-3xl font-semibold tracking-tight mb-1">Inbox Submission</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">Masuk untuk melanjutkan.</p>
-          <LoginForm token={token} />
-        </main>
-      </div>
-    );
+    return <LoginForm token={token} />;
   }
 
   const submission = await getSubmission(id);
   if (!submission) notFound();
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-      <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
-        <Link href={`/${token}/inbox`} className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 mb-6">
-          <ArrowLeft size={14} />
-          Kembali ke Inbox
-        </Link>
+    <div className="flex flex-col gap-6 max-w-4xl">
+      <Link href={`/${token}/inbox`} className="inline-flex items-center gap-2 text-sm font-medium text-zinc-400 hover:text-white transition-colors w-max">
+        <ArrowLeft size={16} />
+        Kembali ke Inbox
+      </Link>
 
-        <div className="flex items-start justify-between gap-4 mb-2">
-          <h1 className="text-3xl font-semibold tracking-tight">{submission.businessName}</h1>
-          <span
-            className={`shrink-0 inline-flex items-center text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full ${
-              submission.status === 'processed'
-                ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
-                : 'bg-neutral-500/10 text-neutral-600 dark:text-neutral-300'
-            }`}
-          >
-            {submission.status === 'processed' ? `Diproses → ${submission.processedSlug}` : 'Pending'}
-          </span>
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">{submission.businessName}</h1>
+          <div className="flex flex-wrap items-center gap-2">
+            <span
+              className={`inline-flex items-center text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border ${
+                submission.status === 'processed'
+                  ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                  : 'bg-zinc-800/50 text-zinc-300 border-white/5'
+              }`}
+            >
+              {submission.status === 'processed' ? `Diproses → ${submission.processedSlug}` : 'Pending'}
+            </span>
+            {submission.packageTier && (
+              <span className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                {PACKAGE_LABELS[submission.packageTier] ?? submission.packageTier}
+              </span>
+            )}
+          </div>
         </div>
-        {submission.packageTier && (
-          <span className="inline-flex items-center text-[11px] font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 mb-3">
-            {PACKAGE_LABELS[submission.packageTier] ?? submission.packageTier}
-          </span>
-        )}
-        {submission.tagline && <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">{submission.tagline}</p>}
 
         <Link
           href={`/${token}?submission=${submission.id}`}
-          className="inline-flex items-center gap-1.5 mb-10 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-4 py-2.5 text-sm font-medium hover:bg-neutral-700 dark:hover:bg-neutral-200 transition"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-500 text-white px-5 py-2.5 text-sm font-semibold hover:bg-blue-400 transition-colors shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.4)]"
         >
-          <NotePencil size={16} weight="bold" />
-          Pakai data ini di form "Buat Customer"
+          <NotePencil size={18} weight="bold" />
+          Buat Website Customer
         </Link>
+      </div>
 
-        <div className="flex flex-col gap-8">
-          <StatusControls
-            token={token}
-            submissionId={submission.id}
-            initialWorkStatus={submission.workStatus}
-            initialPaymentStatus={submission.paymentStatus}
-            initialQueueNumber={submission.queueNumber}
-          />
+      {submission.tagline && <p className="text-lg text-zinc-300 leading-relaxed max-w-2xl">{submission.tagline}</p>}
 
-          <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8 flex flex-col gap-3">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-500">Kontak</h2>
-            <p className="flex items-center gap-2 text-sm">
-              <WhatsappLogo size={15} className="text-emerald-600 shrink-0" /> {submission.whatsapp}
-            </p>
-            <p className="flex items-center gap-2 text-sm">
-              <Key size={15} className="text-neutral-400 shrink-0" /> Kode lookup: <span className="font-mono">{submission.lookupCode}</span>
-            </p>
-            {submission.address && (
-              <p className="flex items-center gap-2 text-sm">
-                <MapPin size={15} className="text-neutral-400 shrink-0" /> {submission.address}
+      <div className="flex flex-col gap-6 mt-4">
+        <StatusControls
+          token={token}
+          submissionId={submission.id}
+          initialWorkStatus={submission.workStatus}
+          initialPaymentStatus={submission.paymentStatus}
+          initialQueueNumber={submission.queueNumber}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <section className="rounded-2xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 flex flex-col gap-4 shadow-sm">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500">Kontak</h2>
+            <div className="flex flex-col gap-3">
+              <p className="flex items-center gap-3 text-sm text-zinc-200">
+                <WhatsappLogo size={18} className="text-blue-500 shrink-0" weight="fill" /> {submission.whatsapp}
               </p>
-            )}
-            {submission.instagram && (
-              <a href={submission.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm hover:underline w-max">
-                <InstagramLogo size={15} className="text-neutral-400 shrink-0" /> {submission.instagram}
-              </a>
-            )}
-            {submission.facebook && (
-              <a href={submission.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-sm hover:underline w-max">
-                <FacebookLogo size={15} className="text-neutral-400 shrink-0" /> {submission.facebook}
-              </a>
+              <p className="flex items-center gap-3 text-sm text-zinc-200">
+                <Key size={18} className="text-zinc-500 shrink-0" weight="fill" /> Kode lookup: <span className="font-mono text-blue-400">{submission.lookupCode}</span>
+              </p>
+              {submission.address && (
+                <p className="flex items-start gap-3 text-sm text-zinc-200">
+                  <MapPin size={18} className="text-zinc-500 shrink-0 mt-0.5" weight="fill" /> <span className="leading-relaxed">{submission.address}</span>
+                </p>
+              )}
+            </div>
+            
+            {(submission.instagram || submission.facebook) && (
+              <div className="mt-4 pt-4 border-t border-white/5 flex flex-col gap-3">
+                {submission.instagram && (
+                  <a href={submission.instagram} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm text-zinc-400 hover:text-white transition-colors w-max">
+                    <InstagramLogo size={18} shrink-0 weight="fill" /> {submission.instagram}
+                  </a>
+                )}
+                {submission.facebook && (
+                  <a href={submission.facebook} target="_blank" rel="noreferrer" className="flex items-center gap-3 text-sm text-zinc-400 hover:text-white transition-colors w-max">
+                    <FacebookLogo size={18} shrink-0 weight="fill" /> {submission.facebook}
+                  </a>
+                )}
+              </div>
             )}
           </section>
 
           {submission.description && (
-            <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-3">Deskripsi</h2>
-              <p className="text-sm leading-relaxed">{submission.description}</p>
-              {submission.template && <p className="text-xs text-neutral-400 mt-3">Template pilihan: {submission.template}</p>}
-            </section>
-          )}
-
-          {(submission.logoFilename || submission.heroFilename || submission.ambianceFilename || submission.gallery.length > 0) && (
-            <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Foto</h2>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                {submission.logoFilename && <Photo submissionId={submission.id} filename={submission.logoFilename} label="Logo" />}
-                {submission.heroFilename && <Photo submissionId={submission.id} filename={submission.heroFilename} label="Hero" />}
-                {submission.ambianceFilename && <Photo submissionId={submission.id} filename={submission.ambianceFilename} label="Ambiance" />}
-                {submission.gallery.map((g, i) => (
-                  <Photo key={i} submissionId={submission.id} filename={g} label={`Galeri ${i + 1}`} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {submission.services.length > 0 && (
-            <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Layanan / Produk</h2>
-              <ul className="flex flex-col gap-3">
-                {submission.services.map((s, i) => (
-                  <li key={i} className="flex items-baseline justify-between gap-4 text-sm">
-                    <div>
-                      <p className="font-medium">{s.name}</p>
-                      {s.desc && <p className="text-xs text-neutral-500">{s.desc}</p>}
-                    </div>
-                    <span className="font-mono text-amber-700 dark:text-amber-500 shrink-0">{s.price}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
-
-          {submission.catalog.length > 0 && (
-            <section className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-500 mb-4">Katalog</h2>
-              <div className="grid sm:grid-cols-2 gap-4">
-                {submission.catalog.map((c, i) => (
-                  <div key={i} className="flex gap-3">
-                    {c.image && (
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-neutral-100 dark:bg-neutral-800 shrink-0">
-                        <Image
-                          src={getSubmissionAssetUrl(submission.id, c.image) ?? ''}
-                          alt={c.name}
-                          fill
-                          sizes="64px"
-                          className="object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{c.name}</p>
-                      <p className="text-xs font-mono text-amber-700 dark:text-amber-500">{c.price}</p>
-                      {c.desc && <p className="text-xs text-neutral-500 truncate">{c.desc}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <section className="rounded-2xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 flex flex-col shadow-sm">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4">Deskripsi Bisnis</h2>
+              <p className="text-sm text-zinc-300 leading-relaxed flex-1">{submission.description}</p>
+              {submission.template && (
+                <div className="mt-6 pt-4 border-t border-white/5">
+                  <p className="text-xs text-zinc-400">Template pilihan: <span className="text-blue-400 font-medium">{submission.template}</span></p>
+                </div>
+              )}
             </section>
           )}
         </div>
-      </main>
+
+        {(submission.logoFilename || submission.heroFilename || submission.ambianceFilename || submission.gallery.length > 0) && (
+          <section className="rounded-2xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 shadow-sm">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-6">Aset Foto</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {submission.logoFilename && <Photo submissionId={submission.id} filename={submission.logoFilename} label="Logo" />}
+              {submission.heroFilename && <Photo submissionId={submission.id} filename={submission.heroFilename} label="Hero Image" />}
+              {submission.ambianceFilename && <Photo submissionId={submission.id} filename={submission.ambianceFilename} label="Suasana Toko" />}
+              {submission.gallery.map((g, i) => (
+                <Photo key={i} submissionId={submission.id} filename={g} label={`Galeri ${i + 1}`} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {submission.services.length > 0 && (
+          <section className="rounded-2xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 shadow-sm">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-6">Layanan / Produk Utama</h2>
+            <ul className="flex flex-col gap-4">
+              {submission.services.map((s, i) => (
+                <li key={i} className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 p-4 rounded-xl bg-zinc-900/50 border border-white/5">
+                  <div className="flex-1">
+                    <p className="font-semibold text-white text-sm mb-1">{s.name}</p>
+                    {s.desc && <p className="text-xs text-zinc-400 leading-relaxed">{s.desc}</p>}
+                  </div>
+                  <span className="font-mono text-blue-400 text-sm font-medium shrink-0">{s.price}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {submission.catalog.length > 0 && (
+          <section className="rounded-2xl border border-white/5 bg-zinc-950/60 p-6 sm:p-8 shadow-sm">
+            <h2 className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-6">Katalog Produk</h2>
+            <div className="grid sm:grid-cols-2 gap-4">
+              {submission.catalog.map((c, i) => (
+                <div key={i} className="flex gap-4 p-3 rounded-xl bg-zinc-900/50 border border-white/5">
+                  {c.image && (
+                    <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-zinc-950 shrink-0 border border-white/5">
+                      <Image
+                        src={getSubmissionAssetUrl(submission.id, c.image) ?? ''}
+                        alt={c.name}
+                        fill
+                        sizes="80px"
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <div className="min-w-0 flex flex-col justify-center flex-1">
+                    <p className="font-semibold text-white text-sm truncate mb-1">{c.name}</p>
+                    <p className="text-xs font-mono text-blue-400 mb-1">{c.price}</p>
+                    {c.desc && <p className="text-xs text-zinc-500 line-clamp-2 leading-relaxed">{c.desc}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

@@ -91,7 +91,7 @@ export default function RegisterAdminForm({ token }: { token: string }) {
         </button>
 
         {result && (
-          <p className={`flex items-center gap-1.5 text-sm ${result.ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+          <p className={`flex items-center gap-1.5 text-sm ${result.ok ? 'text-blue-700 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
             {result.ok ? <CheckCircle size={15} weight="fill" /> : <WarningCircle size={15} weight="fill" />}
             {result.text}
           </p>

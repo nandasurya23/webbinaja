@@ -2,8 +2,12 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { LockKey, Eye, EyeSlash, ArrowRight, WarningCircle } from '@phosphor-icons/react/dist/ssr';
+import { Eye, EyeSlash, ArrowRight, WarningCircle } from '@phosphor-icons/react/dist/ssr';
+import Image from 'next/image';
 import { loginAction } from './actions';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function LoginForm({ token }: { token: string }) {
   const [username, setUsername] = useState('');
@@ -14,80 +18,105 @@ export default function LoginForm({ token }: { token: string }) {
   const router = useRouter();
 
   return (
-    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
-      <div className="flex items-center justify-center h-12 w-12 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500 mb-5">
-        <LockKey size={22} weight="bold" />
-      </div>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      className="w-full max-w-sm mx-auto"
+    >
+      <div className="rounded-2xl border border-white/10 bg-zinc-950/60 p-8 shadow-xl backdrop-blur-xl relative overflow-hidden">
+        
+        {/* Decorative glow */}
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-500/20 rounded-full blur-[60px] pointer-events-none" />
+        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-blue-500/10 rounded-full blur-[60px] pointer-events-none" />
 
-      <form
-        className="flex flex-col gap-4"
-        onSubmit={(e) => {
-          e.preventDefault();
-          setError(null);
-          startTransition(async () => {
-            const res = await loginAction(token, username, password);
-            if (res.ok) {
-              router.refresh();
-            } else {
-              setError(res.error);
-            }
-          });
-        }}
-      >
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">Username</span>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            autoFocus
-            autoComplete="username"
-            placeholder="username"
-            className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
-            required
-          />
-        </label>
+        <div className="flex flex-col items-center text-center mb-8 relative z-10">
+          <div className="relative flex items-center justify-center h-16 w-16 rounded-2xl bg-zinc-900/50 mb-5 border border-white/5 overflow-hidden shadow-[0_0_15px_rgba(255,255,255,0.05)]">
+            <Image src="/logos.png" alt="Logo" fill className="object-contain p-2" sizes="64px" />
+          </div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Admin Area</h2>
+          <p className="text-sm text-zinc-400 mt-1">Masuk untuk melanjutkan</p>
+        </div>
 
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-neutral-700 dark:text-neutral-300">Password</span>
-          <div className="relative">
-            <input
-              type={showPassword ? 'text' : 'password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              placeholder="••••••••••••"
-              className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 pr-10 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+        <form
+          className="flex flex-col gap-5 relative z-10"
+          onSubmit={(e) => {
+            e.preventDefault();
+            setError(null);
+            startTransition(async () => {
+              const res = await loginAction(token, username, password);
+              if (res.ok) {
+                router.refresh();
+              } else {
+                setError(res.error);
+              }
+            });
+          }}
+        >
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-zinc-300">Username</span>
+            <Input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              autoFocus
+              autoComplete="username"
+              placeholder="Masukkan username"
               required
             />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              className="absolute inset-y-0 right-0 flex items-center px-3 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200"
-              tabIndex={-1}
-              aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
-            >
-              {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
-            </button>
-          </div>
-        </label>
+          </label>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="group inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-4 py-2.5 text-sm font-medium transition hover:bg-neutral-700 dark:hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isPending ? 'Memeriksa...' : 'Masuk'}
-          {!isPending && <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />}
-        </button>
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-zinc-300">Password</span>
+            <div className="relative">
+              <Input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                placeholder="••••••••••••"
+                className="pr-10"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-zinc-500 hover:text-zinc-300 transition-colors"
+                tabIndex={-1}
+                aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+              >
+                {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </label>
 
-        {error && (
-          <p role="alert" className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
-            <WarningCircle size={16} weight="fill" />
-            {error}
-          </p>
-        )}
-      </form>
-    </div>
+          <Button
+            type="submit"
+            variant="primary"
+            size="lg"
+            disabled={isPending}
+            className="mt-2 group"
+          >
+            {isPending ? 'Memeriksa...' : 'Masuk'}
+            {!isPending && <ArrowRight size={18} weight="bold" className="ml-1.5 transition-transform group-hover:translate-x-1" />}
+          </Button>
+
+          <AnimatePresence>
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0, marginTop: 0 }} 
+                animate={{ opacity: 1, height: 'auto', marginTop: 8 }} 
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex items-center gap-2 p-3 rounded-lg border border-red-500/20 bg-red-500/10 text-sm font-medium text-red-400">
+                  <WarningCircle size={18} weight="fill" className="shrink-0" />
+                  {error}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </form>
+      </div>
+    </motion.div>
   );
 }

@@ -1,7 +1,10 @@
 'use client';
 
 import { Storefront, Plus, Trash } from '@phosphor-icons/react/dist/ssr';
-import { Section, smallInputClass } from './CustomerFormPieces';
+import { Section } from './CustomerFormPieces';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { motion, AnimatePresence } from 'motion/react';
 
 export type Service = { name: string; price: string; desc: string };
 export const emptyService = (): Service => ({ name: '', price: '', desc: '' });
@@ -14,46 +17,62 @@ export default function ServicesEditor({
   setServices: React.Dispatch<React.SetStateAction<Service[]>>;
 }) {
   return (
-    <Section icon={<Storefront size={16} />} title="Layanan">
-      <div className="flex flex-col gap-3">
-        {services.map((s, i) => (
-          <div key={i} className="grid sm:grid-cols-[1fr_1fr_1fr_auto] gap-2 items-start">
-            <input
-              placeholder="Nama layanan"
-              value={s.name}
-              onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <input
-              placeholder="Harga (Rp 50.000)"
-              value={s.price}
-              onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <input
-              placeholder="Deskripsi (opsional)"
-              value={s.desc}
-              onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
-              className={smallInputClass}
-            />
-            <button
-              type="button"
-              onClick={() => setServices((prev) => prev.filter((_, idx) => idx !== i))}
-              className="text-neutral-400 hover:text-red-600 p-1.5 shrink-0"
-              aria-label="Hapus layanan"
+    <Section icon={<Storefront size={18} weight="bold" className="text-blue-500" />} title="Layanan">
+      <div className="flex flex-col gap-4">
+        <AnimatePresence>
+          {services.map((s, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="grid md:grid-cols-[1fr_1fr_1.5fr_auto] gap-3 items-start p-4 rounded-xl border border-white/5 bg-zinc-900/30"
             >
-              <Trash size={15} />
-            </button>
+              <Input
+                placeholder="mis. Potong Rambut"
+                value={s.name}
+                onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, name: e.target.value } : v)))}
+              />
+              <Input
+                placeholder="mis. Rp 50.000"
+                value={s.price}
+                onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, price: e.target.value } : v)))}
+              />
+              <Input
+                placeholder="Deskripsi (opsional)"
+                value={s.desc}
+                onChange={(e) => setServices((prev) => prev.map((v, idx) => (idx === i ? { ...v, desc: e.target.value } : v)))}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={() => setServices((prev) => prev.filter((_, idx) => idx !== i))}
+                className="text-zinc-500 hover:text-red-400 hover:bg-red-500/10 shrink-0"
+                aria-label="Hapus layanan"
+              >
+                <Trash size={16} />
+              </Button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+        
+        {services.length === 0 && (
+          <div className="text-center p-6 border border-dashed border-white/10 rounded-xl text-sm text-zinc-500">
+            Belum ada layanan. Klik &quot;Tambah layanan&quot; di bawah.
           </div>
-        ))}
-        <button
+        )}
+
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={() => setServices((prev) => [...prev, emptyService()])}
-          className="self-start inline-flex items-center gap-1 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
+          className="self-start"
         >
-          <Plus size={13} weight="bold" />
+          <Plus size={14} className="mr-1.5" />
           Tambah layanan
-        </button>
+        </Button>
       </div>
     </Section>
   );

@@ -21,7 +21,7 @@ const templates = [
   { id: 'gamershub', name: 'Game Cafe', style: 'Deep Cyberpunk HUD', icon: <MonitorPlay size={24} />, color: 'from-cyan-400 to-blue-900', image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop' },
   { id: 'tokokue', name: 'Bakery', style: 'Approachable Premium', icon: <Storefront size={24} />, color: 'from-pink-400 to-rose-900', image: 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?q=80&w=800&auto=format&fit=crop' },
   { id: 'kliniksehat', name: 'Professional', style: 'Trust-First Corporate', icon: <ChalkboardTeacher size={24} />, color: 'from-slate-400 to-indigo-950', image: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?auto=format&fit=crop&q=80&w=800' },
-  { id: 'rentalku', name: 'Rental', style: 'Sleek & Technical', icon: <Car size={24} />, color: 'from-emerald-400 to-teal-950', image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800&auto=format&fit=crop' },
+  { id: 'rentalku', name: 'Rental', style: 'Sleek & Technical', icon: <Car size={24} />, color: 'from-blue-400 to-teal-950', image: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=800&auto=format&fit=crop' },
   { id: 'fitnespro', name: 'Gym', style: 'Kinetic Brutalist', icon: <Barbell size={24} />, color: 'from-red-500 to-red-950', image: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=800&auto=format&fit=crop' },
   { id: 'petlover', name: 'Petshop', style: 'Friendly & Organic', icon: <Cat size={24} />, color: 'from-yellow-400 to-amber-900', image: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=800&auto=format&fit=crop' },
 ];
@@ -174,8 +174,8 @@ export default function HomeClient({ showcaseSites = [] }: { showcaseSites?: Sho
       {showcaseSites.length > 0 && (
         <section className="py-24 px-6 md:px-12 max-w-7xl mx-auto relative z-10 border-t border-white/5">
           <div className="flex flex-col items-center text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-xs font-bold mb-4 text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-xs font-bold mb-4 text-blue-400">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
               Live Sekarang
             </div>
             <h2 className="text-4xl md:text-5xl font-black tracking-tighter text-white font-outfit mb-4">Sudah Dipercaya Bisnis Nyata</h2>

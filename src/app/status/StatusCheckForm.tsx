@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { WarningCircle, MagnifyingGlass, Hash, LinkSimple } from '@phosphor-icons/react/dist/ssr';
+import { WarningCircle, MagnifyingGlass, Hash, LinkSimple, CheckCircle, Clock } from '@phosphor-icons/react/dist/ssr';
 import { checkStatusAction, type CheckStatusResult } from './actions';
-
-const inputClass =
-  'w-full rounded-lg border border-white/10 bg-white/5 px-3.5 py-2.5 text-sm outline-none transition focus:border-white/30 focus:ring-2 focus:ring-white/10 placeholder:text-zinc-500 text-white';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { motion, AnimatePresence } from 'motion/react';
 
 export default function StatusCheckForm() {
   const [whatsapp, setWhatsapp] = useState('');
@@ -14,9 +14,9 @@ export default function StatusCheckForm() {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-8 w-full max-w-md mx-auto">
       <form
-        className="flex flex-col gap-4"
+        className="flex flex-col gap-5 rounded-2xl border border-white/10 bg-zinc-950/60 p-6 shadow-xl backdrop-blur-xl"
         onSubmit={(e) => {
           e.preventDefault();
           setResult(null);
@@ -25,70 +25,114 @@ export default function StatusCheckForm() {
           });
         }}
       >
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-zinc-300">Nomor WhatsApp</span>
-          <input placeholder="62812xxxxxxx" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} className={inputClass} required />
+        <div className="text-center mb-2">
+          <h1 className="text-2xl font-bold text-white tracking-tight">Cek Status</h1>
+          <p className="text-sm text-zinc-400 mt-1">Lacak progres pesanan Anda</p>
+        </div>
+        
+        <label className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-zinc-300">Nomor WhatsApp</span>
+          <Input 
+            placeholder="e.g. 62812xxxxxxx" 
+            value={whatsapp} 
+            onChange={(e) => setWhatsapp(e.target.value)} 
+            required 
+          />
         </label>
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium text-zinc-300">Kode</span>
-          <input
+        
+        <label className="flex flex-col gap-2">
+          <span className="text-sm font-medium text-zinc-300">Kode Pesanan</span>
+          <Input
             placeholder="XXXXXXXX"
             value={lookupCode}
             onChange={(e) => setLookupCode(e.target.value.toUpperCase())}
-            className={`${inputClass} font-mono tracking-widest`}
+            className="font-mono tracking-widest text-lg"
             required
           />
         </label>
-        <button
+
+        <Button
           type="submit"
+          variant="primary"
+          size="lg"
           disabled={isPending}
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-white text-black px-4 py-3 text-sm font-bold hover:bg-zinc-200 transition disabled:opacity-50"
+          className="mt-2"
         >
-          <MagnifyingGlass size={16} weight="bold" />
-          {isPending ? 'Mencari...' : 'Cek Status'}
-        </button>
+          {isPending ? (
+            <><MagnifyingGlass size={18} className="animate-pulse mr-2" /> Mencari...</>
+          ) : (
+            <><MagnifyingGlass size={18} weight="bold" className="mr-2" /> Cek Status</>
+          )}
+        </Button>
       </form>
 
-      {result && !result.ok && (
-        <p role="alert" className="flex items-center gap-1.5 text-sm text-red-400">
-          <WarningCircle size={16} weight="fill" />
-          {result.error}
-        </p>
-      )}
-
-      {result?.ok && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 flex flex-col gap-4">
-          <h2 className="text-lg font-bold text-white">{result.businessName}</h2>
-          {typeof result.queueNumber === 'number' && (
-            <p className="flex items-center gap-1.5 text-sm text-amber-400">
-              <Hash size={14} weight="bold" />
-              Nomor antri: <span className="font-mono font-bold">{result.queueNumber}</span>
-            </p>
-          )}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Pengerjaan</p>
-              <p className="font-medium text-white">{result.workStatusLabel}</p>
+      <AnimatePresence>
+        {result && !result.ok && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }} 
+            animate={{ opacity: 1, height: 'auto' }} 
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center gap-3 p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-sm font-medium text-red-400">
+              <WarningCircle size={20} weight="fill" className="shrink-0" />
+              {result.error}
             </div>
-            <div>
-              <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Pembayaran</p>
-              <p className="font-medium text-white">{result.paymentStatusLabel}</p>
-            </div>
-          </div>
+          </motion.div>
+        )}
 
-          {result.websiteUrl && (
-            <a
-              href={result.websiteUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 px-3.5 py-2.5 text-sm font-medium text-emerald-400 hover:bg-emerald-500/20 transition"
-            >
-              <LinkSimple size={16} weight="bold" />
-              <span className="truncate">{result.websiteUrl}</span>
-            </a>
-          )}
-        </div>
-      )}
-    </div>
+        {result?.ok && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="rounded-2xl border border-blue-500/20 bg-blue-950/30 p-6 flex flex-col gap-6 shadow-[0_0_30px_rgba(16,185,129,0.1)]"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-4">
+              <div>
+                <h2 className="text-xl font-bold text-white">{result.businessName}</h2>
+                <p className="text-sm text-zinc-400 mt-1">Pembaruan Status</p>
+              </div>
+              {typeof result.queueNumber === 'number' && (
+                <div className="flex flex-col items-end">
+                  <span className="text-xs text-zinc-500 uppercase tracking-widest font-semibold">Antrean</span>
+                  <div className="flex items-center gap-1.5 text-blue-400 mt-0.5">
+                    <Hash size={16} weight="bold" />
+                    <span className="font-mono text-xl font-bold">{result.queueNumber}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5 p-3 rounded-xl border border-white/5 bg-zinc-900/50">
+                <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold flex items-center gap-1.5">
+                  <Clock size={14} /> Pengerjaan
+                </p>
+                <p className="font-medium text-white">{result.workStatusLabel}</p>
+              </div>
+              <div className="flex flex-col gap-1.5 p-3 rounded-xl border border-white/5 bg-zinc-900/50">
+                <p className="text-xs text-zinc-500 uppercase tracking-widest font-semibold flex items-center gap-1.5">
+                  <CheckCircle size={14} /> Pembayaran
+                </p>
+                <p className="font-medium text-white">{result.paymentStatusLabel}</p>
+              </div>
+            </div>
+
+            {result.websiteUrl && (
+              <a
+                href={result.websiteUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-2 rounded-xl bg-blue-500 text-white px-4 py-3 text-sm font-bold hover:bg-blue-400 transition"
+              >
+                <LinkSimple size={18} weight="bold" />
+                Kunjungi Website
+              </a>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

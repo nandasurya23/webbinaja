@@ -60,17 +60,17 @@ export default function AssetUploadButton({
         type="button"
         disabled={!slug || state === 'uploading'}
         onClick={() => inputRef.current?.click()}
-        title={!slug ? 'Isi slug dulu' : 'Upload dari komputer — otomatis dikonversi ke WebP & diunggah ke R2'}
+        title={!slug ? 'Isi slug dulu' : 'Unggah dari komputer — otomatis dikonversi ke WebP & diunggah ke R2'}
         className="inline-flex items-center gap-1 rounded-md border border-neutral-300 dark:border-neutral-700 px-2 py-1.5 text-xs font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 transition disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
       >
         {state === 'uploading' ? (
           <Spinner size={13} className="animate-spin" />
         ) : state === 'done' ? (
-          <CheckCircle size={13} weight="fill" className="text-emerald-600 dark:text-emerald-400" />
+          <CheckCircle size={13} weight="fill" className="text-blue-600 dark:text-blue-400" />
         ) : (
           <UploadSimple size={13} />
         )}
-        {state === 'uploading' ? 'Mengunggah...' : state === 'done' ? 'Terunggah' : 'Upload'}
+        {state === 'uploading' ? 'Mengunggah...' : state === 'done' ? 'Terunggah' : 'Unggah'}
       </button>
       {error && (
         <span className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">

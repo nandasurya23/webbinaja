@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { WarningCircle, SignOut, Plus, IdentificationBadge, NotePencil, Phone, Sparkle } from '@phosphor-icons/react/dist/ssr';
+import { WarningCircle, SignOut, Plus, IdentificationBadge, NotePencil, Phone, Sparkle, Spinner } from '@phosphor-icons/react/dist/ssr';
 import {
   createCustomerAction,
   checkAssetsAction,
@@ -13,12 +13,15 @@ import {
 } from './actions';
 import { CUSTOMER_TEMPLATES } from '@/lib/customerTemplates';
 import type { PackageTier } from '@/lib/customerScaffold';
-import { Field, Section, DomainManagerCard, inputClass } from './CustomerFormPieces';
+import { Field, Section, DomainManagerCard } from './CustomerFormPieces';
 import CustomerCreatedPanel from './CustomerCreatedPanel';
 import AssetsSection from './AssetsSection';
 import ServicesEditor, { type Service, emptyService } from './ServicesEditor';
-import CatalogEditor, { type CatalogItem, emptyCatalogItem } from './CatalogEditor';
+import CatalogEditor, { type CatalogItem } from './CatalogEditor';
 import AssetCheckSection from './AssetCheckSection';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { motion } from 'motion/react';
 
 const TEMPLATE_LABELS: Record<string, string> = {
   barber: 'Barbershop',
@@ -71,10 +74,8 @@ export default function CustomerForm({ token }: { token: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Prefill from a /pesan submission picked in the inbox (?submission=<id>)
-  // — a pure convenience so the operator doesn't retype what the customer
-  // already sent. Runs once; doesn't affect the "Buat Customer" write path.
   const [submissionId, setSubmissionId] = useState<string | null>(null);
+
   useEffect(() => {
     const id = searchParams.get('submission');
     if (!id) return;
@@ -97,8 +98,7 @@ export default function CustomerForm({ token }: { token: string }) {
       if (res.services.length) setServices(res.services.map((s) => ({ name: s.name, price: s.price, desc: s.desc ?? '' })));
       if (res.catalog.length) setCatalog(res.catalog.map((c) => ({ name: c.name, price: c.price, desc: c.desc ?? '', image: c.image })));
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams, token]);
 
   const assetSignature = useMemo(
     () =>
@@ -183,10 +183,10 @@ export default function CustomerForm({ token }: { token: string }) {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-6 w-full max-w-4xl mx-auto pb-24">
+      <Card className="border-white/10 bg-zinc-950/60 p-6 sm:p-8">
         <form
-          className="flex flex-col gap-8"
+          className="flex flex-col gap-10"
           onSubmit={(e) => {
             e.preventDefault();
             setResult(null);
@@ -217,31 +217,32 @@ export default function CustomerForm({ token }: { token: string }) {
           }}
         >
           {submissionId && (
-            <p className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-500 -mb-4">
-              <Sparkle size={13} weight="fill" />
+            <div className="flex items-center gap-2 p-3 text-sm rounded-lg border border-amber-500/20 bg-amber-500/10 text-amber-400 -mt-2">
+              <Sparkle size={16} weight="fill" />
               Diisi otomatis dari submission inbox — cek ulang sebelum membuat customer.
-            </p>
+            </div>
           )}
-          <Section icon={<IdentificationBadge size={16} />} title="Identitas">
+          
+          <Section icon={<IdentificationBadge size={18} weight="bold" className="text-blue-500" />} title="Identitas">
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Slug" required placeholder="cafe-siti" value={slug} onChange={setSlug} />
               <Field label="Nama bisnis" required placeholder="Cafe Siti" value={businessName} onChange={setBusinessName} />
             </div>
 
-            <div className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                Template <span className="text-amber-600 dark:text-amber-500">*</span>
+            <div className="flex flex-col gap-2 mt-2">
+              <span className="text-sm font-medium text-zinc-300">
+                Template <span className="text-blue-500 ml-1">*</span>
               </span>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {CUSTOMER_TEMPLATES.map((t) => (
                   <button
                     key={t}
                     type="button"
                     onClick={() => setTemplate(t)}
-                    className={`rounded-lg border px-3 py-2 text-xs font-medium transition text-left ${
+                    className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition text-center ${
                       template === t
-                        ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400'
-                        : 'border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-600 dark:text-neutral-300'
+                        ? 'border-blue-500 bg-blue-500/10 text-blue-400 shadow-sm shadow-blue-500/20'
+                        : 'border-white/10 hover:border-white/30 text-zinc-300 bg-zinc-900/50 hover:bg-zinc-800'
                     }`}
                   >
                     {TEMPLATE_LABELS[t] ?? t}
@@ -250,75 +251,75 @@ export default function CustomerForm({ token }: { token: string }) {
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                Paket <span className="text-amber-600 dark:text-amber-500">*</span>
+            <div className="flex flex-col gap-2 mt-2">
+              <span className="text-sm font-medium text-zinc-300">
+                Paket <span className="text-blue-500 ml-1">*</span>
               </span>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setPackageTier('basic')}
-                  className={`rounded-lg border px-3 py-2 text-xs font-medium transition text-left ${
+                  className={`rounded-lg border px-4 py-3 text-sm font-medium transition text-left flex flex-col ${
                     packageTier === 'basic'
-                      ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400'
-                      : 'border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-600 dark:text-neutral-300'
+                      ? 'border-blue-500 bg-blue-500/10 text-blue-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                      : 'border-white/10 hover:border-white/30 text-zinc-300 bg-zinc-900/50 hover:bg-zinc-800'
                   }`}
                 >
-                  Basic (499K)
+                  <span className={packageTier === 'basic' ? 'text-blue-400' : 'text-zinc-200'}>Basic (499K)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPackageTier('business')}
-                  className={`rounded-lg border px-3 py-2 text-xs font-medium transition text-left ${
+                  className={`rounded-lg border px-4 py-3 text-sm font-medium transition text-left flex flex-col ${
                     packageTier === 'business'
-                      ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400'
-                      : 'border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-600 dark:text-neutral-300'
+                      ? 'border-blue-500 bg-blue-500/10 text-blue-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
+                      : 'border-white/10 hover:border-white/30 text-zinc-300 bg-zinc-900/50 hover:bg-zinc-800'
                   }`}
                 >
-                  Business Kit (999K)
+                  <span className={packageTier === 'business' ? 'text-blue-400' : 'text-zinc-200'}>Business Kit (799K)</span>
                 </button>
               </div>
               {packageTier === 'business' && (
-                <p className="flex items-center gap-1.5 text-xs text-amber-700 dark:text-amber-500">
-                  <Sparkle size={13} weight="fill" />
+                <p className="flex items-center gap-1.5 text-xs text-amber-500 mt-1">
+                  <Sparkle size={14} weight="fill" />
                   Membuka link Kit Promosi Instan (gambar promo otomatis) setelah customer dibuat.
                 </p>
               )}
             </div>
 
             {packageTier === 'business' && (
-              <Field
-                label="Custom domain (opsional)"
-                placeholder="namabisnis.com"
-                value={customDomain}
-                onChange={setCustomDomain}
-              />
-            )}
-            {packageTier === 'business' && customDomain && (
-              <p className="text-xs text-neutral-400 -mt-2">
-                Isi kalau domainnya sudah dibeli sekarang. Kalau belum, kosongkan saja — bisa ditambahkan nanti lewat
-                bagian &quot;Atur Domain Customer&quot; di bawah setelah customer dibuat. Setelah diisi, tambahkan
-                domain ini juga di Vercel → Domains dan arahkan DNS-nya.
-              </p>
+              <div className="mt-4">
+                <Field
+                  label="Custom domain (opsional)"
+                  placeholder="namabisnis.com"
+                  value={customDomain}
+                  onChange={setCustomDomain}
+                />
+                <p className="text-xs text-zinc-500 mt-2 leading-relaxed max-w-[600px]">
+                  Isi kalau domainnya sudah dibeli sekarang. Kalau belum, kosongkan saja — bisa ditambahkan nanti lewat
+                  bagian &quot;Atur Domain Customer&quot; di bawah setelah customer dibuat. Setelah diisi, tambahkan
+                  domain ini juga di Vercel → Domains dan arahkan DNS-nya.
+                </p>
+              </div>
             )}
           </Section>
 
-          <Section icon={<NotePencil size={16} />} title="Profil">
+          <Section icon={<NotePencil size={18} weight="bold" className="text-blue-500" />} title="Profil">
             <Field label="Tagline" placeholder="Kopi enak, harga bersahabat" value={tagline} onChange={setTagline} />
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">Deskripsi singkat</span>
+            <label className="flex flex-col gap-2 mt-2">
+              <span className="text-sm font-medium text-zinc-300">Deskripsi singkat</span>
               <textarea
-                rows={3}
+                rows={4}
                 placeholder="Ceritakan singkat tentang bisnis ini..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className={inputClass}
+                className="w-full rounded-lg border border-white/10 bg-zinc-900/50 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500/50 resize-none"
               />
             </label>
           </Section>
 
-          <Section icon={<Phone size={16} />} title="Kontak">
-            <div className="grid sm:grid-cols-2 gap-4">
+          <Section icon={<Phone size={18} weight="bold" className="text-blue-500" />} title="Kontak">
+            <div className="grid sm:grid-cols-2 gap-6">
               <Field label="Nomor WhatsApp" required placeholder="62812xxxxxxx" value={whatsapp} onChange={setWhatsapp} />
               <Field label="Alamat" placeholder="Jl. Contoh No. 1" value={address} onChange={setAddress} />
               <Field label="Google Maps link" type="url" placeholder="https://maps.google.com/..." value={mapsLink} onChange={setMapsLink} />
@@ -353,42 +354,48 @@ export default function CustomerForm({ token }: { token: string }) {
             assetsAreChecked={assetsAreChecked}
           />
 
-          <button
-            type="submit"
-            disabled={isPending || !assetsAreChecked}
-            title={!assetsAreChecked ? 'Jalankan "Cek Asset Sekarang" dulu' : undefined}
-            className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 px-4 py-2.5 text-sm font-medium transition hover:bg-neutral-700 dark:hover:bg-neutral-200 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isPending ? (
-              'Menyimpan...'
+          <div className="sticky bottom-0 border-t border-white/10 bg-zinc-950/80 backdrop-blur-xl pt-6 pb-2 -mx-2 px-2 flex flex-col md:flex-row justify-between items-center z-10 gap-4 mt-4 rounded-xl">
+            {result && !result.ok ? (
+              <p role="alert" className="flex items-center gap-1.5 text-sm font-medium text-red-400">
+                <WarningCircle size={16} weight="fill" />
+                {result.error}
+              </p>
             ) : (
-              <>
-                <Plus size={16} weight="bold" />
-                Buat customer
-              </>
+              <div />
             )}
-          </button>
-
-          {result && !result.ok && (
-            <p role="alert" className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400 -mt-4">
-              <WarningCircle size={16} weight="fill" />
-              {result.error}
-            </p>
-          )}
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              disabled={isPending || !assetsAreChecked}
+              title={!assetsAreChecked ? 'Jalankan "Cek Asset Sekarang" dulu' : undefined}
+              className="w-full md:w-[250px]"
+            >
+              {isPending ? (
+                <><Spinner size={18} className="animate-spin mr-2" /> Menyimpan...</>
+              ) : (
+                <><Plus size={18} weight="bold" className="mr-2" /> Buat Customer</>
+              )}
+            </Button>
+          </div>
         </form>
-      </div>
+      </Card>
 
       <DomainManagerCard token={token} />
 
-      <button
-        type="button"
-        disabled={isLoggingOut}
-        className="self-start inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 disabled:opacity-50"
-        onClick={logout}
-      >
-        <SignOut size={14} />
-        Keluar
-      </button>
-    </div>
+      <div className="flex justify-end mt-4">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          disabled={isLoggingOut}
+          onClick={logout}
+          className="text-zinc-500 hover:text-zinc-300"
+        >
+          <SignOut size={16} className="mr-2" />
+          Keluar
+        </Button>
+      </div>
+    </motion.div>
   );
 }

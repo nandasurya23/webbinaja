@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
 import { listCustomersPage } from '@/lib/db';
 import { MAIN_DOMAIN } from '@/lib/customers';
@@ -10,7 +9,7 @@ import LoginForm from '../LoginForm';
 import ListSearchFilterBar from '../ListSearchFilterBar';
 import Pagination from '../Pagination';
 import SuspendToggle from './SuspendToggle';
-import { ArrowLeft, Globe, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
+import { Globe, ArrowSquareOut } from '@phosphor-icons/react/dist/ssr';
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -48,15 +47,7 @@ export default async function WebsitesPage({
   const session = parseSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
   if (!session) {
-    return (
-      <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-        <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
-          <h1 className="text-3xl font-semibold tracking-tight mb-1">Website</h1>
-          <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">Masuk untuk melanjutkan.</p>
-          <LoginForm token={token} />
-        </main>
-      </div>
-    );
+    return <LoginForm token={token} />;
   }
 
   const sp = await searchParams;
@@ -78,104 +69,118 @@ export default async function WebsitesPage({
   }
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-      <main className="max-w-3xl mx-auto px-4 py-16 sm:py-20">
-        <Link href={`/${token}`} className="inline-flex items-center gap-1.5 text-xs font-medium text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 mb-6">
-          <ArrowLeft size={14} />
-          Kembali ke Admin
-        </Link>
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-2">
+        <div>
+          <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Kelola Website</h1>
+          <p className="text-sm text-zinc-400">
+            Semua website customer yang sudah dibuat lewat form &quot;Buat Customer&quot; ({total}).
+          </p>
+        </div>
+      </div>
 
-        <h1 className="text-3xl font-semibold tracking-tight mb-1">Website</h1>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-6">
-          Semua website customer yang sudah dibuat lewat form "Buat Customer" ({total}).
-        </p>
+      <ListSearchFilterBar
+        searchPlaceholder="Cari nama bisnis atau slug..."
+        filters={[
+          {
+            param: 'template',
+            allLabel: 'Semua template',
+            options: CUSTOMER_TEMPLATES.map((t) => ({ value: t, label: t })),
+          },
+          {
+            param: 'packageTier',
+            allLabel: 'Semua paket',
+            options: Object.entries(PACKAGE_LABELS).map(([value, label]) => ({ value, label })),
+          },
+          {
+            param: 'status',
+            allLabel: 'Semua status (aktif + disuspend)',
+            options: [
+              { value: 'active', label: 'Aktif' },
+              { value: 'suspended', label: 'Disuspend' },
+            ],
+          },
+        ]}
+      />
 
-        <ListSearchFilterBar
-          searchPlaceholder="Cari nama bisnis atau slug..."
-          filters={[
-            {
-              param: 'template',
-              allLabel: 'Semua template',
-              options: CUSTOMER_TEMPLATES.map((t) => ({ value: t, label: t })),
-            },
-            {
-              param: 'packageTier',
-              allLabel: 'Semua paket',
-              options: Object.entries(PACKAGE_LABELS).map(([value, label]) => ({ value, label })),
-            },
-            {
-              param: 'status',
-              allLabel: 'Semua status (aktif + disuspend)',
-              options: [
-                { value: 'active', label: 'Aktif' },
-                { value: 'suspended', label: 'Disuspend' },
-              ],
-            },
-          ]}
-        />
+      {loadError && (
+        <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/10 text-sm text-red-400 mb-6">
+          {loadError}
+        </div>
+      )}
 
-        {loadError && <p className="text-sm text-red-600 dark:text-red-400 mb-6">{loadError}</p>}
-
-        {websites.length === 0 && !loadError && (
-          <p className="text-sm text-neutral-400">
+      {websites.length === 0 && !loadError && (
+        <div className="text-center py-16 px-4 rounded-2xl border border-dashed border-white/10 bg-zinc-950/30">
+          <p className="text-sm text-zinc-400">
             {search || template || packageTier ? 'Tidak ada website yang cocok.' : 'Belum ada website yang dibuat.'}
           </p>
-        )}
+        </div>
+      )}
 
-        <ul className="flex flex-col gap-3">
-          {websites.map((w) => {
-            const url = w.customDomain ? `https://${w.customDomain}` : `https://${w.slug}.${MAIN_DOMAIN}`;
-            return (
-              <li
-                key={w.slug}
-                className={`flex items-center justify-between gap-4 rounded-xl border bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-4 sm:p-5 ${
-                  w.suspended ? 'border-red-200 dark:border-red-900' : 'border-neutral-200 dark:border-neutral-800'
-                }`}
-              >
-                <div className="flex items-center gap-3 min-w-0">
+      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {websites.map((w) => {
+          const url = w.customDomain ? `https://${w.customDomain}` : `https://${w.slug}.${MAIN_DOMAIN}`;
+          return (
+            <li
+              key={w.slug}
+              className={`group flex flex-col justify-between gap-4 rounded-xl border bg-zinc-950/60 p-5 shadow-sm transition-all hover:bg-zinc-900/80 ${
+                w.suspended 
+                  ? 'border-red-500/20 hover:border-red-500/40' 
+                  : 'border-white/5 hover:border-blue-500/30'
+              }`}
+            >
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between min-w-0">
                   <div
-                    className={`flex items-center justify-center h-9 w-9 rounded-full shrink-0 ${
-                      w.suspended ? 'bg-red-500/10 text-red-600 dark:text-red-400' : 'bg-amber-500/10 text-amber-600 dark:text-amber-500'
+                    className={`flex items-center justify-center h-10 w-10 rounded-full shrink-0 border group-hover:scale-105 transition-transform ${
+                      w.suspended 
+                        ? 'bg-red-500/10 text-red-400 border-red-500/20' 
+                        : 'bg-blue-500/10 text-blue-500 border-blue-500/20'
                     }`}
                   >
-                    <Globe size={16} weight="bold" />
+                    <Globe size={18} weight="fill" />
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-medium truncate flex items-center gap-2">
-                      {w.businessName}
-                      {w.suspended && (
-                        <span className="text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400">
-                          Disuspend
-                        </span>
-                      )}
-                    </p>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400 truncate">
-                      {w.template} · {PACKAGE_LABELS[w.packageTier] ?? w.packageTier}
-                      {w.customDomain && ` · custom domain`}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  {!w.suspended && (
-                    <a
-                      href={url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
-                    >
-                      Buka
-                      <ArrowSquareOut size={14} />
-                    </a>
+                  {w.suspended && (
+                    <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
+                      Disuspend
+                    </span>
                   )}
-                  <SuspendToggle token={token} slug={w.slug} suspended={w.suspended} />
                 </div>
-              </li>
-            );
-          })}
-        </ul>
+                
+                <div className="min-w-0 mt-2">
+                  <p className="font-semibold text-white truncate text-lg mb-1">{w.businessName}</p>
+                  <p className="text-xs text-zinc-400 truncate flex items-center gap-1.5 mb-1.5">
+                    {w.template} <span className="text-zinc-600">•</span> {PACKAGE_LABELS[w.packageTier] ?? w.packageTier}
+                  </p>
+                  {w.customDomain && (
+                    <p className="text-[10px] font-mono text-blue-400/80 uppercase tracking-wider">
+                      ★ Custom Domain
+                    </p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pt-4 border-t border-white/5 mt-2">
+                <SuspendToggle token={token} slug={w.slug} suspended={w.suspended} />
+                
+                {!w.suspended && (
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-500 hover:text-blue-400 hover:underline transition-colors bg-blue-500/10 px-3 py-1.5 rounded-lg border border-blue-500/20"
+                  >
+                    Buka
+                    <ArrowSquareOut size={14} weight="bold" />
+                  </a>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
 
-        <Pagination page={page} pageSize={PAGE_SIZE} total={total} basePath={`/${token}/websites`} searchParams={sp} />
-      </main>
+      <Pagination page={page} pageSize={PAGE_SIZE} total={total} basePath={`/${token}/websites`} searchParams={sp} />
     </div>
   );
 }

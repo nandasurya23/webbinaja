@@ -1,17 +1,11 @@
 'use client';
 
-// Small, state-independent (or self-contained) pieces shared across
-// CustomerForm's fields and its "customer created" panel. Split out purely
-// to keep CustomerForm.tsx focused on the form's own state/submit flow —
-// no behavior changes from when these lived inline in that file.
 import { useState, useTransition } from 'react';
 import { CheckCircle, WarningCircle, Copy, Check, Spinner, LinkSimple } from '@phosphor-icons/react/dist/ssr';
 import { updateCustomDomainAction } from './actions';
-
-export const inputClass =
-  'w-full rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-3.5 py-2.5 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 placeholder:text-neutral-400';
-export const smallInputClass =
-  'w-full rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-950 px-2.5 py-1.5 text-sm outline-none transition focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 placeholder:text-neutral-400';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
 
 export function Field({
   label,
@@ -29,18 +23,17 @@ export function Field({
   onChange: (v: string) => void;
 }) {
   return (
-    <label className="flex flex-col gap-1.5 text-sm">
-      <span className="font-medium text-neutral-700 dark:text-neutral-300">
+    <label className="flex flex-col gap-2 text-sm">
+      <span className="font-medium text-zinc-300">
         {label}
-        {required && <span className="text-amber-600 dark:text-amber-500"> *</span>}
+        {required && <span className="text-blue-500 ml-1">*</span>}
       </span>
-      <input
+      <Input
         type={type}
         required={required}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={inputClass}
       />
     </label>
   );
@@ -58,15 +51,17 @@ export function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col gap-4">
-      <div className="flex items-baseline justify-between gap-2">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-neutral-500 dark:text-neutral-400">
+    <section className="flex flex-col gap-5">
+      <div className="flex items-baseline justify-between gap-2 border-b border-white/5 pb-2">
+        <div className="flex items-center gap-2 text-sm font-semibold tracking-wide text-white">
           {icon}
           {title}
         </div>
-        {hint && <span className="text-xs text-neutral-400 dark:text-neutral-500">{hint}</span>}
+        {hint && <span className="text-xs text-zinc-500">{hint}</span>}
       </div>
-      {children}
+      <div className="flex flex-col gap-5">
+        {children}
+      </div>
     </section>
   );
 }
@@ -82,10 +77,10 @@ export function CopyButton({ text, label = 'Salin' }: { text: string; label?: st
           setTimeout(() => setCopied(false), 1500);
         });
       }}
-      className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-400 hover:underline shrink-0"
+      className="inline-flex items-center justify-center h-8 px-2 rounded-md bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white transition gap-1.5 text-xs font-medium"
     >
-      {copied ? <Check size={13} weight="bold" /> : <Copy size={13} />}
-      {copied ? 'Disalin' : label}
+      {copied ? <Check size={14} weight="bold" className="text-blue-400" /> : <Copy size={14} />}
+      {copied ? 'Tersalin' : label}
     </button>
   );
 }
@@ -97,44 +92,47 @@ export function DomainManagerCard({ token }: { token: string }) {
   const [isSavingDomain, startDomainTransition] = useTransition();
 
   return (
-    <div className="rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-white/70 dark:bg-neutral-900/50 backdrop-blur-sm shadow-sm p-6 sm:p-8">
-      <Section
-        icon={<LinkSimple size={16} />}
-        title="Atur Domain Customer"
-        hint="untuk customer yang sudah ada"
-      >
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 -mt-1">
-          Dipakai kalau customer Business Kit baru beli domain sendiri setelah situsnya sudah jadi. Isi slug
-          customer dan domainnya (contoh: <code className="text-xs">namabisnis.com</code>, tanpa
-          <code className="text-xs"> https://</code>), lalu jangan lupa tambahkan domain yang sama di Vercel →
-          Domains dan arahkan DNS-nya di registrar.
-        </p>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <Field label="Slug customer" placeholder="cafe-siti" value={domainSlug} onChange={setDomainSlug} />
-          <Field label="Custom domain" placeholder="namabisnis.com (kosongkan untuk hapus)" value={domainValue} onChange={setDomainValue} />
+    <Card className="mt-8">
+      <CardHeader>
+        <div className="flex items-center gap-2 text-blue-400">
+          <LinkSimple size={20} weight="bold" />
+          <CardTitle className="text-white">Manajer Domain Customer</CardTitle>
         </div>
-        <button
-          type="button"
-          disabled={isSavingDomain || !domainSlug}
-          onClick={() => {
-            setDomainResult(null);
-            startDomainTransition(async () => {
-              const res = await updateCustomDomainAction(token, domainSlug.trim(), domainValue.trim());
-              setDomainResult(res.ok ? { ok: true, message: res.message ?? 'Berhasil.' } : { ok: false, message: res.error });
-            });
-          }}
-          className="self-start inline-flex items-center gap-1.5 rounded-lg border border-neutral-300 dark:border-neutral-700 px-3.5 py-2 text-sm font-medium hover:bg-neutral-100 dark:hover:bg-neutral-800 transition disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSavingDomain ? <Spinner size={15} className="animate-spin" /> : <LinkSimple size={15} />}
-          {isSavingDomain ? 'Menyimpan...' : 'Simpan Domain'}
-        </button>
-        {domainResult && (
-          <p className={`flex items-center gap-1.5 text-sm ${domainResult.ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
-            {domainResult.ok ? <CheckCircle size={15} weight="fill" /> : <WarningCircle size={15} weight="fill" />}
-            {domainResult.message}
-          </p>
-        )}
-      </Section>
-    </div>
+        <CardDescription>
+          Atur domain kustom untuk customer. Masukkan slug dan domain (mis. namabisnis.com tanpa https://). Pastikan domain juga ditambahkan di Vercel dan DNS telah dikonfigurasi.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col gap-6">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Field label="Slug Customer" placeholder="cafe-siti" value={domainSlug} onChange={setDomainSlug} />
+            <Field label="Domain Kustom" placeholder="namabisnis.com (kosongkan untuk menghapus)" value={domainValue} onChange={setDomainValue} />
+          </div>
+          <div className="flex items-center gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isSavingDomain || !domainSlug}
+              onClick={() => {
+                setDomainResult(null);
+                startDomainTransition(async () => {
+                  const res = await updateCustomDomainAction(token, domainSlug.trim(), domainValue.trim());
+                  setDomainResult(res.ok ? { ok: true, message: res.message ?? 'Success.' } : { ok: false, message: res.error });
+                });
+              }}
+            >
+              {isSavingDomain ? <Spinner size={16} className="animate-spin mr-2" /> : <LinkSimple size={16} className="mr-2" />}
+              {isSavingDomain ? 'Menyimpan...' : 'Simpan Domain'}
+            </Button>
+            {domainResult && (
+              <span className={`flex items-center gap-1.5 text-sm font-medium ${domainResult.ok ? 'text-blue-400' : 'text-red-400'}`}>
+                {domainResult.ok ? <CheckCircle size={16} weight="fill" /> : <WarningCircle size={16} weight="fill" />}
+                {domainResult.message}
+              </span>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

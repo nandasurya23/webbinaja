@@ -49,13 +49,13 @@ export default function AssetCheckSection({
           {checkResults.map((r, i) => (
             <li key={i} className="flex items-center gap-2">
               {r.ok ? (
-                <CheckCircle size={15} weight="fill" className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+                <CheckCircle size={15} weight="fill" className="text-blue-600 dark:text-blue-400 shrink-0" />
               ) : (
                 <WarningCircle size={15} weight="fill" className="text-amber-600 dark:text-amber-500 shrink-0" />
               )}
               <span className="text-neutral-600 dark:text-neutral-300">{r.label}:</span>
               <span className="font-mono text-xs truncate">{r.filename}</span>
-              <span className={`ml-auto text-xs ${r.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-500'}`}>
+              <span className={`ml-auto text-xs ${r.ok ? 'text-blue-600 dark:text-blue-400' : 'text-amber-600 dark:text-amber-500'}`}>
                 {r.ok ? `OK ${r.status ?? ''}` : r.error ?? `${r.status ?? 'gagal'}`}
               </span>
             </li>
@@ -68,7 +68,7 @@ export default function AssetCheckSection({
       )}
 
       {assetsAreChecked ? (
-        <p className="flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400">
+        <p className="flex items-center gap-1.5 text-xs text-blue-700 dark:text-blue-400">
           <CheckCircle size={14} weight="fill" />
           Sudah dicek untuk data saat ini.
         </p>

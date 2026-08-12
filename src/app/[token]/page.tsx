@@ -1,8 +1,6 @@
 import { notFound } from 'next/navigation';
 import { cookies } from 'next/headers';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { Envelope, UsersThree, Globe } from '@phosphor-icons/react/dist/ssr';
 import { ADMIN_SESSION_COOKIE, isAdminConfigured, isValidAdminToken, parseSession } from '@/lib/adminAuth';
 import LoginForm from './LoginForm';
 import CustomerForm from './CustomerForm';
@@ -24,45 +22,20 @@ export default async function AdminPage({ params }: { params: Promise<{ token: s
   const cookieStore = await cookies();
   const session = parseSession(cookieStore.get(ADMIN_SESSION_COOKIE)?.value);
 
-  return (
-    <div className="min-h-screen bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.12),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-10%,rgba(245,158,11,0.08),transparent)]">
-      <main className="max-w-2xl mx-auto px-4 py-16 sm:py-20">
-        <div className="flex items-start justify-between gap-4 mb-1">
-          <h1 className="text-3xl font-semibold tracking-tight">WebbinAja Admin</h1>
-          {session && (
-            <div className="flex items-center gap-4 shrink-0 mt-1.5">
-              <Link
-                href={`/${token}/inbox`}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
-              >
-                <Envelope size={14} />
-                Inbox Submission
-              </Link>
-              <Link
-                href={`/${token}/websites`}
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
-              >
-                <Globe size={14} />
-                Website
-              </Link>
-              {session.role === 'super_admin' && (
-                <Link
-                  href={`/${token}/manage-admins`}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 dark:text-amber-500 hover:underline"
-                >
-                  <UsersThree size={14} />
-                  Kelola Admin
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
-        <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-10">
-          {session ? 'Tambah customer baru ke dalam sistem.' : 'Masuk untuk melanjutkan.'}
-        </p>
+  if (!session) {
+    return <LoginForm token={token} />;
+  }
 
-        {!session ? <LoginForm token={token} /> : <CustomerForm token={token} />}
-      </main>
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-3xl font-semibold tracking-tight text-white mb-2">Dashboard</h1>
+        <p className="text-sm text-zinc-400">
+          Tambah customer baru ke dalam sistem.
+        </p>
+      </div>
+
+      <CustomerForm token={token} />
     </div>
   );
 }

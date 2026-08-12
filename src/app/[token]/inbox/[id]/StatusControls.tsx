@@ -96,7 +96,7 @@ export default function StatusControls({
               onClick={() => apply({ paymentStatus: opt.value })}
               className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50 ${
                 paymentStatus === opt.value
-                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
+                  ? 'border-blue-500 bg-blue-500/10 text-blue-700 dark:text-blue-400'
                   : 'border-neutral-300 dark:border-neutral-700 hover:border-neutral-400 dark:hover:border-neutral-600 text-neutral-600 dark:text-neutral-300'
               }`}
             >
@@ -112,7 +112,7 @@ export default function StatusControls({
         </p>
       )}
       {message && !isPending && (
-        <p className={`flex items-center gap-1.5 text-xs ${message.ok ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>
+        <p className={`flex items-center gap-1.5 text-xs ${message.ok ? 'text-blue-700 dark:text-blue-400' : 'text-red-600 dark:text-red-400'}`}>
           {message.ok ? <CheckCircle size={13} weight="fill" /> : <WarningCircle size={13} weight="fill" />}
           {message.text}
         </p>

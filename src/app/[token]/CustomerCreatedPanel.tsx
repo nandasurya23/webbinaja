@@ -22,31 +22,31 @@ export default function CustomerCreatedPanel({
 }) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50 dark:bg-emerald-950/40 p-6 sm:p-8">
-        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mb-5">
+      <div className="rounded-2xl border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-950/40 p-6 sm:p-8">
+        <div className="flex items-center justify-center h-12 w-12 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 mb-5">
           <CheckCircle size={24} weight="fill" />
         </div>
-        <h2 className="text-lg font-semibold text-emerald-900 dark:text-emerald-200 mb-1">Customer berhasil dibuat</h2>
-        <p className="text-sm text-emerald-800/80 dark:text-emerald-300/80 mb-6">{result.message}</p>
+        <h2 className="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-1">Customer berhasil dibuat</h2>
+        <p className="text-sm text-blue-800/80 dark:text-blue-300/80 mb-6">{result.message}</p>
 
         <div className="flex flex-col gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mb-1.5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-700/80 dark:text-blue-400/80 mb-1.5">
               Link untuk customer (sudah aktif)
             </p>
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-300/70 dark:border-emerald-800 bg-white dark:bg-neutral-950 px-3 py-2">
-              <LinkSimple size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex items-center gap-2 rounded-lg border border-blue-300/70 dark:border-blue-800 bg-white dark:bg-neutral-950 px-3 py-2">
+              <LinkSimple size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
               <span className="text-sm font-mono truncate flex-1">{result.productionUrl}</span>
               <CopyButton text={result.productionUrl} />
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mb-1.5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-blue-700/80 dark:text-blue-400/80 mb-1.5">
               Preview lokal (npm run dev harus aktif)
             </p>
-            <div className="flex items-center gap-2 rounded-lg border border-emerald-300/70 dark:border-emerald-800 bg-white dark:bg-neutral-950 px-3 py-2">
-              <LinkSimple size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <div className="flex items-center gap-2 rounded-lg border border-blue-300/70 dark:border-blue-800 bg-white dark:bg-neutral-950 px-3 py-2">
+              <LinkSimple size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
               <a href={result.localUrl} target="_blank" rel="noreferrer" className="text-sm font-mono truncate flex-1 hover:underline">
                 {result.localUrl}
               </a>
@@ -56,11 +56,11 @@ export default function CustomerCreatedPanel({
 
           {result.localPromoUrl && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mb-1.5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-700/80 dark:text-blue-400/80 mb-1.5">
                 Kit Promosi Instan — preview lokal (npm run dev harus aktif)
               </p>
-              <div className="flex items-center gap-2 rounded-lg border border-emerald-300/70 dark:border-emerald-800 bg-white dark:bg-neutral-950 px-3 py-2">
-                <Sparkle size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border border-blue-300/70 dark:border-blue-800 bg-white dark:bg-neutral-950 px-3 py-2">
+                <Sparkle size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
                 <a href={result.localPromoUrl} target="_blank" rel="noreferrer" className="text-sm font-mono truncate flex-1 hover:underline">
                   {result.localPromoUrl}
                 </a>
@@ -71,11 +71,11 @@ export default function CustomerCreatedPanel({
 
           {result.promoUrl && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mb-1.5">
+              <p className="text-xs font-semibold uppercase tracking-widest text-blue-700/80 dark:text-blue-400/80 mb-1.5">
                 Kit Promosi Instan — link production (sudah aktif)
               </p>
-              <div className="flex items-center gap-2 rounded-lg border border-emerald-300/70 dark:border-emerald-800 bg-white dark:bg-neutral-950 px-3 py-2">
-                <Sparkle size={15} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <div className="flex items-center gap-2 rounded-lg border border-blue-300/70 dark:border-blue-800 bg-white dark:bg-neutral-950 px-3 py-2">
+                <Sparkle size={15} className="text-blue-600 dark:text-blue-400 shrink-0" />
                 <a href={result.promoUrl} target="_blank" rel="noreferrer" className="text-sm font-mono truncate flex-1 hover:underline">
                   {result.promoUrl}
                 </a>
